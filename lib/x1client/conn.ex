@@ -1,8 +1,9 @@
 defmodule X1Client.Conn do
   @moduledoc ~S"""
   `X1Client.Conn` provides a lower-level API than `X1Client`, yet
-  still higher-level than XHTTP.  It is intended for usage where the
-  `X1Client` interface is too simple, e.g. for connection pooling.
+  still higher-level than XHTTP.  It is intended for usage where
+  greater control of the network socket is desired (e.g., connection
+  pooling).
   """
 
   alias X1Client.Response
@@ -40,6 +41,8 @@ defmodule X1Client.Conn do
 
   These messages are received in the caller process, so take care to
   execute this in a process where there are no other message-senders.
+
+  `opts[:timeout]` may be used to provide a request timeout (in milliseconds).
   """
   @spec stream_response(t, Keyword.t()) :: {:ok, t, %Response{}} | {:error, any}
 
@@ -68,16 +71,16 @@ defmodule X1Client.Conn do
     end
   end
 
+  @doc ~S"""
+  Returns whether a connection is still open.
+  """
+  @spec open?(t) :: boolean
+  def open?(conn), do: XHTTP1.Conn.open?(conn)
+
   ## `build_response/2` adds streamed response chunks from XHTTP1 into
   ## an `%X1Client.Response{}` map.
 
-  @typep response_chunk ::
-           {:status, reference, non_neg_integer}
-           | {:headers, reference, [{String.t(), String.t()}]}
-           | {:data, reference, String.t()}
-           | {:done, reference}
-
-  @spec build_response(%Response{}, [response_chunk]) :: %Response{}
+  @spec build_response(%Response{}, [XHTTP1.Conn.response]) :: %Response{}
 
   defp build_response(response, []), do: response
 
@@ -110,8 +113,10 @@ defmodule X1Client.Conn do
     port =
       cond do
         fu.port -> String.to_integer(fu.port)
-        fu.protocol == "http" -> 80
         fu.protocol == "https" -> 443
+        fu.protocol == "http" -> 80
+        String.downcase(to_string(fu.protocol)) == "https" -> 443
+        String.downcase(to_string(fu.protocol)) == "http" -> 80
         :else -> nil
       end
 
@@ -124,7 +129,7 @@ defmodule X1Client.Conn do
   end
 
   ## `make_relative_url/1` strips the protocol, hostname, and port from
-  ## a web URL, returning the path (starting with a slash).
+  ## a web URL, returning the path (always starting with a slash).
 
   defp make_relative_url("http://" <> rest), do: {:ok, get_path(rest)}
 
@@ -132,13 +137,16 @@ defmodule X1Client.Conn do
 
   defp make_relative_url(url), do: {:error, "could not make url relative: #{url}"}
 
-  defp get_path(url_part) do
+  defp get_path(url_without_protocol) do
     "/" <>
-      case String.split(url_part, "/", parts: 2) do
+      case String.split(url_without_protocol, "/", parts: 2) do
         [_hostname, path] -> path
         _ -> ""
       end
   end
+
+  ## `protocol_to_transport/1` returns the correct Erlang TCP transport
+  ## module for the given protocol.
 
   defp protocol_to_transport("http"), do: {:ok, :gen_tcp}
 

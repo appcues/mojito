@@ -5,7 +5,7 @@ defmodule X1Client.MixProject do
     [
       app: :x1client,
       version: "0.1.0",
-      elixir: "~> 1.6",
+      elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -21,7 +21,9 @@ defmodule X1Client.MixProject do
   defp deps do
     [
       {:xhttp, github: "ericmj/xhttp"},
-      {:fuzzyurl, "~> 0.9"},
+      {:fuzzyurl, "~> 0.9 or ~> 1.0"},
+      {:poolboy, "~> 1.5"},
+      {:ex_spec, "~> 2.0", only: :test},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end

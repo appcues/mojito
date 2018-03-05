@@ -6,7 +6,7 @@ low-level [XHTTP library](https://github.com/ericmj/xhttp).
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `xhttp_client` to your list of dependencies in `mix.exs`:
+by adding `x1client` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do

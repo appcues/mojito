@@ -1,5 +1,7 @@
 %{
   "dialyxir": {:hex, :dialyxir, "0.5.1", "b331b091720fd93e878137add264bac4f644e1ddae07a70bf7062c7862c4b952", [:mix], [], "hexpm"},
+  "ex_spec": {:hex, :ex_spec, "2.0.1", "8bdbd6fa85995fbf836ed799571d44be6f9ebbcace075209fd0ad06372c111cf", [:mix], [], "hexpm"},
   "fuzzyurl": {:hex, :fuzzyurl, "0.9.1", "81ed7a5f6b42706b65e3948958e6f584d38e3749a5445d5a26d5f80ac1121033", [:mix], [], "hexpm"},
+  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], [], "hexpm"},
   "xhttp": {:git, "https://github.com/ericmj/xhttp.git", "413d6cea39fe125f2832470dacf53f1e5ff05d8e", []},
 }
