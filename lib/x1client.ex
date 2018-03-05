@@ -30,19 +30,24 @@ defmodule X1Client do
   @doc ~S"""
   Performs an HTTP 1.x request.
   """
-  @spec request(atom, String.t, [{String.t, String.t}], String.t, Keyword.t) ::
-    {:ok, %Response{}} | {:error, any}
+  @spec request(atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
+          {:ok, %Response{}} | {:error, any}
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
-    fn ->
-      with {:ok, conn} <- Conn.connect(url),
-           {:ok, conn, _} <- Conn.request(conn, method, url, headers, payload, opts),
-           {:ok, _conn, response} <- Conn.stream_response(conn, opts) do
-        {:ok, response}
+    task =
+      fn ->
+        with {:ok, conn} <- Conn.connect(url),
+             {:ok, conn, _} <- Conn.request(conn, method, url, headers, payload, opts),
+             {:ok, _conn, response} <- Conn.stream_response(conn, opts) do
+          {:ok, response}
+        end
       end
+      |> Task.async()
+
+    case Task.yield(task, timeout) || Task.shutdown(task) do
+      {:ok, result} -> result
+      _ -> {:error, :timeout}
     end
-    |> Task.async()
-    |> Task.await(timeout)
   end
 end

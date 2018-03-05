@@ -80,7 +80,7 @@ defmodule X1Client.Conn do
   ## `build_response/2` adds streamed response chunks from XHTTP1 into
   ## an `%X1Client.Response{}` map.
 
-  @spec build_response(%Response{}, [XHTTP1.Conn.response]) :: %Response{}
+  @spec build_response(%Response{}, [XHTTP1.Conn.response()]) :: %Response{}
 
   defp build_response(response, []), do: response
 
