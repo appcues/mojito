@@ -40,7 +40,7 @@ defmodule X1Client.Conn do
   Initiates a request on the given connection.
   """
   @spec request(t, atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
-          {:ok, t, reference} | {:error, any}
+          {:ok, t} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url} <- make_relative_url(url),
          {:ok, xhttp1_conn, _request_ref} <-

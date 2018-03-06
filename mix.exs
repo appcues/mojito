@@ -6,10 +6,14 @@ defmodule X1Client.MixProject do
       app: :x1client,
       version: "0.1.0",
       elixir: "~> 1.5",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   def application do
     [
@@ -24,6 +28,8 @@ defmodule X1Client.MixProject do
       {:fuzzyurl, "~> 0.9 or ~> 1.0"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},
+      {:cowboy, "~> 1.1", only: :test},
+      {:plug, "~> 1.3", only: :test},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end

@@ -25,7 +25,7 @@ defmodule X1Client.Pool do
       {:name, {:local, name}},
       {:worker_module, X1Client.PoolWorker},
       {:size, size},
-      {:max_overflow, 50}
+      {:max_overflow, max_overflow}
     ]
 
     :poolboy.child_spec(name, poolboy_config)

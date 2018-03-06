@@ -36,7 +36,7 @@ defmodule X1Client do
     task =
       fn ->
         with {:ok, conn} <- Conn.connect(url),
-             {:ok, conn, _} <- Conn.request(conn, method, url, headers, payload, opts),
+             {:ok, conn} <- Conn.request(conn, method, url, headers, payload, opts),
              {:ok, _conn, response} <- Conn.stream_response(conn, opts) do
           {:ok, response}
         end
