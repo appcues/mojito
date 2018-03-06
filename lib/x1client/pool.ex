@@ -2,6 +2,13 @@ defmodule X1Client.Pool do
   @moduledoc ~S"""
   X1Client.Pool provides an HTTP 1.x request connection pool based on
   X1Client and Poolboy.
+
+  Example:
+
+      >>>> children = [X1Client.Pool.child_spec(MyPool)]
+      >>>> Supervisor.start_link(children, strategy: :one_for_one)
+      >>>> X1Client.Pool.request(MyPool, :get, "http://example.com")
+      {:ok, %X1Client.Response{...}}
   """
 
   defp pool_config, do: Application.get_env(:x1client, :pool, [])
