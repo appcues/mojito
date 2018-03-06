@@ -26,7 +26,7 @@ defmodule X1Client.PoolWorker do
   ## `connect/2` ensures that `state.conn` is an open connection to the
   ## correct destination.
 
-  @spec connect(state, String.t) :: {:ok, state} | {:error, any}
+  @spec connect(state, String.t()) :: {:ok, state} | {:error, any}
   defp connect(state, url) do
     open = state.conn && Conn.open?(state.conn)
     matches_url = state.conn && Conn.matches?(state.conn, url)
@@ -82,25 +82,24 @@ defmodule X1Client.PoolWorker do
       |> Task.async()
 
     response =
-      Task.yield(response_task, timeout) ||
-      Task.shutdown(response_task) ||
-      {:error, :timeout}
+      Task.yield(response_task, timeout) || Task.shutdown(response_task) || {:error, :timeout}
 
     case response do
       {:ok, conn, response} ->
-          {
-            :reply,
-            {:ok, response},
-            %{
-              state
-              | conn: conn,
-                stats:
-                  Map.merge(state.stats, %{
-                    requests: state.stats.requests + 1,
-                    requests_at_this_host: state.stats.requests_at_this_host + 1
-                  })
-            }
+        {
+          :reply,
+          {:ok, response},
+          %{
+            state
+            | conn: conn,
+              stats:
+                Map.merge(state.stats, %{
+                  requests: state.stats.requests + 1,
+                  requests_at_this_host: state.stats.requests_at_this_host + 1
+                })
           }
+        }
+
       err ->
         {
           :reply,

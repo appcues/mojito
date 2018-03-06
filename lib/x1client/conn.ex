@@ -43,7 +43,7 @@ defmodule X1Client.Conn do
           {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url} <- make_relative_url(url),
-         {:ok, xhttp1_conn} <-
+         {:ok, xhttp1_conn, _request_ref} <-
            XHTTP1.Conn.request(conn.conn, method, relative_url, headers, payload) do
       {:ok, %{conn | conn: xhttp1_conn}}
     end
@@ -63,12 +63,13 @@ defmodule X1Client.Conn do
   @spec stream_response(t, Keyword.t()) :: {:ok, t, %Response{}} | {:error, any}
 
   def stream_response(conn, opts \\ []) do
-    with {:ok, xhttp1_conn, response} <- do_stream_response(conn, %Response{}, opts) do
+    with {:ok, xhttp1_conn, response} <- do_stream_response(conn.conn, %Response{}, opts) do
       {:ok, %{conn | conn: xhttp1_conn}, response}
     end
   end
 
-  @spec do_stream_response(t, %Response{}, Keyword.t()) :: {:ok, t, %Response{}} | {:error, any}
+  @spec do_stream_response(XHTTP1.Conn.t(), %Response{}, Keyword.t()) ::
+          {:ok, t, %Response{}} | {:error, any}
 
   defp do_stream_response(conn, %{done: true} = response, _opts), do: {:ok, conn, response}
 
