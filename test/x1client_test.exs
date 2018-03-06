@@ -21,9 +21,9 @@ defmodule X1ClientTest do
       end
     end
 
-    @port Application.get_env(:x1client, :test_server_port)
-
     context "live tests" do
+      @port Application.get_env(:x1client, :test_server_port)
+
       defp get(path, opts \\ []) do
         X1Client.request(:get, "http://localhost:#{@port}#{path}", [], "", opts)
       end
@@ -36,6 +36,7 @@ defmodule X1ClientTest do
       end
 
       it "handles timeouts" do
+        assert({:ok, _} = get("/", timeout: 50))
         assert({:error, :timeout} = get("/wait", timeout: 50))
       end
     end
