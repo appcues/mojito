@@ -19,8 +19,6 @@ defmodule X1Client do
          ],
          status_code: 200
        }}
-
-
   """
 
   alias X1Client.{Conn, Response}
