@@ -23,12 +23,16 @@ defmodule X1Client do
 
   alias X1Client.{Conn, Response}
 
+  @type headers :: [{String.t(), String.t()}]
+
+  @type method :: :get | :post | :put | :patch | :delete | :options
+
   @request_timeout Application.get_env(:x1client, :request_timeout, 5000)
 
   @doc ~S"""
   Performs an HTTP 1.x request.
   """
-  @spec request(atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
+  @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, %Response{}} | {:error, any}
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
@@ -36,7 +40,7 @@ defmodule X1Client do
     task =
       fn ->
         with {:ok, conn} <- Conn.connect(url),
-             {:ok, conn} <- Conn.request(conn, method, url, headers, payload, opts),
+             {:ok, conn, _ref} <- Conn.request(conn, method, url, headers, payload, opts),
              {:ok, _conn, response} <- Conn.stream_response(conn, opts) do
           {:ok, response}
         end

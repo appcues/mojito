@@ -9,7 +9,7 @@ defmodule X1Client.PoolTest do
     defp with_pool(fun) do
       rand = round(:rand.uniform() * 1_000_000_000)
       pool_name = "TestPool#{rand}" |> String.to_atom()
-      {:ok, pid} = start_pool(pool_name, [size: 2, max_overflow: 2])
+      {:ok, pid} = start_pool(pool_name, size: 2, max_overflow: 2)
       fun.(pool_name)
       GenServer.stop(pid)
     end

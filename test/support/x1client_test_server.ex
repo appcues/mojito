@@ -23,7 +23,7 @@ defmodule X1Client.TestServer.PlugRouter do
   end
 
   get "/wait" do
-    :timer.sleep(1000)
+    :timer.sleep(10000)
     send_resp(conn, 200, "ok")
   end
 end

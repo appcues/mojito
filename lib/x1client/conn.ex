@@ -23,8 +23,14 @@ defmodule X1Client.Conn do
   """
   @spec connect(String.t()) :: {:ok, t} | {:error, any}
   def connect(url) do
-    with {:ok, protocol, hostname, port} <- decompose_url(url),
-         {:ok, transport} <- protocol_to_transport(protocol),
+    with {:ok, protocol, hostname, port} <- decompose_url(url) do
+      connect(protocol, hostname, port)
+    end
+  end
+
+  @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
+  def connect(protocol, hostname, port) do
+    with {:ok, transport} <- protocol_to_transport(protocol),
          {:ok, xhttp1_conn} <- XHTTP1.Conn.connect(hostname, port, transport: transport) do
       {:ok,
        %X1Client.Conn{
@@ -43,9 +49,9 @@ defmodule X1Client.Conn do
           {:ok, t} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url} <- make_relative_url(url),
-         {:ok, xhttp1_conn, _request_ref} <-
+         {:ok, xhttp1_conn, request_ref} <-
            XHTTP1.Conn.request(conn.conn, method, relative_url, headers, payload) do
-      {:ok, %{conn | conn: xhttp1_conn}}
+      {:ok, %{conn | conn: xhttp1_conn}, request_ref}
     end
   end
 
@@ -78,6 +84,8 @@ defmodule X1Client.Conn do
 
     receive do
       tcp_message ->
+        IO.inspect(tcp_message, label: :tcp_message)
+
         case XHTTP1.Conn.stream(conn, tcp_message) do
           {:ok, conn, resps} ->
             do_stream_response(conn, build_response(response, resps), opts)
@@ -131,6 +139,13 @@ defmodule X1Client.Conn do
 
         {:done, _request_ref} ->
           body = :erlang.list_to_binary(response.body)
+
+          receive do
+            msg -> IO.inspect(msg, label: :last_one)
+          after
+            10000 -> IO.inspect(:end_of_messages)
+          end
+
           %{response | done: true, body: body}
       end
 
