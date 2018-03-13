@@ -1,7 +1,7 @@
 defmodule X1Client.Response do
   defstruct status_code: nil,
             headers: [],
-            body: "",
+            body: [],
             done: false
 
   @doc ~S"""

@@ -22,7 +22,12 @@ defmodule X1Client.TestServer.PlugRouter do
     send_resp(conn, 200, "Hello world!")
   end
 
-  get "/wait" do
+  get "/wait1" do
+    :timer.sleep(1000)
+    send_resp(conn, 200, "ok")
+  end
+
+  get "/wait10" do
     :timer.sleep(10000)
     send_resp(conn, 200, "ok")
   end

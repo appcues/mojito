@@ -21,7 +21,7 @@ defmodule X1Client do
        }}
   """
 
-  alias X1Client.{Conn, Response}
+  alias X1Client.Response
 
   @type headers :: [{String.t(), String.t()}]
 
@@ -39,15 +39,22 @@ defmodule X1Client do
 
     task =
       fn ->
-        with {:ok, conn} <- Conn.connect(url),
-             {:ok, conn, _ref} <- Conn.request(conn, method, url, headers, payload, opts),
-             {:ok, _conn, response} <- Conn.stream_response(conn, opts) do
-          {:ok, response}
+        with {:ok, pid} <- X1Client.ConnServer.start_link(),
+             :ok <- X1Client.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
+          receive do
+            reply ->
+              GenServer.stop(pid)
+              reply
+          after
+            timeout ->
+              GenServer.stop(pid)
+              {:error, :timeout}
+          end
         end
       end
       |> Task.async()
 
-    case Task.yield(task, timeout) || Task.shutdown(task) do
+    case Task.yield(task, timeout + 100) || Task.shutdown(task) do
       {:ok, result} -> result
       _ -> {:error, :timeout}
     end

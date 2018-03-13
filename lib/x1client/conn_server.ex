@@ -1,38 +1,80 @@
 defmodule X1Client.ConnServer do
+  @moduledoc ~S"""
+  `X1Client.ConnServer` is a GenServer that handles a single
+  `X1Client.Conn`.  It supports automatic connection/reconnection,
+  connection keep-alive, and request pipelining.
+
+  It's intended for usage through `X1Client` or `X1Client.Pool`.
+
+  Example:
+
+      >>>> {:ok, pid} = X1Client.ConnServer.start_link()
+      >>>> :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
+      >>>> receive do
+      ...>   {:ok, response} -> response
+      ...> after
+      ...>   1_000 -> :timeout
+      ...> end
+
+  """
+
   use GenServer
   require Logger
 
   alias X1Client.{Conn, Response}
 
-  @initial_state %{
-    conn: nil,
-    protocol: nil,
-    hostname: nil,
-    port: nil,
-    responses: %{},
-    reply_tos: %{}
-  }
-
   @type state :: map
 
-  def start_link(args) do
+  @doc ~S"""
+  Starts an X1Client.ConnServer.
+  """
+  @spec start_link(Keyword.t) :: {:ok, pid} | {:error, any}
+  def start_link(args \\ []) do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def init(_) do
-    {:ok, @initial_state}
+  @doc ~S"""
+  Initiates a request.  The `reply_to` pid will receive the response in a
+  message of the format `{:ok, %X1Client.Response{}} | {:error, any}`.
+  """
+  @spec request(pid, pid, X1Client.method, X1Client.headers, String.t, Keyword.t) :: :ok | {:error, any}
+  def request(pid, reply_to, method, url, headers \\ [], payload \\ "", opts \\ []) do
+    GenServer.call(pid, {:request, reply_to, method, url, headers, payload, opts})
   end
 
-  def handle_cast({:request, reply_to, method, url, headers, payload, opts}, state) do
-    with {:ok, state, _ref} <- request(state, reply_to, method, url, headers, payload, opts) do
-      {:noreply, state}
+
+  #### GenServer callbacks
+
+  def init(_) do
+    {:ok, %{
+      conn: nil,
+      protocol: nil,
+      hostname: nil,
+      port: nil,
+      responses: %{},
+      reply_tos: %{}
+    }}
+  end
+
+  def terminate(reason, state) do
+    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})" end)
+    close_connections(state)
+  end
+
+  def handle_call({:request, reply_to, method, url, headers, payload, opts}, _from, state) do
+    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: #{method} #{url}" end)
+    with {:ok, state, _ref} <- do_request(state, reply_to, method, url, headers, payload, opts) do
+      {:reply, :ok, state}
     else
-      err -> {:noreply, state}
+      err ->
+        ## TODO reconnect?
+        {:reply, err, state}
     end
   end
 
-  def handle_info({closed_msg, _port} = msg, state)
+  def handle_info({closed_msg, _port}, state)
       when closed_msg in [:tcp_closed, :ssl_closed] do
+    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: connection closed" end)
     {:noreply, close_connections(state)}
   end
 
@@ -52,9 +94,13 @@ defmodule X1Client.ConnServer do
     end
   end
 
+  #### Helpers
+
   @spec close_connections(state) :: state
   defp close_connections(state) do
-    Enum.each(state.reply_tos, fn reply_to ->
+    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: cleaning up" end)
+
+    Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
       send(reply_to, {:error, :closed})
     end)
 
@@ -90,10 +136,12 @@ defmodule X1Client.ConnServer do
   end
 
   defp apply_resp(state, {:done, request_ref}) do
-    response = Map.get(state.responses, request_ref)
-    body = :erlang.list_to_binary(response.body)
-    response = %{response | done: true, body: body}
-    send(Map.get(state.reply_tos, request_ref), {:ok, response})
+    r = Map.get(state.responses, request_ref)
+    response = %{r | done: true, body: :erlang.list_to_binary(r.body)}
+
+    reply_to = Map.get(state.reply_tos, request_ref)
+    send(reply_to, {:ok, response})
+    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}" end)
 
     %{
       state
@@ -102,7 +150,7 @@ defmodule X1Client.ConnServer do
     }
   end
 
-  @spec request(
+  @spec do_request(
           state,
           pid,
           X1Client.method(),
@@ -111,7 +159,7 @@ defmodule X1Client.ConnServer do
           String.t(),
           Keyword.t()
         ) :: {:ok, String.t(), reference} | {:error, any}
-  defp request(state, reply_to, method, url, headers, payload, opts) do
+  defp do_request(state, reply_to, method, url, headers, payload, opts) do
     with {:ok, state} <- ensure_connection(state, url),
          {:ok, conn, request_ref} <- Conn.request(state.conn, method, url, headers, payload, opts) do
       responses = state.responses |> Map.put(request_ref, %Response{})

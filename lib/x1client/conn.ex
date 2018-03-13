@@ -84,8 +84,6 @@ defmodule X1Client.Conn do
 
     receive do
       tcp_message ->
-        IO.inspect(tcp_message, label: :tcp_message)
-
         case XHTTP1.Conn.stream(conn, tcp_message) do
           {:ok, conn, resps} ->
             do_stream_response(conn, build_response(response, resps), opts)

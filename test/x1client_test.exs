@@ -36,8 +36,8 @@ defmodule X1ClientTest do
       end
 
       it "handles timeouts" do
-        assert({:ok, _} = get("/", timeout: 50))
-        assert({:error, :timeout} = get("/wait", timeout: 50))
+        assert({:ok, _} = get("/", timeout: 100))
+        assert({:error, :timeout} = get("/wait1", timeout: 100))
       end
     end
   end
