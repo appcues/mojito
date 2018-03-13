@@ -21,7 +21,7 @@ defmodule X1Client.ConnServer do
   use GenServer
   require Logger
 
-  alias X1Client.{Conn, Response}
+  alias X1Client.{Conn, Response, Utils}
 
   @type state :: map
 
@@ -176,7 +176,7 @@ defmodule X1Client.ConnServer do
 
   @spec ensure_connection(state, String.t()) :: {:ok, state} | {:error, any}
   defp ensure_connection(state, url) do
-    with {:ok, protocol, hostname, port} <- decompose_url(url) do
+    with {:ok, protocol, hostname, port} <- Utils.decompose_url(url) do
       new_destination =
         state.protocol != protocol || state.hostname != hostname || state.port != port
 
@@ -197,30 +197,5 @@ defmodule X1Client.ConnServer do
     end
   end
 
-  @url_regex ~r"
-    (?<protocol> https?)
-    ://
-    (?<hostname> [^:/]+)
-    :?
-    (?<port> \d+)?
-  "xi
-  @spec decompose_url(String.t()) :: {:ok, String.t(), String.t(), String.t()} | {:error, any}
-  defp decompose_url(url) do
-    case Regex.named_captures(@url_regex, url) do
-      nil ->
-        {:error, "could not parse url #{url}"}
 
-      nc ->
-        protocol = String.downcase(nc["protocol"])
-
-        port =
-          nc["port"] ||
-            case protocol do
-              "https" -> "443"
-              "http" -> "80"
-            end
-
-        {:ok, protocol, nc["hostname"], String.to_integer(port)}
-    end
-  end
 end

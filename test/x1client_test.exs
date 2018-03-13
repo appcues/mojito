@@ -1,6 +1,7 @@
 defmodule X1ClientTest do
   use ExSpec, async: true
   doctest X1Client
+  doctest X1Client.Utils
 
   context "request" do
     context "url validation" do
