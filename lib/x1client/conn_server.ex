@@ -28,7 +28,7 @@ defmodule X1Client.ConnServer do
   @doc ~S"""
   Starts an X1Client.ConnServer.
   """
-  @spec start_link(Keyword.t) :: {:ok, pid} | {:error, any}
+  @spec start_link(Keyword.t()) :: {:ok, pid} | {:error, any}
   def start_link(args \\ []) do
     GenServer.start_link(__MODULE__, args)
   end
@@ -37,32 +37,37 @@ defmodule X1Client.ConnServer do
   Initiates a request.  The `reply_to` pid will receive the response in a
   message of the format `{:ok, %X1Client.Response{}} | {:error, any}`.
   """
-  @spec request(pid, pid, X1Client.method, X1Client.headers, String.t, Keyword.t) :: :ok | {:error, any}
+  @spec request(pid, pid, X1Client.method(), X1Client.headers(), String.t(), Keyword.t()) ::
+          :ok | {:error, any}
   def request(pid, reply_to, method, url, headers \\ [], payload \\ "", opts \\ []) do
     GenServer.call(pid, {:request, reply_to, method, url, headers, payload, opts})
   end
 
-
   #### GenServer callbacks
 
   def init(_) do
-    {:ok, %{
-      conn: nil,
-      protocol: nil,
-      hostname: nil,
-      port: nil,
-      responses: %{},
-      reply_tos: %{}
-    }}
+    {:ok,
+     %{
+       conn: nil,
+       protocol: nil,
+       hostname: nil,
+       port: nil,
+       responses: %{},
+       reply_tos: %{}
+     }}
   end
 
   def terminate(reason, state) do
-    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})" end)
+    Logger.debug(fn ->
+      "X1Client.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
+    end)
+
     close_connections(state)
   end
 
   def handle_call({:request, reply_to, method, url, headers, payload, opts}, _from, state) do
     Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: #{method} #{url}" end)
+
     with {:ok, state, _ref} <- do_request(state, reply_to, method, url, headers, payload, opts) do
       {:reply, :ok, state}
     else
@@ -104,11 +109,7 @@ defmodule X1Client.ConnServer do
       send(reply_to, {:error, :closed})
     end)
 
-    %{state |
-      conn: nil,
-      responses: %{},
-      reply_tos: %{}
-    }
+    %{state | conn: nil, responses: %{}, reply_tos: %{}}
   end
 
   defp apply_resps(state, []), do: state
@@ -141,7 +142,10 @@ defmodule X1Client.ConnServer do
 
     reply_to = Map.get(state.reply_tos, request_ref)
     send(reply_to, {:ok, response})
-    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}" end)
+
+    Logger.debug(fn ->
+      "X1Client.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}"
+    end)
 
     %{
       state
@@ -219,6 +223,4 @@ defmodule X1Client.ConnServer do
         {:ok, protocol, nc["hostname"], String.to_integer(port)}
     end
   end
-
-
 end

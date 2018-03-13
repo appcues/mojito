@@ -32,10 +32,10 @@ defmodule X1Client.PoolTest do
 
     it "can saturate pool" do
       with_pool(fn pool_name ->
-        spawn fn -> get(pool_name, "/wait1") end
-        spawn fn -> get(pool_name, "/wait1") end
-        spawn fn -> get(pool_name, "/wait1") end
-        spawn fn -> get(pool_name, "/wait1") end
+        spawn(fn -> get(pool_name, "/wait1") end)
+        spawn(fn -> get(pool_name, "/wait1") end)
+        spawn(fn -> get(pool_name, "/wait1") end)
+        spawn(fn -> get(pool_name, "/wait1") end)
         :timer.sleep(100)
 
         ## 0 ready, 1 waiting, 3 in-progress
