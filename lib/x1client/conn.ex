@@ -1,14 +1,7 @@
 defmodule X1Client.Conn do
-  @moduledoc ~S"""
-  `X1Client.Conn` provides a lower-level API than `X1Client`, yet
-  still higher-level than XHTTP.  It is intended for usage where
-  greater control of the network socket is desired (e.g., connection
-  pooling).
-  """
+  @moduledoc false
 
-  alias X1Client.{Response, Utils}
-
-  @request_timeout Application.get_env(:x1client, :request_timeout, 5000)
+  alias X1Client.Utils
 
   defstruct conn: nil,
             protocol: nil,
@@ -18,8 +11,8 @@ defmodule X1Client.Conn do
   @type t :: %X1Client.Conn{}
 
   @doc ~S"""
-  Connects to the server specified in the given URL,
-  returning a connection to the server.  No requests are made.
+  Connects to the specified endpoint, returning a connection to the server.
+  No requests are made.
   """
   @spec connect(String.t()) :: {:ok, t} | {:error, any}
   def connect(url) do
@@ -28,6 +21,10 @@ defmodule X1Client.Conn do
     end
   end
 
+  @doc ~S"""
+  Connects to the server specified in the given URL,
+  returning a connection to the server.  No requests are made.
+  """
   @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
   def connect(protocol, hostname, port) do
     with {:ok, transport} <- Utils.protocol_to_transport(protocol),
@@ -43,10 +40,12 @@ defmodule X1Client.Conn do
   end
 
   @doc ~S"""
-  Initiates a request on the given connection.
+  Initiates a request on the given connection.  Returns the updated Conn and
+  a reference to this request (which is required when receiving pipelined
+  responses).
   """
   @spec request(t, atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
-          {:ok, t} | {:error, any}
+          {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url} <- Utils.make_relative_url(url),
          {:ok, xhttp1_conn, request_ref} <-

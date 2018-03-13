@@ -46,6 +46,11 @@ defmodule X1Client.Pool do
 
   @doc ~S"""
   Makes an HTTP 1.x request using an existing connection pool.
+
+  Options:
+
+  * `timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:x1client, :request_timeout, 5000)`.
   """
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout

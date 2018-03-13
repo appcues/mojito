@@ -21,7 +21,8 @@ defmodule X1Client.Utils do
       iex> X1Client.Utils.decompose_url("https://example.com")
       {:ok, "https", "example.com", 443}
   """
-  @spec decompose_url(String.t()) :: {:ok, String.t(), String.t(), non_neg_integer} | {:error, any}
+  @spec decompose_url(String.t()) ::
+          {:ok, String.t(), String.t(), non_neg_integer} | {:error, any}
   def decompose_url(url) do
     case Regex.named_captures(@url_regex, url) do
       nil ->
@@ -30,14 +31,15 @@ defmodule X1Client.Utils do
       nc ->
         protocol = String.downcase(nc["protocol"])
 
-        port = if nc["port"] == "" do
-          case protocol do
-            "https" -> "443"
-            "http" -> "80"
+        port =
+          if nc["port"] == "" do
+            case protocol do
+              "https" -> "443"
+              "http" -> "80"
+            end
+          else
+            nc["port"]
           end
-        else
-          nc["port"]
-        end
 
         {:ok, protocol, nc["hostname"], String.to_integer(port)}
     end
@@ -53,7 +55,7 @@ defmodule X1Client.Utils do
       iex> X1Client.Utils.make_relative_url("https://example.com")
       {:ok, "/"}
   """
-  @spec make_relative_url(String.t) :: {:ok, String.t} | {:error, any}
+  @spec make_relative_url(String.t()) :: {:ok, String.t()} | {:error, any}
   def make_relative_url(url) do
     case Regex.named_captures(@url_regex, url) do
       nil ->
@@ -65,11 +67,10 @@ defmodule X1Client.Utils do
     end
   end
 
-
   @doc ~S"""
   Returns the correct Erlang TCP transport module for the given protocol.
   """
-  @spec protocol_to_transport(String.t) :: {:ok, atom} | {:error, any}
+  @spec protocol_to_transport(String.t()) :: {:ok, atom} | {:error, any}
   def protocol_to_transport("https"), do: {:ok, :ssl}
 
   def protocol_to_transport("http"), do: {:ok, :gen_tcp}

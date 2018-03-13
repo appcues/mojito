@@ -1,8 +1,17 @@
 defmodule X1Client.Response do
+  @moduledoc ~S"""
+  Represents the response to a request.
+  """
+
   defstruct status_code: nil,
             headers: [],
-            body: [],
-            done: false
+            body: []
+
+  @type t :: %__MODULE__{
+          status_code: non_neg_integer,
+          headers: X1Client.headers(),
+          body: String.t()
+        }
 
   @doc ~S"""
   Returns the value of the given response header, or `nil` if not present.

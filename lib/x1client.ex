@@ -1,10 +1,21 @@
 defmodule X1Client do
   @moduledoc ~S"""
-  `X1Client` is a simplified HTTP 1.x client built using the
-  low-level [`XHTTP` library](https://github.com/ericmj/xhttp).
+  X1Client is a simplified HTTP 1.x client built using the
+  low-level [XHTTP library](https://github.com/ericmj/xhttp).
 
   It provides an interface that will feel familiar to users of other
   Elixir HTTP client libraries.
+
+  ## Installation
+
+  Add `x1client` to your deps in `mix.exs`:
+
+      {:x1client, "~> 0.5"}
+
+  ## Single-request example
+
+  `X1Client.request/5` can be used directly for making individual
+  requests:
 
       >>>> X1Client.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
       {:ok,
@@ -19,6 +30,19 @@ defmodule X1Client do
          ],
          status_code: 200
        }}
+
+  ## Pool example
+
+  `X1Client.Pool.request/6` can be used when a pool of persistent HTTP
+  connections is desired:
+
+      >>>> children = [X1Client.Pool.child_spec(MyPool)]
+      >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
+      >>>> X1Client.Pool.request(MyPool, :get, "http://example.com")
+      {:ok, %X1Client.Response{...}}
+
+  Connection pooling in X1Client is implemented using
+  [Poolboy](https://github.com/devinus/poolboy).
   """
 
   alias X1Client.Response
@@ -30,7 +54,12 @@ defmodule X1Client do
   @request_timeout Application.get_env(:x1client, :request_timeout, 5000)
 
   @doc ~S"""
-  Performs an HTTP 1.x request.
+  Performs an HTTP 1.x request and returns the response.
+
+  Options:
+
+  * `timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:x1client, :request_timeout, 5000)`.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, %Response{}} | {:error, any}

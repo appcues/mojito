@@ -1,20 +1,20 @@
 defmodule X1Client.ConnServer do
   @moduledoc ~S"""
   `X1Client.ConnServer` is a GenServer that handles a single
-  `X1Client.Conn`.  It supports automatic connection/reconnection,
+  `X1Client.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
 
   It's intended for usage through `X1Client` or `X1Client.Pool`.
 
   Example:
 
-      >>>> {:ok, pid} = X1Client.ConnServer.start_link()
-      >>>> :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
-      >>>> receive do
-      ...>   {:ok, response} -> response
-      ...> after
-      ...>   1_000 -> :timeout
-      ...> end
+      {:ok, pid} = X1Client.ConnServer.start_link()
+      :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
+      receive do
+        {:ok, response} -> response
+      after
+        1_000 -> :timeout
+      end
 
   """
 
@@ -71,9 +71,7 @@ defmodule X1Client.ConnServer do
     with {:ok, state, _ref} <- do_request(state, reply_to, method, url, headers, payload, opts) do
       {:reply, :ok, state}
     else
-      err ->
-        ## TODO reconnect?
-        {:reply, err, state}
+      err -> {:reply, err, close_connections(state)}
     end
   end
 
@@ -138,7 +136,7 @@ defmodule X1Client.ConnServer do
 
   defp apply_resp(state, {:done, request_ref}) do
     r = Map.get(state.responses, request_ref)
-    response = %{r | done: true, body: :erlang.list_to_binary(r.body)}
+    response = %{r | body: :erlang.list_to_binary(r.body)}
 
     reply_to = Map.get(state.reply_tos, request_ref)
     send(reply_to, {:ok, response})
@@ -196,6 +194,4 @@ defmodule X1Client.ConnServer do
       {:ok, %{state | conn: conn, protocol: protocol, hostname: hostname, port: port}}
     end
   end
-
-
 end
