@@ -56,12 +56,16 @@ defmodule X1Client.Pool do
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->
-      X1Client.ConnServer.request(worker, self(), method, url, headers, payload, opts)
+      case X1Client.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
+        :ok ->
+          receive do
+            response -> response
+          after
+            timeout -> {:error, :timeout}
+          end
 
-      receive do
-        response -> response
-      after
-        timeout -> {:error, :timeout}
+        err ->
+          err
       end
     end
 

@@ -4,7 +4,8 @@ defmodule X1Client.PoolTest do
   doctest X1Client.ConnServer
 
   context "live tests" do
-    @port Application.get_env(:x1client, :test_server_port)
+    @http_port Application.get_env(:x1client, :test_server_http_port)
+    @https_port Application.get_env(:x1client, :test_server_https_port)
 
     defp with_pool(fun) do
       rand = round(:rand.uniform() * 1_000_000_000)
@@ -20,12 +21,30 @@ defmodule X1Client.PoolTest do
     end
 
     defp get(pool, path, opts \\ []) do
-      X1Client.Pool.request(pool, :get, "http://localhost:#{@port}#{path}", [], "", opts)
+      X1Client.Pool.request(pool, :get, "http://localhost:#{@http_port}#{path}", [], "", opts)
     end
 
-    it "can make requests" do
+    defp get_ssl(pool, path, opts \\ []) do
+      X1Client.Pool.request(
+        pool,
+        :get,
+        "https://localhost:#{@https_port}#{path}",
+        [],
+        "",
+        [transport_opts: [verify: :verify_none]] ++ opts
+      )
+    end
+
+    it "can make HTTP requests" do
       with_pool(fn pool_name ->
         assert({:ok, response} = get(pool_name, "/"))
+        assert(200 == response.status_code)
+      end)
+    end
+
+    it "can make HTTPS requests" do
+      with_pool(fn pool_name ->
+        assert({:ok, response} = get_ssl(pool_name, "/"))
         assert(200 == response.status_code)
       end)
     end

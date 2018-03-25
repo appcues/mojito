@@ -22,15 +22,33 @@ defmodule X1ClientTest do
       end
     end
 
-    context "live tests" do
-      @port Application.get_env(:x1client, :test_server_port)
+    context "local server tests" do
+      @http_port Application.get_env(:x1client, :test_server_http_port)
+      @https_port Application.get_env(:x1client, :test_server_https_port)
 
       defp get(path, opts \\ []) do
-        X1Client.request(:get, "http://localhost:#{@port}#{path}", [], "", opts)
+        X1Client.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
       end
 
-      it "can make requests" do
+      defp get_ssl(path, opts \\ []) do
+        X1Client.request(
+          :get,
+          "https://localhost:#{@https_port}#{path}",
+          [],
+          "",
+          [transport_opts: [verify: :verify_none]] ++ opts
+        )
+      end
+
+      it "can make HTTP requests" do
         assert({:ok, response} = get("/"))
+        assert(200 == response.status_code)
+        assert("Hello world!" == response.body)
+        assert("12" == X1Client.Response.get_header(response, "content-length"))
+      end
+
+      it "can make HTTPS requests" do
+        assert({:ok, response} = get_ssl("/"))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
         assert("12" == X1Client.Response.get_header(response, "content-length"))
@@ -39,6 +57,12 @@ defmodule X1ClientTest do
       it "handles timeouts" do
         assert({:ok, _} = get("/", timeout: 100))
         assert({:error, :timeout} = get("/wait1", timeout: 100))
+      end
+    end
+
+    context "external tests" do
+      it "can make HTTPS requests using proper cert chain by default" do
+        assert({:ok, _} = X1Client.request(:get, "https://github.com"))
       end
     end
   end

@@ -13,7 +13,7 @@ It is not yet recommended to use X1Client in production.
 
 Add `x1client` to your deps in `mix.exs`:
 
-    {:x1client, "~> 0.5"}
+    {:x1client, "~> 0.6"}
 
 ## Single-request example
 
@@ -24,7 +24,6 @@ requests:
     {:ok,
      %X1Client.Response{
        body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
-       done: true,
        headers: [
          {"content-type", "application/json; charset=utf-8"},
          {"content-length", "292"},
@@ -46,6 +45,18 @@ connections is desired:
 
 Connection pooling in X1Client is implemented using
 [Poolboy](https://github.com/devinus/poolboy).
+
+## Self-signed SSL certificates
+
+To accept self-signed SSL/TLS certificates, you can give the
+`transport_opts: [verify: :verify_none]` option to `X1Client.request/5`
+or `X1Client.Pool.request/6`:
+
+    >>>> X1Client.request(:get, "https://localhost:8443/")
+    {:error, {:tls_alert, 'bad certificate'}}
+
+    >>>> X1Client.request(:get, "https://localhost:4443/, [], "", transport_opts: [verify: :verify_none])
+    {:ok, %X1Client.Response{...}}
 
 ## Authorship and License
 

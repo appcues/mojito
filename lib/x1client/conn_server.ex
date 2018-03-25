@@ -75,25 +75,28 @@ defmodule X1Client.ConnServer do
     end
   end
 
-  def handle_info({closed_msg, _port}, state)
-      when closed_msg in [:tcp_closed, :ssl_closed] do
-    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: connection closed" end)
-    {:noreply, close_connections(state)}
-  end
-
+  ## `msg` is an incoming chunk of a response
   def handle_info(msg, state) do
-    case XHTTP1.Conn.stream(state.conn.conn, msg) do
-      {:ok, xhttp1_conn, resps} ->
-        state_conn = state.conn |> Map.put(:conn, xhttp1_conn)
-        state = %{state | conn: state_conn}
-        {:noreply, apply_resps(state, resps)}
+    Logger.debug(fn ->
+      "X1Client.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
+    end)
 
-      {:error, _xhttp1_conn, :closed} ->
-        {:noreply, close_connections(state)}
+    if !state.conn do
+      {:noreply, close_connections(state)}
+    else
+      case XHTTP1.Conn.stream(state.conn.conn, msg) do
+        {:ok, xhttp1_conn, resps} ->
+          state_conn = state.conn |> Map.put(:conn, xhttp1_conn)
+          state = %{state | conn: state_conn}
+          {:noreply, apply_resps(state, resps)}
 
-      other ->
-        Logger.error(fn -> "got unknown message: #{inspect(other)}" end)
-        raise RuntimeError
+        {:error, _xhttp1_conn, :closed} ->
+          {:noreply, close_connections(state)}
+
+        other ->
+          Logger.error(fn -> "got unknown message: #{inspect(other)}" end)
+          raise RuntimeError
+      end
     end
   end
 
@@ -162,7 +165,7 @@ defmodule X1Client.ConnServer do
           Keyword.t()
         ) :: {:ok, String.t(), reference} | {:error, any}
   defp do_request(state, reply_to, method, url, headers, payload, opts) do
-    with {:ok, state} <- ensure_connection(state, url),
+    with {:ok, state} <- ensure_connection(state, url, opts),
          {:ok, conn, request_ref} <- Conn.request(state.conn, method, url, headers, payload, opts) do
       responses = state.responses |> Map.put(request_ref, %Response{})
       reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
@@ -172,15 +175,15 @@ defmodule X1Client.ConnServer do
     end
   end
 
-  @spec ensure_connection(state, String.t()) :: {:ok, state} | {:error, any}
-  defp ensure_connection(state, url) do
+  @spec ensure_connection(state, String.t(), Keyword.t()) :: {:ok, state} | {:error, any}
+  defp ensure_connection(state, url, opts) do
     with {:ok, protocol, hostname, port} <- Utils.decompose_url(url) do
       new_destination =
         state.protocol != protocol || state.hostname != hostname || state.port != port
 
       cond do
         !state.conn || new_destination ->
-          connect(state, protocol, hostname, port)
+          connect(state, protocol, hostname, port, opts)
 
         :else ->
           {:ok, state}
@@ -188,9 +191,10 @@ defmodule X1Client.ConnServer do
     end
   end
 
-  @spec connect(state, String.t(), String.t(), non_neg_integer) :: {:ok, state} | {:error, any}
-  defp connect(state, protocol, hostname, port) do
-    with {:ok, conn} <- X1Client.Conn.connect(protocol, hostname, port) do
+  @spec connect(state, String.t(), String.t(), non_neg_integer, Keyword.t()) ::
+          {:ok, state} | {:error, any}
+  defp connect(state, protocol, hostname, port, opts) do
+    with {:ok, conn} <- X1Client.Conn.connect(protocol, hostname, port, opts) do
       {:ok, %{state | conn: conn, protocol: protocol, hostname: hostname, port: port}}
     end
   end
