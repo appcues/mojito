@@ -40,7 +40,7 @@ defmodule XClient.Conn do
     end
   end
 
-  @spec configure_opts_for_transport(Keyword.t(), atom) :: Keyword.t()
+  @spec configure_opts_for_transport(Keyword.t(), atom) :: {:ok, Keyword.t()} | {:error, any}
   defp configure_opts_for_transport(opts, :gen_tcp) do
     {:ok, opts |> Keyword.put(:transport, :gen_tcp)}
   end
@@ -61,10 +61,6 @@ defmodule XClient.Conn do
      opts
      |> Keyword.put(:transport, :ssl)
      |> Keyword.put(:transport_opts, transport_opts)}
-  end
-
-  defp configure_opts_for_transport(_opts, transport) do
-    {:error, "unrecognized transport #{inspect(transport)}"}
   end
 
   @doc ~S"""

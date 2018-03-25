@@ -1,10 +1,16 @@
 defmodule XClient do
   @moduledoc ~S"""
-  XClient is a simplified HTTP 1.x client built using the
+  XClient is a simplified HTTP client built using the
   low-level [XHTTP library](https://github.com/ericmj/xhttp).
 
   It provides an interface that will feel familiar to users of other
   Elixir HTTP client libraries.
+
+  WARNING! This library currently depends on pre-release software (XHTTP).
+  It is not yet recommended to use XClient in production.
+
+  Currently only HTTP 1.x is supported; however, as support for HTTP 2.x
+  in XHTTP is finalized, it will be added to XClient.
 
   ## Installation
 

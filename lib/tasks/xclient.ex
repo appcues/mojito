@@ -1,4 +1,8 @@
 defmodule Mix.Tasks.Xclient do
+  @moduledoc false
+
+  ## These tasks are only useful to maintainers of XClient itself
+
   use Mix.Task
 
   def run(["fetch-cacerts" | _]) do
