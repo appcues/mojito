@@ -1,19 +1,19 @@
-defmodule X1Client.TestServer do
+defmodule XClient.TestServer do
   use Application
 
   def start(_type, _args) do
     children = [
       Plug.Adapters.Cowboy.child_spec(
         :http,
-        X1Client.TestServer.PlugRouter,
+        XClient.TestServer.PlugRouter,
         [],
-        port: Application.get_env(:x1client, :test_server_http_port)
+        port: Application.get_env(:xclient, :test_server_http_port)
       ),
       Plug.Adapters.Cowboy.child_spec(
         :https,
-        X1Client.TestServer.PlugRouter,
+        XClient.TestServer.PlugRouter,
         [],
-        port: Application.get_env(:x1client, :test_server_https_port),
+        port: Application.get_env(:xclient, :test_server_https_port),
         keyfile: System.cwd() <> "/test/support/key.pem",
         certfile: System.cwd() <> "/test/support/cert.pem"
       )
@@ -23,7 +23,7 @@ defmodule X1Client.TestServer do
   end
 end
 
-defmodule X1Client.TestServer.PlugRouter do
+defmodule XClient.TestServer.PlugRouter do
   use Plug.Router
 
   plug(:match)

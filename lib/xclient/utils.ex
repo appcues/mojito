@@ -1,4 +1,4 @@
-defmodule X1Client.Utils do
+defmodule XClient.Utils do
   @moduledoc false
 
   @url_regex ~r"
@@ -15,10 +15,10 @@ defmodule X1Client.Utils do
   @doc ~S"""
   Returns the protocol, hostname, and port (express or implied) from a URL.
 
-      iex> X1Client.Utils.decompose_url("http://example.com:8888/test")
+      iex> XClient.Utils.decompose_url("http://example.com:8888/test")
       {:ok, "http", "example.com", 8888}
 
-      iex> X1Client.Utils.decompose_url("https://example.com")
+      iex> XClient.Utils.decompose_url("https://example.com")
       {:ok, "https", "example.com", 443}
   """
   @spec decompose_url(String.t()) ::
@@ -49,10 +49,10 @@ defmodule X1Client.Utils do
   Strips the protocol, hostname, and port from a URL.  Returned path always
   begins with `/`.
 
-      iex> X1Client.Utils.make_relative_url("http://google.com/search?q=news")
+      iex> XClient.Utils.make_relative_url("http://google.com/search?q=news")
       {:ok, "/search?q=news"}
 
-      iex> X1Client.Utils.make_relative_url("https://example.com")
+      iex> XClient.Utils.make_relative_url("https://example.com")
       {:ok, "/"}
   """
   @spec make_relative_url(String.t()) :: {:ok, String.t()} | {:error, any}

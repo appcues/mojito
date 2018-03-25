@@ -1,14 +1,14 @@
-defmodule X1Client.Conn do
+defmodule XClient.Conn do
   @moduledoc false
 
-  alias X1Client.Utils
+  alias XClient.Utils
 
   defstruct conn: nil,
             protocol: nil,
             hostname: nil,
             port: nil
 
-  @type t :: %X1Client.Conn{}
+  @type t :: %XClient.Conn{}
 
   @doc ~S"""
   Connects to the specified endpoint, returning a connection to the server.
@@ -31,7 +31,7 @@ defmodule X1Client.Conn do
          {:ok, opts} <- configure_opts_for_transport(opts, transport),
          {:ok, xhttp1_conn} <- XHTTP1.Conn.connect(hostname, port, opts) do
       {:ok,
-       %X1Client.Conn{
+       %XClient.Conn{
          conn: xhttp1_conn,
          protocol: protocol,
          hostname: hostname,

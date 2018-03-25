@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.X1client do
+defmodule Mix.Tasks.Xclient do
   use Mix.Task
 
   def run(["fetch-cacerts" | _]) do
@@ -16,6 +16,6 @@ defmodule Mix.Tasks.X1client do
 
   def run([other | _]) do
     Mix.shell().error("no such command: #{other}")
-    Mix.shell().info("Usage: mix x1client [fetch-cacerts | make-test-certs]")
+    Mix.shell().info("Usage: mix xclient [fetch-cacerts | make-test-certs]")
   end
 end

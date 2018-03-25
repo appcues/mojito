@@ -1,4 +1,4 @@
-defmodule X1Client.Response do
+defmodule XClient.Response do
   @moduledoc ~S"""
   Represents the response to a request.
   """
@@ -9,7 +9,7 @@ defmodule X1Client.Response do
 
   @type t :: %__MODULE__{
           status_code: non_neg_integer,
-          headers: X1Client.headers(),
+          headers: XClient.headers(),
           body: String.t()
         }
 
