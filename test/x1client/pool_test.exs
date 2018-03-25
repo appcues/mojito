@@ -25,7 +25,14 @@ defmodule X1Client.PoolTest do
     end
 
     defp get_ssl(pool, path, opts \\ []) do
-      X1Client.Pool.request(pool, :get, "https://localhost:#{@https_port}#{path}", [], "", opts)
+      X1Client.Pool.request(
+        pool,
+        :get,
+        "https://localhost:#{@https_port}#{path}",
+        [],
+        "",
+        [transport_opts: [verify: :verify_none]] ++ opts
+      )
     end
 
     it "can make HTTP requests" do
@@ -37,7 +44,7 @@ defmodule X1Client.PoolTest do
 
     it "can make HTTPS requests" do
       with_pool(fn pool_name ->
-        assert({:ok, response} = get_ssl(pool_name, "/", transport_opts: [verify: :verify_none]))
+        assert({:ok, response} = get_ssl(pool_name, "/"))
         assert(200 == response.status_code)
       end)
     end

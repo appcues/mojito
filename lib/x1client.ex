@@ -42,6 +42,18 @@ defmodule X1Client do
 
   Connection pooling in X1Client is implemented using
   [Poolboy](https://github.com/devinus/poolboy).
+
+  ## Self-signed SSL certificates
+
+  To accept self-signed SSL/TLS certificates, you can give the
+  `transport_opts: [verify: :verify_none]` option to `X1Client.request/5`
+  or `X1Client.Pool.request/6`:
+
+      >>>> X1Client.request(:get, "https://localhost:8443/")
+      {:error, {:tls_alert, 'bad certificate'}}
+
+      >>>> X1Client.request(:get, "https://localhost:4443/, [], "", transport_opts: [verify: :verify_none])
+      {:ok, %X1Client.Response{...}}
   """
 
   alias X1Client.Response

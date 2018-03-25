@@ -7,19 +7,15 @@ defmodule X1Client.TestServer do
         :http,
         X1Client.TestServer.PlugRouter,
         [],
-        [
-          port: Application.get_env(:x1client, :test_server_http_port)
-        ]
+        port: Application.get_env(:x1client, :test_server_http_port)
       ),
       Plug.Adapters.Cowboy.child_spec(
         :https,
         X1Client.TestServer.PlugRouter,
         [],
-        [
-          port: Application.get_env(:x1client, :test_server_https_port),
-          keyfile: System.cwd() <> "/test/support/key.pem",
-          certfile: System.cwd() <> "/test/support/cert.pem"
-        ]
+        port: Application.get_env(:x1client, :test_server_https_port),
+        keyfile: System.cwd() <> "/test/support/key.pem",
+        certfile: System.cwd() <> "/test/support/cert.pem"
       )
     ]
 
