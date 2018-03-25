@@ -16,7 +16,7 @@ defmodule XClient do
 
   Add `xclient` to your deps in `mix.exs`:
 
-      {:xclient, "~> 0.6"}
+      {:xclient, "~> 0.5"}
 
   ## Single-request example
 
