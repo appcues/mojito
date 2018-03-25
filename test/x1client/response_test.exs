@@ -1,8 +1,8 @@
-defmodule X1Client.ResponseTest do
+defmodule XClient.ResponseTest do
   use ExSpec, async: true
-  doctest X1Client.Response
+  doctest XClient.Response
 
-  import X1Client.Response
+  import XClient.Response
 
   @headers [
     {"content-length", "222"},
@@ -10,7 +10,7 @@ defmodule X1Client.ResponseTest do
     {"server", "cowpoke/0.22.0"}
   ]
 
-  @response %X1Client.Response{headers: @headers}
+  @response %XClient.Response{headers: @headers}
 
   context "get_headers" do
     it "works on response" do

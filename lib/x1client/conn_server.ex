@@ -1,14 +1,14 @@
-defmodule X1Client.ConnServer do
+defmodule XClient.ConnServer do
   @moduledoc ~S"""
-  `X1Client.ConnServer` is a GenServer that handles a single
-  `X1Client.Conn`.  It supports automatic reconnection,
+  `XClient.ConnServer` is a GenServer that handles a single
+  `XClient.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
 
-  It's intended for usage through `X1Client` or `X1Client.Pool`.
+  It's intended for usage through `XClient` or `XClient.Pool`.
 
   Example:
 
-      {:ok, pid} = X1Client.ConnServer.start_link()
+      {:ok, pid} = XClient.ConnServer.start_link()
       :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
       receive do
         {:ok, response} -> response
@@ -21,12 +21,12 @@ defmodule X1Client.ConnServer do
   use GenServer
   require Logger
 
-  alias X1Client.{Conn, Response, Utils}
+  alias XClient.{Conn, Response, Utils}
 
   @type state :: map
 
   @doc ~S"""
-  Starts an X1Client.ConnServer.
+  Starts an XClient.ConnServer.
   """
   @spec start_link(Keyword.t()) :: {:ok, pid} | {:error, any}
   def start_link(args \\ []) do
@@ -35,9 +35,9 @@ defmodule X1Client.ConnServer do
 
   @doc ~S"""
   Initiates a request.  The `reply_to` pid will receive the response in a
-  message of the format `{:ok, %X1Client.Response{}} | {:error, any}`.
+  message of the format `{:ok, %XClient.Response{}} | {:error, any}`.
   """
-  @spec request(pid, pid, X1Client.method(), X1Client.headers(), String.t(), Keyword.t()) ::
+  @spec request(pid, pid, XClient.method(), XClient.headers(), String.t(), Keyword.t()) ::
           :ok | {:error, any}
   def request(pid, reply_to, method, url, headers \\ [], payload \\ "", opts \\ []) do
     GenServer.call(pid, {:request, reply_to, method, url, headers, payload, opts})
@@ -59,14 +59,14 @@ defmodule X1Client.ConnServer do
 
   def terminate(reason, state) do
     Logger.debug(fn ->
-      "X1Client.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
+      "XClient.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
     end)
 
     close_connections(state)
   end
 
   def handle_call({:request, reply_to, method, url, headers, payload, opts}, _from, state) do
-    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: #{method} #{url}" end)
+    Logger.debug(fn -> "XClient.ConnServer #{inspect(self())}: #{method} #{url}" end)
 
     with {:ok, state, _ref} <- do_request(state, reply_to, method, url, headers, payload, opts) do
       {:reply, :ok, state}
@@ -78,7 +78,7 @@ defmodule X1Client.ConnServer do
   ## `msg` is an incoming chunk of a response
   def handle_info(msg, state) do
     Logger.debug(fn ->
-      "X1Client.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
+      "XClient.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
     end)
 
     if !state.conn do
@@ -104,7 +104,7 @@ defmodule X1Client.ConnServer do
 
   @spec close_connections(state) :: state
   defp close_connections(state) do
-    Logger.debug(fn -> "X1Client.ConnServer #{inspect(self())}: cleaning up" end)
+    Logger.debug(fn -> "XClient.ConnServer #{inspect(self())}: cleaning up" end)
 
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
       send(reply_to, {:error, :closed})
@@ -145,7 +145,7 @@ defmodule X1Client.ConnServer do
     send(reply_to, {:ok, response})
 
     Logger.debug(fn ->
-      "X1Client.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}"
+      "XClient.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}"
     end)
 
     %{
@@ -158,9 +158,9 @@ defmodule X1Client.ConnServer do
   @spec do_request(
           state,
           pid,
-          X1Client.method(),
+          XClient.method(),
           String.t(),
-          X1Client.headers(),
+          XClient.headers(),
           String.t(),
           Keyword.t()
         ) :: {:ok, String.t(), reference} | {:error, any}
@@ -194,7 +194,7 @@ defmodule X1Client.ConnServer do
   @spec connect(state, String.t(), String.t(), non_neg_integer, Keyword.t()) ::
           {:ok, state} | {:error, any}
   defp connect(state, protocol, hostname, port, opts) do
-    with {:ok, conn} <- X1Client.Conn.connect(protocol, hostname, port, opts) do
+    with {:ok, conn} <- XClient.Conn.connect(protocol, hostname, port, opts) do
       {:ok, %{state | conn: conn, protocol: protocol, hostname: hostname, port: port}}
     end
   end

@@ -1,17 +1,17 @@
-defmodule X1Client.Pool do
+defmodule XClient.Pool do
   @moduledoc ~S"""
-  X1Client.Pool provides an HTTP 1.x request connection pool based on
-  X1Client and Poolboy.
+  XClient.Pool provides an HTTP 1.x request connection pool based on
+  XClient and Poolboy.
 
   Example:
 
-      >>>> children = [X1Client.Pool.child_spec(MyPool)]
+      >>>> children = [XClient.Pool.child_spec(MyPool)]
       >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> X1Client.Pool.request(MyPool, :get, "http://example.com")
-      {:ok, %X1Client.Response{...}}
+      >>>> XClient.Pool.request(MyPool, :get, "http://example.com")
+      {:ok, %XClient.Response{...}}
   """
 
-  defp pool_opts, do: Application.get_env(:x1client, :pool_opts, [])
+  defp pool_opts, do: Application.get_env(:xclient, :pool_opts, [])
 
   @doc ~S"""
   Returns a child spec suitable to pass to e.g., `Supervisor.start_link/2`.
@@ -33,7 +33,7 @@ defmodule X1Client.Pool do
 
     poolboy_config = [
       {:name, {:local, name}},
-      {:worker_module, X1Client.ConnServer},
+      {:worker_module, XClient.ConnServer},
       {:size, size},
       {:max_overflow, max_overflow},
       {:strategy, strategy}
@@ -42,7 +42,7 @@ defmodule X1Client.Pool do
     :poolboy.child_spec(name, poolboy_config)
   end
 
-  @request_timeout Application.get_env(:x1client, :request_timeout, 5000)
+  @request_timeout Application.get_env(:xclient, :request_timeout, 5000)
 
   @doc ~S"""
   Makes an HTTP 1.x request using an existing connection pool.
@@ -50,13 +50,13 @@ defmodule X1Client.Pool do
   Options:
 
   * `timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:x1client, :request_timeout, 5000)`.
+    `Application.get_env(:xclient, :request_timeout, 5000)`.
   """
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->
-      case X1Client.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
+      case XClient.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
         :ok ->
           receive do
             response -> response

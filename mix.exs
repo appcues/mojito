@@ -1,9 +1,9 @@
-defmodule X1Client.MixProject do
+defmodule XClient.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :x1client,
+      app: :xclient,
       version: "0.6.0",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -11,7 +11,7 @@ defmodule X1Client.MixProject do
       deps: deps(),
       package: package(),
       aliases: [
-        docs: "docs --source-url https://github.com/appcues/x1client"
+        docs: "docs --source-url https://github.com/appcues/xclient"
       ]
     ]
   end
@@ -23,14 +23,14 @@ defmodule X1Client.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["pete gamache <pete@appcues.com>"],
-      links: %{github: "https://github.com/appcues/x1client"}
+      links: %{github: "https://github.com/appcues/xclient"}
     ]
   end
 
   def application do
     [
       extra_applications: [:logger],
-      mod: {X1Client.Application, []}
+      mod: {XClient.Application, []}
     ]
   end
 

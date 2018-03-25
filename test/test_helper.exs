@@ -1,4 +1,4 @@
-X1Client.TestServer.start([], [])
+XClient.TestServer.start([], [])
 
 Logger.remove_backend(:console)
 

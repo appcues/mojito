@@ -1,28 +1,28 @@
-# X1Client
+# XClient
 
-X1Client is a simplified HTTP 1.x client for Elixir, built using the
+XClient is a simplified HTTP 1.x client for Elixir, built using the
 low-level [XHTTP library](https://github.com/ericmj/xhttp).
 
 It provides an interface that will feel familiar to users of other
 Elixir HTTP client libraries.
 
 WARNING! This library currently depends on pre-release software (XHTTP).
-It is not yet recommended to use X1Client in production.
+It is not yet recommended to use XClient in production.
 
 ## Installation
 
-Add `x1client` to your deps in `mix.exs`:
+Add `xclient` to your deps in `mix.exs`:
 
-    {:x1client, "~> 0.6"}
+    {:xclient, "~> 0.6"}
 
 ## Single-request example
 
-`X1Client.request/5` can be used directly for making individual
+`XClient.request/5` can be used directly for making individual
 requests:
 
-    >>>> X1Client.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+    >>>> XClient.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
     {:ok,
-     %X1Client.Response{
+     %XClient.Response{
        body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
        headers: [
          {"content-type", "application/json; charset=utf-8"},
@@ -35,31 +35,31 @@ requests:
 
 ## Pool example
 
-`X1Client.Pool.request/6` can be used when a pool of persistent HTTP
+`XClient.Pool.request/6` can be used when a pool of persistent HTTP
 connections is desired:
 
-    >>>> children = [X1Client.Pool.child_spec(MyPool)]
+    >>>> children = [XClient.Pool.child_spec(MyPool)]
     >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-    >>>> X1Client.Pool.request(MyPool, :get, "http://example.com")
-    {:ok, %X1Client.Response{...}}
+    >>>> XClient.Pool.request(MyPool, :get, "http://example.com")
+    {:ok, %XClient.Response{...}}
 
-Connection pooling in X1Client is implemented using
+Connection pooling in XClient is implemented using
 [Poolboy](https://github.com/devinus/poolboy).
 
 ## Self-signed SSL certificates
 
 To accept self-signed SSL/TLS certificates, you can give the
-`transport_opts: [verify: :verify_none]` option to `X1Client.request/5`
-or `X1Client.Pool.request/6`:
+`transport_opts: [verify: :verify_none]` option to `XClient.request/5`
+or `XClient.Pool.request/6`:
 
-    >>>> X1Client.request(:get, "https://localhost:8443/")
+    >>>> XClient.request(:get, "https://localhost:8443/")
     {:error, {:tls_alert, 'bad certificate'}}
 
-    >>>> X1Client.request(:get, "https://localhost:4443/, [], "", transport_opts: [verify: :verify_none])
-    {:ok, %X1Client.Response{...}}
+    >>>> XClient.request(:get, "https://localhost:4443/, [], "", transport_opts: [verify: :verify_none])
+    {:ok, %XClient.Response{...}}
 
 ## Authorship and License
 
 Copyright 2018, Appcues, Inc.
 
-X1Client is released under the MIT License.
+XClient is released under the MIT License.
