@@ -23,14 +23,26 @@ defmodule X1ClientTest do
     end
 
     context "live tests" do
-      @port Application.get_env(:x1client, :test_server_port)
+      @http_port Application.get_env(:x1client, :test_server_http_port)
+      @https_port Application.get_env(:x1client, :test_server_https_port)
 
       defp get(path, opts \\ []) do
-        X1Client.request(:get, "http://localhost:#{@port}#{path}", [], "", opts)
+        X1Client.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
       end
 
-      it "can make requests" do
+      defp get_ssl(path, opts \\ []) do
+        X1Client.request(:get, "https://localhost:#{@https_port}#{path}", [], "", opts)
+      end
+
+      it "can make HTTP requests" do
         assert({:ok, response} = get("/"))
+        assert(200 == response.status_code)
+        assert("Hello world!" == response.body)
+        assert("12" == X1Client.Response.get_header(response, "content-length"))
+      end
+
+      it "can make HTTPS requests" do
+        assert({:ok, response} = get_ssl("/", transport_opts: [verify: :verify_none]))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
         assert("12" == X1Client.Response.get_header(response, "content-length"))

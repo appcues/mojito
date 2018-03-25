@@ -10,7 +10,7 @@ defmodule X1Client do
 
   Add `x1client` to your deps in `mix.exs`:
 
-      {:x1client, "~> 0.5"}
+      {:x1client, "~> 0.6"}
 
   ## Single-request example
 
@@ -21,7 +21,6 @@ defmodule X1Client do
       {:ok,
        %X1Client.Response{
          body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
-         done: true,
          headers: [
            {"content-type", "application/json; charset=utf-8"},
            {"content-length", "292"},
@@ -66,26 +65,17 @@ defmodule X1Client do
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
-    task =
-      fn ->
-        with {:ok, pid} <- X1Client.ConnServer.start_link(),
-             :ok <- X1Client.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
-          receive do
-            reply ->
-              GenServer.stop(pid)
-              reply
-          after
-            timeout ->
-              GenServer.stop(pid)
-              {:error, :timeout}
-          end
-        end
+    with {:ok, pid} <- X1Client.ConnServer.start_link(),
+         :ok <- X1Client.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
+      receive do
+        reply ->
+          GenServer.stop(pid)
+          reply
+      after
+        timeout ->
+          GenServer.stop(pid)
+          {:error, :timeout}
       end
-      |> Task.async()
-
-    case Task.yield(task, timeout + 100) || Task.shutdown(task) do
-      {:ok, result} -> result
-      _ -> {:error, :timeout}
     end
   end
 end

@@ -26,9 +26,10 @@ defmodule X1Client.Conn do
   returning a connection to the server.  No requests are made.
   """
   @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
-  def connect(protocol, hostname, port) do
+  def connect(protocol, hostname, port, opts \\ []) do
     with {:ok, transport} <- Utils.protocol_to_transport(protocol),
-         {:ok, xhttp1_conn} <- XHTTP1.Conn.connect(hostname, port, transport: transport) do
+         {:ok, opts} <- configure_opts_for_transport(opts, transport),
+         {:ok, xhttp1_conn} <- XHTTP1.Conn.connect(hostname, port, opts) do
       {:ok,
        %X1Client.Conn{
          conn: xhttp1_conn,
@@ -37,6 +38,33 @@ defmodule X1Client.Conn do
          port: port
        }}
     end
+  end
+
+  @spec configure_opts_for_transport(Keyword.t(), atom) :: Keyword.t()
+  defp configure_opts_for_transport(opts, :gen_tcp) do
+    {:ok, opts |> Keyword.put(:transport, :gen_tcp)}
+  end
+
+  @cacerts (case File.read("./priv/cacerts.pem") do
+              {:ok, certs_data} ->
+                :public_key.pem_decode(certs_data)
+                |> Enum.map(fn {:Certificate, bem, _} -> bem end)
+
+              {:error, e} ->
+                raise e
+            end)
+
+  defp configure_opts_for_transport(opts, :ssl) do
+    transport_opts = (opts[:transport_opts] || []) ++ [cacerts: @cacerts]
+
+    {:ok,
+     opts
+     |> Keyword.put(:transport, :ssl)
+     |> Keyword.put(:transport_opts, transport_opts)}
+  end
+
+  defp configure_opts_for_transport(_opts, transport) do
+    {:error, "unrecognized transport #{inspect(transport)}"}
   end
 
   @doc ~S"""
