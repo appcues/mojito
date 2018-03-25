@@ -1,5 +1,7 @@
+Logger.remove_backend(:console)
+
 XClient.TestServer.start([], [])
 
-Logger.remove_backend(:console)
+if System.get_env("SLOW_TESTS"), do: :timer.sleep(1000)
 
 ExUnit.start()

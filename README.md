@@ -1,5 +1,8 @@
 # XClient
 
+[![Build Status](https://travis-ci.org/appcues/xclient.svg?branch=master)](https://travis-ci.org/appcues/xclient)
+[![Hex.pm Version](http://img.shields.io/hexpm/v/xclient.svg?style=flat)](https://hex.pm/packages/xclient)
+
 XClient is a simplified HTTP client for Elixir, built using the
 low-level [XHTTP library](https://github.com/ericmj/xhttp).
 
