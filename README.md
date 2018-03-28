@@ -52,16 +52,16 @@ connections is desired:
 Connection pooling in XClient is implemented using
 [Poolboy](https://github.com/devinus/poolboy).
 
-## Self-signed SSL certificates
+## Self-signed SSL/TLS certificates
 
-To accept self-signed SSL/TLS certificates, you can give the
+To accept self-signed certificates in HTTPS connections, you can give the
 `transport_opts: [verify: :verify_none]` option to `XClient.request/5`
 or `XClient.Pool.request/6`:
 
     >>>> XClient.request(:get, "https://localhost:8443/")
     {:error, {:tls_alert, 'bad certificate'}}
 
-    >>>> XClient.request(:get, "https://localhost:4443/, [], "", transport_opts: [verify: :verify_none])
+    >>>> XClient.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
     {:ok, %XClient.Response{...}}
 
 ## Authorship and License
