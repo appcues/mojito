@@ -30,6 +30,20 @@ defmodule XClientTest do
         XClient.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
       end
 
+      defp get_with_user(path, user, opts \\ []) do
+        XClient.request(:get, "http://#{user}@localhost:#{@http_port}#{path}", [], "", opts)
+      end
+
+      defp get_with_user_and_pass(path, user, pass, opts \\ []) do
+        XClient.request(:get, "http://#{user}:#{pass}@localhost:#{@http_port}#{path}", [], "", opts)
+      end
+
+      defp post(path, body_obj, opts \\ []) do
+        body = Jason.encode!(body_obj)
+        headers = [{"content-type", "application/json"}]
+        XClient.request(:post, "http://localhost:#{@http_port}#{path}", headers, body, opts)
+      end
+
       defp get_ssl(path, opts \\ []) do
         XClient.request(
           :get,
@@ -57,6 +71,25 @@ defmodule XClientTest do
       it "handles timeouts" do
         assert({:ok, _} = get("/", timeout: 100))
         assert({:error, :timeout} = get("/wait1", timeout: 100))
+      end
+
+      it "handles URL query params" do
+        assert({:ok, %{body: "Hello Alice!"}} = get("/?name=Alice"))
+        assert({:ok, %{body: "Hello Alice!"}} = get("?name=Alice"))
+      end
+
+      it "can post data" do
+        assert({:ok, response} = post("/post", %{name: "Charlie"}))
+        resp_body = response.body |> Jason.decode!()
+        assert("Charlie" == resp_body["name"])
+      end
+
+      it "handles user+pass in URL" do
+        assert({:ok, %{status_code: 500}} = get("/auth"))
+        assert({:ok, %{status_code: 200}=response} = get_with_user("/auth", "hi"))
+        assert(%{"user" => "hi", "pass" => ""} = Jason.decode!(response.body))
+        assert({:ok, %{status_code: 200}=response} = get_with_user_and_pass("/auth", "hi", "mom"))
+        assert(%{"user" => "hi", "pass" => "mom"} = Jason.decode!(response.body))
       end
     end
 

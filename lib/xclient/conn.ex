@@ -71,9 +71,9 @@ defmodule XClient.Conn do
   @spec request(t, atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
           {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
-    with {:ok, relative_url} <- Utils.make_relative_url(url),
+    with {:ok, relative_url, auth_headers} <- Utils.get_relative_url_and_auth_headers(url),
          {:ok, xhttp1_conn, request_ref} <-
-           XHTTP1.Conn.request(conn.conn, method, relative_url, headers, payload) do
+           XHTTP1.Conn.request(conn.conn, method, relative_url, auth_headers ++ headers, payload) do
       {:ok, %{conn | conn: xhttp1_conn}, request_ref}
     end
   end

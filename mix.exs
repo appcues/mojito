@@ -4,8 +4,8 @@ defmodule XClient.MixProject do
   def project do
     [
       app: :xclient,
-      description: "XClient is an HTTP client based on XHTTP",
-      version: "0.5.0",
+      description: "XClient is an HTTP client based on XHTTP.",
+      version: "0.5.1",
       elixir: "~> 1.5",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -41,8 +41,10 @@ defmodule XClient.MixProject do
   defp deps do
     [
       {:xhttp, github: "ericmj/xhttp"},
+      {:fuzzyurl, "~> 1.0"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},
+      {:jason, "~> 1.0", only: :test},
       {:cowboy, "~> 1.1", only: :test},
       {:plug, "~> 1.3", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},

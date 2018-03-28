@@ -27,10 +27,25 @@ defmodule XClient.TestServer.PlugRouter do
   use Plug.Router
 
   plug(:match)
+  plug(Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason)
   plug(:dispatch)
 
   get "/" do
-    send_resp(conn, 200, "Hello world!")
+    name = conn.params["name"] || "world"
+    send_resp(conn, 200, "Hello #{name}!")
+  end
+
+  post "/post" do
+    name = conn.body_params["name"] || "Bob"
+    send_resp(conn, 200, Jason.encode!(%{name: name}))
+  end
+
+  get "/auth" do
+    ["Basic " <> auth64] = Plug.Conn.get_req_header(conn, "authorization")
+    creds = auth64 |> Base.decode64! |> String.split(":", parts: 2)
+    user = creds |> Enum.at(0)
+    pass = creds |> Enum.at(1)
+    send_resp(conn, 200, Jason.encode!(%{user: user, pass: pass}))
   end
 
   get "/wait1" do
