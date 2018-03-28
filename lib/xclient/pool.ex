@@ -73,7 +73,7 @@ defmodule XClient.Pool do
       fn -> :poolboy.transaction(pool, worker_fn) end
       |> Task.async()
 
-    case Task.yield(task, timeout + 100) || Task.shutdown(task) do
+    case Task.yield(task, timeout) || Task.shutdown(task) do
       nil -> {:error, :timeout}
       {:ok, reply} -> reply
     end
