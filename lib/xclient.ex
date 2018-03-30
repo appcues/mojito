@@ -62,11 +62,22 @@ defmodule XClient do
       {:ok, %XClient.Response{...}}
   """
 
-  alias XClient.Response
+  alias XClient.{Error, Response, Utils}
 
   @type headers :: [{String.t(), String.t()}]
 
-  @type method :: :get | :post | :put | :patch | :delete | :options
+  @type response :: %XClient.Response{
+          status_code: pos_integer,
+          headers: headers,
+          body: String.t()
+        }
+
+  @type error :: %XClient.Error{
+          reason: any,
+          message: any
+        }
+
+  @type method :: :head | :get | :post | :put | :patch | :delete | :options
 
   @request_timeout Application.get_env(:xclient, :request_timeout, 5000)
 
@@ -79,7 +90,7 @@ defmodule XClient do
     `Application.get_env(:xclient, :request_timeout, 5000)`.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
-          {:ok, %Response{}} | {:error, any}
+          {:ok, response} | {:error, error}
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
@@ -92,8 +103,9 @@ defmodule XClient do
       after
         timeout ->
           GenServer.stop(pid)
-          {:error, :timeout}
+          {:error, %Error{reason: :timeout}}
       end
     end
+    |> Utils.wrap_return_value()
   end
 end

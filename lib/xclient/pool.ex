@@ -11,6 +11,8 @@ defmodule XClient.Pool do
       {:ok, %XClient.Response{...}}
   """
 
+  alias XClient.{Error, Response, Utils}
+
   defp pool_opts, do: Application.get_env(:xclient, :pool_opts, [])
 
   @doc ~S"""
@@ -52,6 +54,8 @@ defmodule XClient.Pool do
   * `timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:xclient, :request_timeout, 5000)`.
   """
+  @spec request(pid, XClient.method(), String.t(), XClient.headers(), String.t(), Keyword.t()) ::
+          {:ok, XClient.response()} | {:error, XClient.error()}
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
@@ -77,5 +81,6 @@ defmodule XClient.Pool do
       nil -> {:error, :timeout}
       {:ok, reply} -> reply
     end
+    |> Utils.wrap_return_value()
   end
 end

@@ -42,7 +42,7 @@ defmodule XClient.TestServer.PlugRouter do
 
   get "/auth" do
     ["Basic " <> auth64] = Plug.Conn.get_req_header(conn, "authorization")
-    creds = auth64 |> Base.decode64! |> String.split(":", parts: 2)
+    creds = auth64 |> Base.decode64!() |> String.split(":", parts: 2)
     user = creds |> Enum.at(0)
     pass = creds |> Enum.at(1)
     send_resp(conn, 200, Jason.encode!(%{user: user, pass: pass}))

@@ -3,6 +3,9 @@ defmodule XClientTest do
   doctest XClient
   doctest XClient.Utils
 
+  import XClient.Headers
+  alias XClient.Error
+
   context "request" do
     context "url validation" do
       it "fails on url without protocol" do
@@ -35,7 +38,13 @@ defmodule XClientTest do
       end
 
       defp get_with_user_and_pass(path, user, pass, opts \\ []) do
-        XClient.request(:get, "http://#{user}:#{pass}@localhost:#{@http_port}#{path}", [], "", opts)
+        XClient.request(
+          :get,
+          "http://#{user}:#{pass}@localhost:#{@http_port}#{path}",
+          [],
+          "",
+          opts
+        )
       end
 
       defp post(path, body_obj, opts \\ []) do
@@ -58,19 +67,19 @@ defmodule XClientTest do
         assert({:ok, response} = get("/"))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
-        assert("12" == XClient.Response.get_header(response, "content-length"))
+        assert("12" == get_header(response.headers, "content-length"))
       end
 
       it "can make HTTPS requests" do
         assert({:ok, response} = get_ssl("/"))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
-        assert("12" == XClient.Response.get_header(response, "content-length"))
+        assert("12" == get_header(response.headers, "content-length"))
       end
 
       it "handles timeouts" do
         assert({:ok, _} = get("/", timeout: 100))
-        assert({:error, :timeout} = get("/wait1", timeout: 100))
+        assert({:error, %Error{reason: :timeout}} = get("/wait1", timeout: 100))
       end
 
       it "handles URL query params" do
@@ -86,9 +95,13 @@ defmodule XClientTest do
 
       it "handles user+pass in URL" do
         assert({:ok, %{status_code: 500}} = get("/auth"))
-        assert({:ok, %{status_code: 200}=response} = get_with_user("/auth", "hi"))
+        assert({:ok, %{status_code: 200} = response} = get_with_user("/auth", "hi"))
         assert(%{"user" => "hi", "pass" => ""} = Jason.decode!(response.body))
-        assert({:ok, %{status_code: 200}=response} = get_with_user_and_pass("/auth", "hi", "mom"))
+
+        assert(
+          {:ok, %{status_code: 200} = response} = get_with_user_and_pass("/auth", "hi", "mom")
+        )
+
         assert(%{"user" => "hi", "pass" => "mom"} = Jason.decode!(response.body))
       end
     end

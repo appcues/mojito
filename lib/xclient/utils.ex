@@ -1,6 +1,24 @@
 defmodule XClient.Utils do
   @moduledoc false
 
+  alias XClient.Error
+
+  @doc ~S"""
+  Ensures that the return value errors are of the form
+  `{:error, %XClient.Error{}}`.  Values `:ok` and `{:ok, val}` are
+  considered successful; other values are treated as errors.
+  """
+  @spec wrap_return_value(any) :: :ok | {:ok, any} | {:error, XClient.error()}
+  def wrap_return_value(rv) do
+    case rv do
+      :ok -> rv
+      {:ok, val} -> rv
+      {:error, %Error{}} -> rv
+      {:error, e} -> {:error, %Error{reason: e}}
+      other -> {:error, %Error{reason: :unknown, message: other}}
+    end
+  end
+
   @doc ~S"""
   Returns the protocol, hostname, and port (express or implied) from a
   web URL.

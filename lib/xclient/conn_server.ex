@@ -1,5 +1,16 @@
 defmodule XClient.ConnServer do
-  @moduledoc ~S"""
+  @moduledoc false
+
+  use GenServer
+  require Logger
+
+  alias XClient.{Conn, Response, Utils}
+
+  @type state :: map
+
+  @doc ~S"""
+  Starts an XClient.ConnServer.
+
   `XClient.ConnServer` is a GenServer that handles a single
   `XClient.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
@@ -15,18 +26,6 @@ defmodule XClient.ConnServer do
       after
         1_000 -> :timeout
       end
-
-  """
-
-  use GenServer
-  require Logger
-
-  alias XClient.{Conn, Response, Utils}
-
-  @type state :: map
-
-  @doc ~S"""
-  Starts an XClient.ConnServer.
   """
   @spec start_link(Keyword.t()) :: {:ok, pid} | {:error, any}
   def start_link(args \\ []) do
