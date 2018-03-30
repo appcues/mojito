@@ -12,7 +12,7 @@ defmodule XClient.Utils do
   def wrap_return_value(rv) do
     case rv do
       :ok -> rv
-      {:ok, val} -> rv
+      {:ok, _} -> rv
       {:error, %Error{}} -> rv
       {:error, e} -> {:error, %Error{reason: e}}
       other -> {:error, %Error{reason: :unknown, message: other}}

@@ -16,7 +16,7 @@ defmodule XClient do
 
   Add `xclient` to your deps in `mix.exs`:
 
-      {:xclient, "~> 0.5"}
+      {:xclient, "~> 0.6.0-vendored-xhttp"}
 
   ## Single-request example
 
@@ -62,7 +62,7 @@ defmodule XClient do
       {:ok, %XClient.Response{...}}
   """
 
-  alias XClient.{Error, Response, Utils}
+  alias XClient.{Error, Utils}
 
   @type headers :: [{String.t(), String.t()}]
 

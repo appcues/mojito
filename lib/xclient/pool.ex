@@ -11,7 +11,7 @@ defmodule XClient.Pool do
       {:ok, %XClient.Response{...}}
   """
 
-  alias XClient.{Error, Response, Utils}
+  alias XClient.Utils
 
   defp pool_opts, do: Application.get_env(:xclient, :pool_opts, [])
 
