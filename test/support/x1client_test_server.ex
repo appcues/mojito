@@ -48,6 +48,12 @@ defmodule XClient.TestServer.PlugRouter do
     send_resp(conn, 200, Jason.encode!(%{user: user, pass: pass}))
   end
 
+  get "/wait" do
+    delay = (conn.params["d"] || "100") |> String.to_integer
+    :timer.sleep(delay)
+    send_resp(conn, 200, "ok")
+  end
+
   get "/wait1" do
     :timer.sleep(1000)
     send_resp(conn, 200, "ok")
