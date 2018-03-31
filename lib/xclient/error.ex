@@ -1,8 +1,7 @@
 defmodule XClient.Error do
   @moduledoc false
 
-  defstruct reason: nil,
-            message: nil
+  defstruct [:reason, :message]
 
   @type t :: XClient.error()
 end

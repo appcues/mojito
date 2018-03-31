@@ -6,10 +6,9 @@ defmodule XClient.Headers do
   Headers are represented in Elixir as a list of `{"header_name", "value"}`
   tuples.  Multiple entries for the same header name are allowed.
 
-  Capitalization of header names is preserved during insertion
-  (`put_header/3`), however header names are handled case-insensitively
-  during lookup (`get_header/2`, `get_header_values/2`) and deletion
-  (`delete_header/2`).
+  Capitalization of header names is preserved during insertion,
+  however header names are handled case-insensitively during
+  lookup and deletion.
   """
 
   @type headers :: XClient.headers()
@@ -22,10 +21,24 @@ defmodule XClient.Headers do
 
   If more than one matching header is found, the values are joined with
   `","` as specified in [RFC 2616](https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2).
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.get(headers, "header2")
+      "bar"
+      iex> XClient.Headers.get(headers, "HEADER1")
+      "foo,baz"
+      iex> XClient.Headers.get(headers, "header3")
+      nil
   """
-  @spec get_header(headers, String.t()) :: String.t() | nil
-  def get_header(headers, name) do
-    case get_header_values(headers, name) do
+  @spec get(headers, String.t()) :: String.t() | nil
+  def get(headers, name) do
+    case get_values(headers, name) do
       [] -> nil
       values -> values |> Enum.join(",")
     end
@@ -36,15 +49,29 @@ defmodule XClient.Headers do
   Returns an empty list if none found.
 
   Header names are matched case-insensitively.
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.get_values(headers, "header2")
+      ["bar"]
+      iex> XClient.Headers.get_values(headers, "HEADER1")
+      ["foo", "baz"]
+      iex> XClient.Headers.get_values(headers, "header3")
+      []
   """
-  @spec get_header_values(headers, String.t()) :: [String.t()]
-  def get_header_values(headers, name) do
-    get_header_values(headers, String.downcase(name), [])
+  @spec get_values(headers, String.t()) :: [String.t()]
+  def get_values(headers, name) do
+    get_values(headers, String.downcase(name), [])
   end
 
-  defp get_header_values([], _name, values), do: values
+  defp get_values([], _name, values), do: values
 
-  defp get_header_values([{key, value} | rest], name, values) do
+  defp get_values([{key, value} | rest], name, values) do
     new_values =
       if String.downcase(key) == name do
         values ++ [value]
@@ -52,7 +79,7 @@ defmodule XClient.Headers do
         values
       end
 
-    get_header_values(rest, name, new_values)
+    get_values(rest, name, new_values)
   end
 
   @doc ~S"""
@@ -61,19 +88,39 @@ defmodule XClient.Headers do
 
   Header names are matched case-insensitively, but case of `name` is preserved
   when adding the header.
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.put(headers, "HEADER1", "quux")
+      [{"header2", "bar"}, {"HEADER1", "quux"}]
   """
-  @spec put_header(headers, String.t(), String.t()) :: headers
-  def put_header(headers, name, value) do
-    delete_header(headers, name) ++ [{name, value}]
+  @spec put(headers, String.t(), String.t()) :: headers
+  def put(headers, name, value) do
+    delete(headers, name) ++ [{name, value}]
   end
 
   @doc ~S"""
   Removes all instances of the given header.
 
   Header names are matched case-insensitively.
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.delete(headers, "HEADER1")
+      [{"header2", "bar"}]
   """
-  @spec delete_header(headers, String.t()) :: headers
-  def delete_header(headers, name) do
+  @spec delete(headers, String.t()) :: headers
+  def delete(headers, name) do
     name = String.downcase(name)
     Enum.filter(headers, fn {key, _value} -> String.downcase(key) != name end)
   end
@@ -81,30 +128,50 @@ defmodule XClient.Headers do
   @doc ~S"""
   Returns an ordered list of the header names from the given headers.
   Header names are returned in lowercase.
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.keys(headers)
+      ["header1", "header2"]
   """
-  @spec header_names(headers) :: [String.t()]
-  def header_names(headers) do
-    header_names(headers, [])
+  @spec keys(headers) :: [String.t()]
+  def keys(headers) do
+    keys(headers, [])
   end
 
-  defp header_names([], names), do: Enum.reverse(names)
+  defp keys([], names), do: Enum.reverse(names)
 
-  defp header_names([{name, _value} | rest], names) do
+  defp keys([{name, _value} | rest], names) do
     name = String.downcase(name)
 
     if name in names do
-      header_names(rest, names)
+      keys(rest, names)
     else
-      header_names(rest, [name | names])
+      keys(rest, [name | names])
     end
   end
 
   @doc ~S"""
   Returns a copy of the given headers where all header names are lowercased
   and multiple values for the same header have been joined with `","`.
+
+  Example:
+
+      iex> headers = [
+      ...>   {"header1", "foo"},
+      ...>   {"header2", "bar"},
+      ...>   {"Header1", "baz"}
+      ...> ]
+      iex> XClient.Headers.normalize(headers)
+      [{"header1", "foo,baz"}, {"header2", "bar"}]
   """
-  @spec normalize_headers(headers) :: headers
-  def normalize_headers(headers) do
+  @spec normalize(headers) :: headers
+  def normalize(headers) do
     headers_map =
       Enum.reduce(headers, %{}, fn {name, value}, acc ->
         name = String.downcase(name)
@@ -113,7 +180,7 @@ defmodule XClient.Headers do
       end)
 
     headers
-    |> header_names
+    |> keys
     |> Enum.map(fn name ->
       {name, Map.get(headers_map, name) |> Enum.join(",")}
     end)

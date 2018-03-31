@@ -3,8 +3,7 @@ defmodule XClientTest do
   doctest XClient
   doctest XClient.Utils
 
-  import XClient.Headers
-  alias XClient.Error
+  alias XClient.{Error, Headers}
 
   context "request" do
     context "url validation" do
@@ -67,14 +66,14 @@ defmodule XClientTest do
         assert({:ok, response} = get("/"))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
-        assert("12" == get_header(response.headers, "content-length"))
+        assert("12" == Headers.get(response.headers, "content-length"))
       end
 
       it "can make HTTPS requests" do
         assert({:ok, response} = get_ssl("/"))
         assert(200 == response.status_code)
         assert("Hello world!" == response.body)
-        assert("12" == get_header(response.headers, "content-length"))
+        assert("12" == Headers.get(response.headers, "content-length"))
       end
 
       it "handles timeouts" do

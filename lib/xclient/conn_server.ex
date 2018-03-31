@@ -9,7 +9,7 @@ defmodule XClient.ConnServer do
   @type state :: map
 
   @doc ~S"""
-  Starts an XClient.ConnServer.
+  Starts an `XClient.ConnServer`.
 
   `XClient.ConnServer` is a GenServer that handles a single
   `XClient.Conn`.  It supports automatic reconnection,
@@ -166,7 +166,7 @@ defmodule XClient.ConnServer do
   defp do_request(state, reply_to, method, url, headers, payload, opts) do
     with {:ok, state} <- ensure_connection(state, url, opts),
          {:ok, conn, request_ref} <- Conn.request(state.conn, method, url, headers, payload, opts) do
-      responses = state.responses |> Map.put(request_ref, %Response{})
+      responses = state.responses |> Map.put(request_ref, %Response{body: []})
       reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
       state = %{state | conn: conn, responses: responses, reply_tos: reply_tos}
 
