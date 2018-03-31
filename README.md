@@ -19,7 +19,7 @@ in XHTTP is finalized, it will be added to XClient.
 
 Add `xclient` to your deps in `mix.exs`:
 
-    {:xclient, "~> 0.6.0-vendored-xhttp"}
+    {:xclient, "~> 0.7.0-vendored-xhttp"}
 
 ## Single-request example
 
