@@ -51,7 +51,7 @@ defmodule XClient.Pool do
 
   Options:
 
-  * `timeout` - Response timeout in milliseconds.  Defaults to
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:xclient, :request_timeout, 5000)`.
   """
   @spec request(pid, XClient.method(), String.t(), XClient.headers(), String.t(), Keyword.t()) ::

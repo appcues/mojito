@@ -82,11 +82,11 @@ defmodule XClient do
   @request_timeout Application.get_env(:xclient, :request_timeout, 5000)
 
   @doc ~S"""
-  Performs an HTTP 1.x request and returns the response.
+  Performs an HTTP request and returns the response.
 
   Options:
 
-  * `timeout` - Response timeout in milliseconds.  Defaults to
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:xclient, :request_timeout, 5000)`.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
