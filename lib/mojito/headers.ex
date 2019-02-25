@@ -1,4 +1,4 @@
-defmodule XClient.Headers do
+defmodule Mojito.Headers do
   @moduledoc ~S"""
   Functions for working with HTTP request and response headers, as described
   in the [HTTP 1.1 specification](https://www.w3.org/Protocols/rfc2616/rfc2616.html).
@@ -11,7 +11,7 @@ defmodule XClient.Headers do
   lookup and deletion.
   """
 
-  @type headers :: XClient.headers()
+  @type headers :: Mojito.headers()
 
   @doc ~S"""
   Returns the value for the given HTTP request or response header,
@@ -29,11 +29,11 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.get(headers, "header2")
+      iex> Mojito.Headers.get(headers, "header2")
       "bar"
-      iex> XClient.Headers.get(headers, "HEADER1")
+      iex> Mojito.Headers.get(headers, "HEADER1")
       "foo,baz"
-      iex> XClient.Headers.get(headers, "header3")
+      iex> Mojito.Headers.get(headers, "header3")
       nil
   """
   @spec get(headers, String.t()) :: String.t() | nil
@@ -57,11 +57,11 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.get_values(headers, "header2")
+      iex> Mojito.Headers.get_values(headers, "header2")
       ["bar"]
-      iex> XClient.Headers.get_values(headers, "HEADER1")
+      iex> Mojito.Headers.get_values(headers, "HEADER1")
       ["foo", "baz"]
-      iex> XClient.Headers.get_values(headers, "header3")
+      iex> Mojito.Headers.get_values(headers, "header3")
       []
   """
   @spec get_values(headers, String.t()) :: [String.t()]
@@ -96,7 +96,7 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.put(headers, "HEADER1", "quux")
+      iex> Mojito.Headers.put(headers, "HEADER1", "quux")
       [{"header2", "bar"}, {"HEADER1", "quux"}]
   """
   @spec put(headers, String.t(), String.t()) :: headers
@@ -116,7 +116,7 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.delete(headers, "HEADER1")
+      iex> Mojito.Headers.delete(headers, "HEADER1")
       [{"header2", "bar"}]
   """
   @spec delete(headers, String.t()) :: headers
@@ -136,7 +136,7 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.keys(headers)
+      iex> Mojito.Headers.keys(headers)
       ["header1", "header2"]
   """
   @spec keys(headers) :: [String.t()]
@@ -167,7 +167,7 @@ defmodule XClient.Headers do
       ...>   {"header2", "bar"},
       ...>   {"Header1", "baz"}
       ...> ]
-      iex> XClient.Headers.normalize(headers)
+      iex> Mojito.Headers.normalize(headers)
       [{"header1", "foo,baz"}, {"header2", "bar"}]
   """
   @spec normalize(headers) :: headers

@@ -1,19 +1,19 @@
-defmodule XClient.Pool do
+defmodule Mojito.Pool do
   @moduledoc ~S"""
-  XClient.Pool provides an HTTP 1.x request connection pool based on
-  XClient and Poolboy.
+  Mojito.Pool provides an HTTP 1.x request connection pool based on
+  Mojito and Poolboy.
 
   Example:
 
-      >>>> children = [XClient.Pool.child_spec(MyPool)]
+      >>>> children = [Mojito.Pool.child_spec(MyPool)]
       >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> XClient.Pool.request(MyPool, :get, "http://example.com")
-      {:ok, %XClient.Response{...}}
+      >>>> Mojito.Pool.request(MyPool, :get, "http://example.com")
+      {:ok, %Mojito.Response{...}}
   """
 
-  alias XClient.Utils
+  alias Mojito.Utils
 
-  defp pool_opts, do: Application.get_env(:xclient, :pool_opts, [])
+  defp pool_opts, do: Application.get_env(:mojito, :pool_opts, [])
 
   @doc ~S"""
   Returns a child spec suitable to pass to e.g., `Supervisor.start_link/2`.
@@ -35,7 +35,7 @@ defmodule XClient.Pool do
 
     poolboy_config = [
       {:name, {:local, name}},
-      {:worker_module, XClient.ConnServer},
+      {:worker_module, Mojito.ConnServer},
       {:size, size},
       {:max_overflow, max_overflow},
       {:strategy, strategy}
@@ -44,7 +44,7 @@ defmodule XClient.Pool do
     :poolboy.child_spec(name, poolboy_config)
   end
 
-  @request_timeout Application.get_env(:xclient, :request_timeout, 5000)
+  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
   Makes an HTTP 1.x request using an existing connection pool.
@@ -52,15 +52,15 @@ defmodule XClient.Pool do
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:xclient, :request_timeout, 5000)`.
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
   """
-  @spec request(pid, XClient.method(), String.t(), XClient.headers(), String.t(), Keyword.t()) ::
-          {:ok, XClient.response()} | {:error, XClient.error()}
+  @spec request(pid, Mojito.method(), String.t(), Mojito.headers(), String.t(), Keyword.t()) ::
+          {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->
-      case XClient.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
+      case Mojito.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
         :ok ->
           receive do
             response -> response

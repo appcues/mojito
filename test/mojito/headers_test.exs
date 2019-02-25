@@ -1,7 +1,7 @@
-defmodule XClient.HeadersTest do
+defmodule Mojito.HeadersTest do
   use ExUnit.Case, async: true
-  doctest XClient.Headers
-  alias XClient.Headers
+  doctest Mojito.Headers
+  alias Mojito.Headers
 
   @test_headers [
     {"header1", "value1"},

@@ -1,7 +1,7 @@
-defmodule XClient.Error do
+defmodule Mojito.Error do
   @moduledoc false
 
   defstruct [:reason, :message]
 
-  @type t :: XClient.error()
+  @type t :: Mojito.error()
 end

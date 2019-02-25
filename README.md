@@ -1,34 +1,31 @@
-# XClient
+# Mojito
 
-[![Build Status](https://travis-ci.org/appcues/xclient.svg?branch=master)](https://travis-ci.org/appcues/xclient)
-[![Hex.pm Version](http://img.shields.io/hexpm/v/xclient.svg?style=flat)](https://hex.pm/packages/xclient)
+[![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito)
+[![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
 
-XClient is a simplified HTTP client for Elixir, built using the
-low-level [XHTTP library](https://github.com/ericmj/xhttp).
+Mojito is a simplified HTTP client for Elixir, built using the
+low-level [Mint library](https://github.com/ericmj/xhttp).
 
 It provides an interface that will feel familiar to users of other
 Elixir HTTP client libraries.
 
-WARNING! This library currently depends on pre-release software (XHTTP).
-It is not yet recommended to use XClient in production.
-
-Currently only HTTP 1.x is supported; however, as support for HTTP 2.x
-in XHTTP is finalized, it will be added to XClient.
+WARNING! This library currently depends on brand new software (Mint).
+It is not yet recommended to use Mojito in production.
 
 ## Installation
 
-Add `xclient` to your deps in `mix.exs`:
+Add `mojito` to your deps in `mix.exs`:
 
-    {:xclient, "~> 0.7.0-vendored-xhttp"}
+    {:mojito, "~> 0.1.0"}
 
 ## Single-request example
 
-`XClient.request/5` can be used directly for making individual
+`Mojito.request/5` can be used directly for making individual
 requests:
 
-    >>>> XClient.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+    >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
     {:ok,
-     %XClient.Response{
+     %Mojito.Response{
        body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
        headers: [
          {"content-type", "application/json; charset=utf-8"},
@@ -41,31 +38,31 @@ requests:
 
 ## Pool example
 
-`XClient.Pool.request/6` can be used when a pool of persistent HTTP
+`Mojito.Pool.request/6` can be used when a pool of persistent HTTP
 connections is desired:
 
-    >>>> children = [XClient.Pool.child_spec(MyPool)]
+    >>>> children = [Mojito.Pool.child_spec(MyPool)]
     >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-    >>>> XClient.Pool.request(MyPool, :get, "http://example.com")
-    {:ok, %XClient.Response{...}}
+    >>>> Mojito.Pool.request(MyPool, :get, "http://example.com")
+    {:ok, %Mojito.Response{...}}
 
-Connection pooling in XClient is implemented using
+Connection pooling in Mojito is implemented using
 [Poolboy](https://github.com/devinus/poolboy).
 
 ## Self-signed SSL/TLS certificates
 
 To accept self-signed certificates in HTTPS connections, you can give the
-`transport_opts: [verify: :verify_none]` option to `XClient.request/5`
-or `XClient.Pool.request/6`:
+`transport_opts: [verify: :verify_none]` option to `Mojito.request/5`
+or `Mojito.Pool.request/6`:
 
-    >>>> XClient.request(:get, "https://localhost:8443/")
+    >>>> Mojito.request(:get, "https://localhost:8443/")
     {:error, {:tls_alert, 'bad certificate'}}
 
-    >>>> XClient.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
-    {:ok, %XClient.Response{...}}
+    >>>> Mojito.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
+    {:ok, %Mojito.Response{...}}
 
 ## Authorship and License
 
-Copyright 2018, Appcues, Inc.
+Copyright 2018-2019, Appcues, Inc.
 
-XClient is released under the MIT License.
+Mojito is released under the MIT License.
