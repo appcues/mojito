@@ -21,15 +21,16 @@ defmodule Mojito.Conn do
     end
   end
 
-  @protocols [:http, :https]
-
   @doc ~S"""
   Connects to the server specified in the given URL,
   returning a connection to the server.  No requests are made.
   """
   @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
+    :http
+    :https
     proto = if is_atom(protocol), do: protocol, else: String.to_existing_atom(protocol)
+
     with {:ok, mint_conn} <- Mint.HTTP.connect(proto, hostname, port, opts) do
       {:ok,
        %Mojito.Conn{

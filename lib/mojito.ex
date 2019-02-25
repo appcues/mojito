@@ -1,22 +1,19 @@
 defmodule Mojito do
   @moduledoc ~S"""
   Mojito is a simplified HTTP client built using the
-  low-level [Mint library](https://github.com/ericmj/xhttp).
+  low-level [Mint library](https://github.com/ericmj/mint).
 
   It provides an interface that will feel familiar to users of other
   Elixir HTTP client libraries.
 
-  WARNING! This library currently depends on pre-release software (Mint).
+  WARNING! This library currently depends on brand new software (Mint).
   It is not yet recommended to use Mojito in production.
-
-  Currently only HTTP 1.x is supported; however, as support for HTTP 2.x
-  in Mint is finalized, it will be added to Mojito.
 
   ## Installation
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.7.0-vendored-xhttp"}
+      {:mojito, "~> 0.1.0"}
 
   ## Single-request example
 
