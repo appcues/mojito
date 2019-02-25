@@ -1,7 +1,7 @@
-defmodule XClient.Response do
+defmodule Mojito.Response do
   @moduledoc false
 
   defstruct [:status_code, :headers, :body]
 
-  @type t :: XClient.response()
+  @type t :: Mojito.response()
 end

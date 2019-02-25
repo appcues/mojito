@@ -1,31 +1,31 @@
-defmodule XClient do
+defmodule Mojito do
   @moduledoc ~S"""
-  XClient is a simplified HTTP client built using the
-  low-level [XHTTP library](https://github.com/ericmj/xhttp).
+  Mojito is a simplified HTTP client built using the
+  low-level [Mint library](https://github.com/ericmj/xhttp).
 
   It provides an interface that will feel familiar to users of other
   Elixir HTTP client libraries.
 
-  WARNING! This library currently depends on pre-release software (XHTTP).
-  It is not yet recommended to use XClient in production.
+  WARNING! This library currently depends on pre-release software (Mint).
+  It is not yet recommended to use Mojito in production.
 
   Currently only HTTP 1.x is supported; however, as support for HTTP 2.x
-  in XHTTP is finalized, it will be added to XClient.
+  in Mint is finalized, it will be added to Mojito.
 
   ## Installation
 
-  Add `xclient` to your deps in `mix.exs`:
+  Add `mojito` to your deps in `mix.exs`:
 
-      {:xclient, "~> 0.7.0-vendored-xhttp"}
+      {:mojito, "~> 0.7.0-vendored-xhttp"}
 
   ## Single-request example
 
-  `XClient.request/5` can be used directly for making individual
+  `Mojito.request/5` can be used directly for making individual
   requests:
 
-      >>>> XClient.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+      >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
       {:ok,
-       %XClient.Response{
+       %Mojito.Response{
          body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
          headers: [
            {"content-type", "application/json; charset=utf-8"},
@@ -38,48 +38,48 @@ defmodule XClient do
 
   ## Pool example
 
-  `XClient.Pool.request/6` can be used when a pool of persistent HTTP
+  `Mojito.Pool.request/6` can be used when a pool of persistent HTTP
   connections is desired:
 
-      >>>> children = [XClient.Pool.child_spec(MyPool)]
+      >>>> children = [Mojito.Pool.child_spec(MyPool)]
       >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> XClient.Pool.request(MyPool, :get, "http://example.com")
-      {:ok, %XClient.Response{...}}
+      >>>> Mojito.Pool.request(MyPool, :get, "http://example.com")
+      {:ok, %Mojito.Response{...}}
 
-  Connection pooling in XClient is implemented using
+  Connection pooling in Mojito is implemented using
   [Poolboy](https://github.com/devinus/poolboy).
 
   ## Self-signed SSL/TLS certificates
 
   To accept self-signed certificates in HTTPS connections, you can give the
-  `transport_opts: [verify: :verify_none]` option to `XClient.request/5`
-  or `XClient.Pool.request/6`:
+  `transport_opts: [verify: :verify_none]` option to `Mojito.request/5`
+  or `Mojito.Pool.request/6`:
 
-      >>>> XClient.request(:get, "https://localhost:8443/")
+      >>>> Mojito.request(:get, "https://localhost:8443/")
       {:error, {:tls_alert, 'bad certificate'}}
 
-      >>>> XClient.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
-      {:ok, %XClient.Response{...}}
+      >>>> Mojito.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
+      {:ok, %Mojito.Response{...}}
   """
 
-  alias XClient.{Error, Utils}
+  alias Mojito.{Error, Utils}
 
   @type headers :: [{String.t(), String.t()}]
 
-  @type response :: %XClient.Response{
+  @type response :: %Mojito.Response{
           status_code: pos_integer,
           headers: headers,
           body: String.t()
         }
 
-  @type error :: %XClient.Error{
+  @type error :: %Mojito.Error{
           reason: any,
           message: any
         }
 
   @type method :: :head | :get | :post | :put | :patch | :delete | :options
 
-  @request_timeout Application.get_env(:xclient, :request_timeout, 5000)
+  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
@@ -87,15 +87,15 @@ defmodule XClient do
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:xclient, :request_timeout, 5000)`.
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error}
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
-    with {:ok, pid} <- XClient.ConnServer.start_link(),
-         :ok <- XClient.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
+    with {:ok, pid} <- Mojito.ConnServer.start_link(),
+         :ok <- Mojito.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
       receive do
         reply ->
           GenServer.stop(pid)

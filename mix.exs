@@ -1,12 +1,12 @@
-defmodule XClient.MixProject do
+defmodule Mojito.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :xclient,
-      description: "XClient is an HTTP client based on XHTTP.",
-      version: "0.7.0",
-      elixir: "~> 1.5",
+      app: :mojito,
+      description: "Mojito is a high-level HTTP client based on Mint.",
+      version: "0.1.0",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -15,7 +15,7 @@ defmodule XClient.MixProject do
         plt_add_apps: [:mix]
       ],
       aliases: [
-        docs: "docs --source-url https://github.com/appcues/xclient"
+        docs: "docs --source-url https://github.com/appcues/mojito"
       ]
     ]
   end
@@ -27,20 +27,21 @@ defmodule XClient.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["pete gamache <pete@appcues.com>"],
-      links: %{github: "https://github.com/appcues/xclient"}
+      links: %{github: "https://github.com/appcues/mojito"}
     ]
   end
 
   def application do
     [
       extra_applications: [:logger],
-      mod: {XClient.Application, []}
+      mod: {Mojito.Application, []}
     ]
   end
 
   defp deps do
     [
-      {:xhttp, github: "ericmj/xhttp"},
+      {:mint, "~> 0.1"},
+      {:castore, "~> 0.1"},
       {:fuzzyurl, "~> 1.0"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},

@@ -1,19 +1,19 @@
-defmodule XClient.TestServer do
+defmodule Mojito.TestServer do
   use Application
 
   def start(_type, _args) do
     children = [
       Plug.Adapters.Cowboy.child_spec(
         :http,
-        XClient.TestServer.PlugRouter,
+        Mojito.TestServer.PlugRouter,
         [],
-        port: Application.get_env(:xclient, :test_server_http_port)
+        port: Application.get_env(:mojito, :test_server_http_port)
       ),
       Plug.Adapters.Cowboy.child_spec(
         :https,
-        XClient.TestServer.PlugRouter,
+        Mojito.TestServer.PlugRouter,
         [],
-        port: Application.get_env(:xclient, :test_server_https_port),
+        port: Application.get_env(:mojito, :test_server_https_port),
         keyfile: System.cwd() <> "/test/support/key.pem",
         certfile: System.cwd() <> "/test/support/cert.pem"
       )
@@ -23,7 +23,7 @@ defmodule XClient.TestServer do
   end
 end
 
-defmodule XClient.TestServer.PlugRouter do
+defmodule Mojito.TestServer.PlugRouter do
   use Plug.Router
 
   plug(:match)

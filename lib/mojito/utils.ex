@@ -1,14 +1,14 @@
-defmodule XClient.Utils do
+defmodule Mojito.Utils do
   @moduledoc false
 
-  alias XClient.Error
+  alias Mojito.Error
 
   @doc ~S"""
   Ensures that the return value errors are of the form
-  `{:error, %XClient.Error{}}`.  Values `:ok` and `{:ok, val}` are
+  `{:error, %Mojito.Error{}}`.  Values `:ok` and `{:ok, val}` are
   considered successful; other values are treated as errors.
   """
-  @spec wrap_return_value(any) :: :ok | {:ok, any} | {:error, XClient.error()}
+  @spec wrap_return_value(any) :: :ok | {:ok, any} | {:error, Mojito.error()}
   def wrap_return_value(rv) do
     case rv do
       :ok -> rv
@@ -23,13 +23,13 @@ defmodule XClient.Utils do
   Returns the protocol, hostname, and port (express or implied) from a
   web URL.
 
-      iex> XClient.Utils.decompose_url("http://example.com:8888/test")
+      iex> Mojito.Utils.decompose_url("http://example.com:8888/test")
       {:ok, "http", "example.com", 8888}
 
-      iex> XClient.Utils.decompose_url("https://user:pass@example.com")
+      iex> Mojito.Utils.decompose_url("https://user:pass@example.com")
       {:ok, "https", "example.com", 443}
 
-      iex> XClient.Utils.decompose_url("ssh://example.com")
+      iex> Mojito.Utils.decompose_url("ssh://example.com")
       {:error, "unsupported URL protocol ssh"}
   """
   @spec decompose_url(String.t()) ::
@@ -48,7 +48,7 @@ defmodule XClient.Utils do
   necessary auth headers (i.e., for HTTP Basic auth).
   """
   @spec get_relative_url_and_auth_headers(String.t()) ::
-          {:ok, String.t(), XClient.headers()} | {:error, any}
+          {:ok, String.t(), Mojito.headers()} | {:error, any}
   def get_relative_url_and_auth_headers(url) do
     with {:ok, fu} <- fuzzyurl_from_string(url) do
       headers =

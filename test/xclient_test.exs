@@ -1,43 +1,43 @@
-defmodule XClientTest do
+defmodule MojitoTest do
   use ExSpec, async: true
-  doctest XClient
-  doctest XClient.Utils
+  doctest Mojito
+  doctest Mojito.Utils
 
-  alias XClient.{Error, Headers}
+  alias Mojito.{Error, Headers}
 
   context "request" do
     context "url validation" do
       it "fails on url without protocol" do
-        assert({:error, _} = XClient.request(:get, "localhost/path"))
-        assert({:error, _} = XClient.request(:get, "/localhost/path"))
-        assert({:error, _} = XClient.request(:get, "//localhost/path"))
-        assert({:error, _} = XClient.request(:get, "localhost//path"))
+        assert({:error, _} = Mojito.request(:get, "localhost/path"))
+        assert({:error, _} = Mojito.request(:get, "/localhost/path"))
+        assert({:error, _} = Mojito.request(:get, "//localhost/path"))
+        assert({:error, _} = Mojito.request(:get, "localhost//path"))
       end
 
       it "fails on url with bad protocol" do
-        assert({:error, _} = XClient.request(:get, "garbage://localhost/path"))
-        assert({:error, _} = XClient.request(:get, "ftp://localhost/path"))
+        assert({:error, _} = Mojito.request(:get, "garbage://localhost/path"))
+        assert({:error, _} = Mojito.request(:get, "ftp://localhost/path"))
       end
 
       it "fails on url without hostname" do
-        assert({:error, _} = XClient.request(:get, "http://"))
+        assert({:error, _} = Mojito.request(:get, "http://"))
       end
     end
 
     context "local server tests" do
-      @http_port Application.get_env(:xclient, :test_server_http_port)
-      @https_port Application.get_env(:xclient, :test_server_https_port)
+      @http_port Application.get_env(:mojito, :test_server_http_port)
+      @https_port Application.get_env(:mojito, :test_server_https_port)
 
       defp get(path, opts \\ []) do
-        XClient.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
+        Mojito.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
       end
 
       defp get_with_user(path, user, opts \\ []) do
-        XClient.request(:get, "http://#{user}@localhost:#{@http_port}#{path}", [], "", opts)
+        Mojito.request(:get, "http://#{user}@localhost:#{@http_port}#{path}", [], "", opts)
       end
 
       defp get_with_user_and_pass(path, user, pass, opts \\ []) do
-        XClient.request(
+        Mojito.request(
           :get,
           "http://#{user}:#{pass}@localhost:#{@http_port}#{path}",
           [],
@@ -49,11 +49,11 @@ defmodule XClientTest do
       defp post(path, body_obj, opts \\ []) do
         body = Jason.encode!(body_obj)
         headers = [{"content-type", "application/json"}]
-        XClient.request(:post, "http://localhost:#{@http_port}#{path}", headers, body, opts)
+        Mojito.request(:post, "http://localhost:#{@http_port}#{path}", headers, body, opts)
       end
 
       defp get_ssl(path, opts \\ []) do
-        XClient.request(
+        Mojito.request(
           :get,
           "https://localhost:#{@https_port}#{path}",
           [],
@@ -107,7 +107,7 @@ defmodule XClientTest do
 
     context "external tests" do
       it "can make HTTPS requests using proper cert chain by default" do
-        assert({:ok, _} = XClient.request(:get, "https://github.com"))
+        assert({:ok, _} = Mojito.request(:get, "https://github.com"))
       end
     end
   end

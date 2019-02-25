@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Xclient do
   @moduledoc false
 
-  ## These tasks are only useful to maintainers of XClient itself
+  ## These tasks are only useful to maintainers of Mojito itself
 
   use Mix.Task
 
@@ -20,6 +20,6 @@ defmodule Mix.Tasks.Xclient do
 
   def run([other | _]) do
     Mix.shell().error("no such command: #{other}")
-    Mix.shell().info("Usage: mix xclient [fetch-cacerts | make-test-certs]")
+    Mix.shell().info("Usage: mix mojito [fetch-cacerts | make-test-certs]")
   end
 end

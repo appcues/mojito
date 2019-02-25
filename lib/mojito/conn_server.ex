@@ -1,25 +1,25 @@
-defmodule XClient.ConnServer do
+defmodule Mojito.ConnServer do
   @moduledoc false
 
   use GenServer
   require Logger
 
-  alias XClient.{Conn, Response, Utils}
+  alias Mojito.{Conn, Response, Utils}
 
   @type state :: map
 
   @doc ~S"""
-  Starts an `XClient.ConnServer`.
+  Starts an `Mojito.ConnServer`.
 
-  `XClient.ConnServer` is a GenServer that handles a single
-  `XClient.Conn`.  It supports automatic reconnection,
+  `Mojito.ConnServer` is a GenServer that handles a single
+  `Mojito.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
 
-  It's intended for usage through `XClient` or `XClient.Pool`.
+  It's intended for usage through `Mojito` or `Mojito.Pool`.
 
   Example:
 
-      {:ok, pid} = XClient.ConnServer.start_link()
+      {:ok, pid} = Mojito.ConnServer.start_link()
       :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
       receive do
         {:ok, response} -> response
@@ -34,9 +34,9 @@ defmodule XClient.ConnServer do
 
   @doc ~S"""
   Initiates a request.  The `reply_to` pid will receive the response in a
-  message of the format `{:ok, %XClient.Response{}} | {:error, any}`.
+  message of the format `{:ok, %Mojito.Response{}} | {:error, any}`.
   """
-  @spec request(pid, pid, XClient.method(), XClient.headers(), String.t(), Keyword.t()) ::
+  @spec request(pid, pid, Mojito.method(), Mojito.headers(), String.t(), Keyword.t()) ::
           :ok | {:error, any}
   def request(pid, reply_to, method, url, headers \\ [], payload \\ "", opts \\ []) do
     GenServer.call(pid, {:request, reply_to, method, url, headers, payload, opts})
@@ -58,14 +58,14 @@ defmodule XClient.ConnServer do
 
   def terminate(reason, state) do
     Logger.debug(fn ->
-      "XClient.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
+      "Mojito.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
     end)
 
     close_connections(state)
   end
 
   def handle_call({:request, reply_to, method, url, headers, payload, opts}, _from, state) do
-    Logger.debug(fn -> "XClient.ConnServer #{inspect(self())}: #{method} #{url}" end)
+    Logger.debug(fn -> "Mojito.ConnServer #{inspect(self())}: #{method} #{url}" end)
 
     with {:ok, state, _ref} <- do_request(state, reply_to, method, url, headers, payload, opts) do
       {:reply, :ok, state}
@@ -77,13 +77,13 @@ defmodule XClient.ConnServer do
   ## `msg` is an incoming chunk of a response
   def handle_info(msg, state) do
     Logger.debug(fn ->
-      "XClient.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
+      "Mojito.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
     end)
 
     if !state.conn do
       {:noreply, close_connections(state)}
     else
-      case XHTTP1.Conn.stream(state.conn.conn, msg) do
+      case Mint1.Conn.stream(state.conn.conn, msg) do
         {:ok, xhttp1_conn, resps} ->
           state_conn = state.conn |> Map.put(:conn, xhttp1_conn)
           state = %{state | conn: state_conn}
@@ -103,7 +103,7 @@ defmodule XClient.ConnServer do
 
   @spec close_connections(state) :: state
   defp close_connections(state) do
-    Logger.debug(fn -> "XClient.ConnServer #{inspect(self())}: cleaning up" end)
+    Logger.debug(fn -> "Mojito.ConnServer #{inspect(self())}: cleaning up" end)
 
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
       send(reply_to, {:error, :closed})
@@ -144,7 +144,7 @@ defmodule XClient.ConnServer do
     send(reply_to, {:ok, response})
 
     Logger.debug(fn ->
-      "XClient.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}"
+      "Mojito.ConnServer #{inspect(self())}: sent response to #{inspect(reply_to)}"
     end)
 
     %{
@@ -157,9 +157,9 @@ defmodule XClient.ConnServer do
   @spec do_request(
           state,
           pid,
-          XClient.method(),
+          Mojito.method(),
           String.t(),
-          XClient.headers(),
+          Mojito.headers(),
           String.t(),
           Keyword.t()
         ) :: {:ok, String.t(), reference} | {:error, any}
@@ -193,7 +193,7 @@ defmodule XClient.ConnServer do
   @spec connect(state, String.t(), String.t(), non_neg_integer, Keyword.t()) ::
           {:ok, state} | {:error, any}
   defp connect(state, protocol, hostname, port, opts) do
-    with {:ok, conn} <- XClient.Conn.connect(protocol, hostname, port, opts) do
+    with {:ok, conn} <- Mojito.Conn.connect(protocol, hostname, port, opts) do
       {:ok, %{state | conn: conn, protocol: protocol, hostname: hostname, port: port}}
     end
   end

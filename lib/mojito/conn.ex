@@ -1,14 +1,14 @@
-defmodule XClient.Conn do
+defmodule Mojito.Conn do
   @moduledoc false
 
-  alias XClient.Utils
+  alias Mojito.Utils
 
   defstruct conn: nil,
             protocol: nil,
             hostname: nil,
             port: nil
 
-  @type t :: %XClient.Conn{}
+  @type t :: %Mojito.Conn{}
 
   @doc ~S"""
   Connects to the specified endpoint, returning a connection to the server.
@@ -29,9 +29,9 @@ defmodule XClient.Conn do
   def connect(protocol, hostname, port, opts \\ []) do
     with {:ok, transport} <- Utils.protocol_to_transport(protocol),
          {:ok, opts} <- configure_opts_for_transport(opts, transport),
-         {:ok, xhttp1_conn} <- XHTTP1.Conn.connect(hostname, port, opts) do
+         {:ok, xhttp1_conn} <- Mint1.Conn.connect(hostname, port, opts) do
       {:ok,
-       %XClient.Conn{
+       %Mojito.Conn{
          conn: xhttp1_conn,
          protocol: protocol,
          hostname: hostname,
@@ -73,7 +73,7 @@ defmodule XClient.Conn do
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url, auth_headers} <- Utils.get_relative_url_and_auth_headers(url),
          {:ok, xhttp1_conn, request_ref} <-
-           XHTTP1.Conn.request(conn.conn, method, relative_url, auth_headers ++ headers, payload) do
+           Mint1.Conn.request(conn.conn, method, relative_url, auth_headers ++ headers, payload) do
       {:ok, %{conn | conn: xhttp1_conn}, request_ref}
     end
   end

@@ -1,11 +1,11 @@
-defmodule XClient.PoolTest do
+defmodule Mojito.PoolTest do
   use ExSpec, async: true
-  doctest XClient.Pool
-  doctest XClient.ConnServer
+  doctest Mojito.Pool
+  doctest Mojito.ConnServer
 
   context "live tests" do
-    @http_port Application.get_env(:xclient, :test_server_http_port)
-    @https_port Application.get_env(:xclient, :test_server_https_port)
+    @http_port Application.get_env(:mojito, :test_server_http_port)
+    @https_port Application.get_env(:mojito, :test_server_https_port)
 
     defp with_pool(fun) do
       rand = round(:rand.uniform() * 1_000_000_000)
@@ -16,16 +16,16 @@ defmodule XClient.PoolTest do
     end
 
     defp start_pool(name, opts) do
-      children = [XClient.Pool.child_spec(name, opts)]
+      children = [Mojito.Pool.child_spec(name, opts)]
       Supervisor.start_link(children, strategy: :one_for_one)
     end
 
     defp get(pool, path, opts \\ []) do
-      XClient.Pool.request(pool, :get, "http://localhost:#{@http_port}#{path}", [], "", opts)
+      Mojito.Pool.request(pool, :get, "http://localhost:#{@http_port}#{path}", [], "", opts)
     end
 
     defp get_ssl(pool, path, opts \\ []) do
-      XClient.Pool.request(
+      Mojito.Pool.request(
         pool,
         :get,
         "https://localhost:#{@https_port}#{path}",
