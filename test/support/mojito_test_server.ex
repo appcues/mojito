@@ -49,7 +49,7 @@ defmodule Mojito.TestServer.PlugRouter do
   end
 
   get "/wait" do
-    delay = (conn.params["d"] || "100") |> String.to_integer
+    delay = (conn.params["d"] || "100") |> String.to_integer()
     :timer.sleep(delay)
     send_resp(conn, 200, "ok")
   end

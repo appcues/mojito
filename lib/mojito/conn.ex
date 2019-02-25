@@ -47,21 +47,34 @@ defmodule Mojito.Conn do
   a reference to this request (which is required when receiving pipelined
   responses).
   """
-  @spec request(t, atom | String.t, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
+  @spec request(
+          t,
+          atom | String.t(),
+          String.t(),
+          [{String.t(), String.t()}],
+          String.t(),
+          Keyword.t()
+        ) ::
           {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url, auth_headers} <- Utils.get_relative_url_and_auth_headers(url),
          {:ok, mint_conn, request_ref} <-
-           Mint.HTTP.request(conn.conn, method_to_string(method), relative_url, auth_headers ++ headers, payload) do
+           Mint.HTTP.request(
+             conn.conn,
+             method_to_string(method),
+             relative_url,
+             auth_headers ++ headers,
+             payload
+           ) do
       {:ok, %{conn | conn: mint_conn}, request_ref}
     end
   end
 
   defp method_to_string(m) when is_atom(m) do
-    m |> to_string |> String.upcase
+    m |> to_string |> String.upcase()
   end
 
   defp method_to_string(m) when is_binary(m) do
-    m |> String.upcase
+    m |> String.upcase()
   end
 end
