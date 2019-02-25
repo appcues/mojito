@@ -9,7 +9,8 @@ low-level [Mint library](https://github.com/ericmj/xhttp).
 It provides an interface that will feel familiar to users of other
 Elixir HTTP client libraries.
 
-WARNING! This library currently depends on brand new software (Mint).
+WARNING! This library currently depends on brand new software (Mint),
+not to mention being even younger itself.
 It is not yet recommended to use Mojito in production.
 
 ## Installation
