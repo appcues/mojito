@@ -83,18 +83,18 @@ defmodule Mojito.ConnServer do
     if !state.conn do
       {:noreply, close_connections(state)}
     else
-      case Mint1.Conn.stream(state.conn.conn, msg) do
-        {:ok, xhttp1_conn, resps} ->
-          state_conn = state.conn |> Map.put(:conn, xhttp1_conn)
+      case Mint.HTTP.stream(state.conn.conn, msg) do
+        {:ok, mint_conn, resps} ->
+          state_conn = state.conn |> Map.put(:conn, mint_conn)
           state = %{state | conn: state_conn}
           {:noreply, apply_resps(state, resps)}
 
-        {:error, _xhttp1_conn, :closed} ->
+        {:error, %{state: :closed}, :closed, _} ->
           {:noreply, close_connections(state)}
 
         other ->
           Logger.error(fn -> "got unknown message: #{inspect(other)}" end)
-          raise RuntimeError
+          raise RuntimeError, other
       end
     end
   end

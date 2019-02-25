@@ -14,8 +14,8 @@ defmodule Mojito.TestServer do
         Mojito.TestServer.PlugRouter,
         [],
         port: Application.get_env(:mojito, :test_server_https_port),
-        keyfile: System.cwd() <> "/test/support/key.pem",
-        certfile: System.cwd() <> "/test/support/cert.pem"
+        keyfile: File.cwd!() <> "/test/support/key.pem",
+        certfile: File.cwd!() <> "/test/support/cert.pem"
       )
     ]
 

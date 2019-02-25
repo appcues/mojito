@@ -21,46 +21,24 @@ defmodule Mojito.Conn do
     end
   end
 
+  @protocols [:http, :https]
+
   @doc ~S"""
   Connects to the server specified in the given URL,
   returning a connection to the server.  No requests are made.
   """
   @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
-    with {:ok, transport} <- Utils.protocol_to_transport(protocol),
-         {:ok, opts} <- configure_opts_for_transport(opts, transport),
-         {:ok, xhttp1_conn} <- Mint1.Conn.connect(hostname, port, opts) do
+    proto = if is_atom(protocol), do: protocol, else: String.to_existing_atom(protocol)
+    with {:ok, mint_conn} <- Mint.HTTP.connect(proto, hostname, port, opts) do
       {:ok,
        %Mojito.Conn{
-         conn: xhttp1_conn,
-         protocol: protocol,
+         conn: mint_conn,
+         protocol: proto,
          hostname: hostname,
          port: port
        }}
     end
-  end
-
-  @spec configure_opts_for_transport(Keyword.t(), atom) :: {:ok, Keyword.t()} | {:error, any}
-  defp configure_opts_for_transport(opts, :gen_tcp) do
-    {:ok, opts |> Keyword.put(:transport, :gen_tcp)}
-  end
-
-  @cacerts (case File.read("./priv/cacerts.pem") do
-              {:ok, certs_data} ->
-                :public_key.pem_decode(certs_data)
-                |> Enum.map(fn {:Certificate, bem, _} -> bem end)
-
-              {:error, e} ->
-                raise e
-            end)
-
-  defp configure_opts_for_transport(opts, :ssl) do
-    transport_opts = (opts[:transport_opts] || []) ++ [cacerts: @cacerts]
-
-    {:ok,
-     opts
-     |> Keyword.put(:transport, :ssl)
-     |> Keyword.put(:transport_opts, transport_opts)}
   end
 
   @doc ~S"""
@@ -68,13 +46,21 @@ defmodule Mojito.Conn do
   a reference to this request (which is required when receiving pipelined
   responses).
   """
-  @spec request(t, atom, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
+  @spec request(t, atom | String.t, String.t(), [{String.t(), String.t()}], String.t(), Keyword.t()) ::
           {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
     with {:ok, relative_url, auth_headers} <- Utils.get_relative_url_and_auth_headers(url),
-         {:ok, xhttp1_conn, request_ref} <-
-           Mint1.Conn.request(conn.conn, method, relative_url, auth_headers ++ headers, payload) do
-      {:ok, %{conn | conn: xhttp1_conn}, request_ref}
+         {:ok, mint_conn, request_ref} <-
+           Mint.HTTP.request(conn.conn, method_to_string(method), relative_url, auth_headers ++ headers, payload) do
+      {:ok, %{conn | conn: mint_conn}, request_ref}
     end
+  end
+
+  defp method_to_string(m) when is_atom(m) do
+    m |> to_string |> String.upcase
+  end
+
+  defp method_to_string(m) when is_binary(m) do
+    m |> String.upcase
   end
 end
