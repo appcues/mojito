@@ -1,7 +1,7 @@
 language: elixir
 elixir:
-  - 1.5.0
-  - 1.6.4
+  - 1.7
+  - 1.8
 script:
   - "MIX_ENV=test mix do deps.get, compile, test"
 
