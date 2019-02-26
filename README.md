@@ -1,6 +1,6 @@
 <img align="right" width="131" height="225" src="assets/mojito.png?raw=true">
 
-# Mojito [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
+# Mojito [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
 
 Mojito is a simplified HTTP client for Elixir, built using the
 low-level [Mint client](https://github.com/ericmj/mint).
