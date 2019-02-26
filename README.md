@@ -1,3 +1,5 @@
+<img align="right" width="131" height="225" src="assets/mojito.png?raw=true">
+
 # Mojito
 
 [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito)
