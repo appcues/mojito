@@ -3,12 +3,12 @@
 # Mojito [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
 
 Mojito is a simplified HTTP client for Elixir, built using the
-low-level [Mint library](https://github.com/ericmj/xhttp).
+low-level [Mint client](https://github.com/ericmj/mint).
 
 It provides an interface that will feel familiar to users of other
 Elixir HTTP client libraries.
 
-One-off requests, connection pooling, and request pipelining are
+HTTPS, one-off requests, connection pooling, and request pipelining are
 supported out of the box.
 
 ## Installation
