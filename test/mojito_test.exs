@@ -22,6 +22,12 @@ defmodule MojitoTest do
       it "fails on url without hostname" do
         assert({:error, _} = Mojito.request(:get, "http://"))
       end
+
+      it "fails on a nil url" do
+        assert_raise(FunctionClauseError, fn ->
+          Mojito.request(:get, nil)
+        end)
+      end
     end
 
     context "local server tests" do

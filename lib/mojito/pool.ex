@@ -56,7 +56,7 @@ defmodule Mojito.Pool do
   """
   @spec request(pid, Mojito.method(), String.t(), Mojito.headers(), String.t(), Keyword.t()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
+  def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) when is_binary(url) do
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->

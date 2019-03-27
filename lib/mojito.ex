@@ -88,7 +88,7 @@ defmodule Mojito do
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error}
-  def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
+  def request(method, url, headers \\ [], payload \\ "", opts \\ []) when is_binary(url) do
     timeout = opts[:timeout] || @request_timeout
 
     with {:ok, pid} <- Mojito.ConnServer.start_link(),
