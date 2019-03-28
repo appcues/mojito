@@ -5,18 +5,18 @@ defmodule Mojito.MixProject do
     [
       app: :mojito,
       description: "Mojito is a high-level HTTP client based on Mint.",
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       dialyzer: [
-        plt_add_apps: [:mix]
+        plt_add_apps: [:mix],
       ],
       aliases: [
-        docs: "docs --source-url https://github.com/appcues/mojito"
-      ]
+        docs: "docs --source-url https://github.com/appcues/mojito",
+      ],
     ]
   end
 
@@ -27,14 +27,14 @@ defmodule Mojito.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["pete gamache <pete@appcues.com>"],
-      links: %{github: "https://github.com/appcues/mojito"}
+      links: %{github: "https://github.com/appcues/mojito"},
     ]
   end
 
   def application do
     [
       extra_applications: [:logger],
-      mod: {Mojito.Application, []}
+      mod: {Mojito.Application, []},
     ]
   end
 
@@ -50,7 +50,8 @@ defmodule Mojito.MixProject do
       {:plug, "~> 1.3", only: :test},
       {:plug_cowboy, "~> 1.0", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
-      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
+      {:freedom_formatter, "~> 1.0", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
     ]
   end
 end

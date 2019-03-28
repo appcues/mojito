@@ -64,7 +64,7 @@ defmodule Mojito.Utils do
       url_pieces = [
         if(fu.path, do: "#{fu.path}", else: ""),
         if(fu.query, do: "?#{fu.query}", else: ""),
-        if(fu.fragment, do: "##{fu.fragment}", else: "")
+        if(fu.fragment, do: "##{fu.fragment}", else: ""),
       ]
 
       joined_url = url_pieces |> Enum.join("")
@@ -88,7 +88,8 @@ defmodule Mojito.Utils do
 
   def protocol_to_transport("http"), do: {:ok, :gen_tcp}
 
-  def protocol_to_transport(proto), do: {:error, "unknown protocol #{inspect(proto)}"}
+  def protocol_to_transport(proto),
+    do: {:error, "unknown protocol #{inspect(proto)}"}
 
   @spec fuzzyurl_from_string(String.t()) :: {:ok, Fuzzyurl.t()} | {:error, any}
   defp fuzzyurl_from_string(url) do

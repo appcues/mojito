@@ -16,7 +16,7 @@ defmodule Mojito.TestServer do
         port: Application.get_env(:mojito, :test_server_https_port),
         keyfile: File.cwd!() <> "/test/support/key.pem",
         certfile: File.cwd!() <> "/test/support/cert.pem"
-      )
+      ),
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
@@ -27,7 +27,14 @@ defmodule Mojito.TestServer.PlugRouter do
   use Plug.Router
 
   plug(:match)
-  plug(Plug.Parsers, parsers: [:json], pass: ["application/json"], json_decoder: Jason)
+
+  plug(
+    Plug.Parsers,
+    parsers: [:json],
+    pass: ["application/json"],
+    json_decoder: Jason
+  )
+
   plug(:dispatch)
 
   get "/" do

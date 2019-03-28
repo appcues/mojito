@@ -7,7 +7,7 @@ defmodule Mojito.HeadersTest do
     {"header1", "value1"},
     {"header3", "value3-1"},
     {"header2", "value2"},
-    {"HeaDer3", "value3-2"}
+    {"HeaDer3", "value3-2"},
   ]
 
   test "Headers.get with no match" do
@@ -43,7 +43,9 @@ defmodule Mojito.HeadersTest do
   end
 
   test "Headers.get_values with multiple values" do
-    assert(["value3-1", "value3-2"] == Headers.get_values(@test_headers, "header3"))
+    assert(
+      ["value3-1", "value3-2"] == Headers.get_values(@test_headers, "header3")
+    )
   end
 
   test "Headers.put when value doesn't exist" do
@@ -52,7 +54,7 @@ defmodule Mojito.HeadersTest do
       {"header3", "value3-1"},
       {"header2", "value2"},
       {"HeaDer3", "value3-2"},
-      {"header4", "new value"}
+      {"header4", "new value"},
     ]
 
     assert(output == Headers.put(@test_headers, "header4", "new value"))
@@ -63,7 +65,7 @@ defmodule Mojito.HeadersTest do
       {"header1", "value1"},
       {"header3", "value3-1"},
       {"HeaDer3", "value3-2"},
-      {"heADer2", "new value"}
+      {"heADer2", "new value"},
     ]
 
     assert(output == Headers.put(@test_headers, "heADer2", "new value"))
@@ -73,7 +75,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header2", "value2"},
-      {"HeaDer3", "new value"}
+      {"HeaDer3", "new value"},
     ]
 
     assert(output == Headers.put(@test_headers, "HeaDer3", "new value"))
@@ -87,7 +89,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header3", "value3-1"},
-      {"HeaDer3", "value3-2"}
+      {"HeaDer3", "value3-2"},
     ]
 
     assert(output == Headers.delete(@test_headers, "heADer2"))
@@ -96,7 +98,7 @@ defmodule Mojito.HeadersTest do
   test "Headers.delete when value exists multiple times" do
     output = [
       {"header1", "value1"},
-      {"header2", "value2"}
+      {"header2", "value2"},
     ]
 
     assert(output == Headers.delete(@test_headers, "HEADER3"))
@@ -110,7 +112,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header3", "value3-1,value3-2"},
-      {"header2", "value2"}
+      {"header2", "value2"},
     ]
 
     assert(output == Headers.normalize(@test_headers))

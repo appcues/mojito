@@ -25,11 +25,16 @@ defmodule Mojito.Conn do
   Connects to the server specified in the given URL,
   returning a connection to the server.  No requests are made.
   """
-  @spec connect(String.t(), String.t(), non_neg_integer) :: {:ok, t} | {:error, any}
+  @spec connect(String.t(), String.t(), non_neg_integer) ::
+          {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
     :http
     :https
-    proto = if is_atom(protocol), do: protocol, else: String.to_existing_atom(protocol)
+
+    proto =
+      if is_atom(protocol),
+        do: protocol,
+        else: String.to_existing_atom(protocol)
 
     with {:ok, mint_conn} <- Mint.HTTP.connect(proto, hostname, port, opts) do
       {:ok,
@@ -37,7 +42,7 @@ defmodule Mojito.Conn do
          conn: mint_conn,
          protocol: proto,
          hostname: hostname,
-         port: port
+         port: port,
        }}
     end
   end
@@ -54,10 +59,10 @@ defmodule Mojito.Conn do
           [{String.t(), String.t()}],
           String.t(),
           Keyword.t()
-        ) ::
-          {:ok, t, reference} | {:error, any}
+        ) :: {:ok, t, reference} | {:error, any}
   def request(conn, method, url, headers, payload, _opts \\ []) do
-    with {:ok, relative_url, auth_headers} <- Utils.get_relative_url_and_auth_headers(url),
+    with {:ok, relative_url, auth_headers} <-
+           Utils.get_relative_url_and_auth_headers(url),
          {:ok, mint_conn, request_ref} <-
            Mint.HTTP.request(
              conn.conn,

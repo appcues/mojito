@@ -22,6 +22,28 @@ defmodule MojitoTest do
       it "fails on url without hostname" do
         assert({:error, _} = Mojito.request(:get, "http://"))
       end
+
+      it "fails on blank url" do
+        assert({:error, err} = Mojito.request(:get, ""))
+        assert(is_binary(err.message))
+      end
+
+      it "fails on nil url" do
+        assert({:error, err} = Mojito.request(:get, nil))
+        assert(is_binary(err.message))
+      end
+    end
+
+    context "method validation" do
+      it "fails on blank method" do
+        assert({:error, err} = Mojito.request("", "https://cool.com"))
+        assert(is_binary(err.message))
+      end
+
+      it "fails on nil method" do
+        assert({:error, err} = Mojito.request(nil, "https://cool.com"))
+        assert(is_binary(err.message))
+      end
     end
 
     context "local server tests" do
@@ -29,11 +51,23 @@ defmodule MojitoTest do
       @https_port Application.get_env(:mojito, :test_server_https_port)
 
       defp get(path, opts \\ []) do
-        Mojito.request(:get, "http://localhost:#{@http_port}#{path}", [], "", opts)
+        Mojito.request(
+          :get,
+          "http://localhost:#{@http_port}#{path}",
+          [],
+          "",
+          opts
+        )
       end
 
       defp get_with_user(path, user, opts \\ []) do
-        Mojito.request(:get, "http://#{user}@localhost:#{@http_port}#{path}", [], "", opts)
+        Mojito.request(
+          :get,
+          "http://#{user}@localhost:#{@http_port}#{path}",
+          [],
+          "",
+          opts
+        )
       end
 
       defp get_with_user_and_pass(path, user, pass, opts \\ []) do
@@ -49,7 +83,14 @@ defmodule MojitoTest do
       defp post(path, body_obj, opts \\ []) do
         body = Jason.encode!(body_obj)
         headers = [{"content-type", "application/json"}]
-        Mojito.request(:post, "http://localhost:#{@http_port}#{path}", headers, body, opts)
+
+        Mojito.request(
+          :post,
+          "http://localhost:#{@http_port}#{path}",
+          headers,
+          body,
+          opts
+        )
       end
 
       defp get_ssl(path, opts \\ []) do
@@ -94,14 +135,21 @@ defmodule MojitoTest do
 
       it "handles user+pass in URL" do
         assert({:ok, %{status_code: 500}} = get("/auth"))
-        assert({:ok, %{status_code: 200} = response} = get_with_user("/auth", "hi"))
+
+        assert(
+          {:ok, %{status_code: 200} = response} = get_with_user("/auth", "hi")
+        )
+
         assert(%{"user" => "hi", "pass" => ""} = Jason.decode!(response.body))
 
         assert(
-          {:ok, %{status_code: 200} = response} = get_with_user_and_pass("/auth", "hi", "mom")
+          {:ok, %{status_code: 200} = response} =
+            get_with_user_and_pass("/auth", "hi", "mom")
         )
 
-        assert(%{"user" => "hi", "pass" => "mom"} = Jason.decode!(response.body))
+        assert(
+          %{"user" => "hi", "pass" => "mom"} = Jason.decode!(response.body)
+        )
       end
     end
 

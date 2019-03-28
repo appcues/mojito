@@ -38,7 +38,7 @@ defmodule Mojito.Pool do
       {:worker_module, Mojito.ConnServer},
       {:size, size},
       {:max_overflow, max_overflow},
-      {:strategy, strategy}
+      {:strategy, strategy},
     ]
 
     :poolboy.child_spec(name, poolboy_config)
@@ -54,13 +54,27 @@ defmodule Mojito.Pool do
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
   """
-  @spec request(pid, Mojito.method(), String.t(), Mojito.headers(), String.t(), Keyword.t()) ::
-          {:ok, Mojito.response()} | {:error, Mojito.error()}
+  @spec request(
+          pid,
+          Mojito.method(),
+          String.t(),
+          Mojito.headers(),
+          String.t(),
+          Keyword.t()
+        ) :: {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->
-      case Mojito.ConnServer.request(worker, self(), method, url, headers, payload, opts) do
+      case Mojito.ConnServer.request(
+             worker,
+             self(),
+             method,
+             url,
+             headers,
+             payload,
+             opts
+           ) do
         :ok ->
           receive do
             response -> response

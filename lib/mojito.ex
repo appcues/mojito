@@ -66,15 +66,16 @@ defmodule Mojito do
   @type response :: %Mojito.Response{
           status_code: pos_integer,
           headers: headers,
-          body: String.t()
+          body: String.t(),
         }
 
   @type error :: %Mojito.Error{
           reason: any,
-          message: any
+          message: any,
         }
 
-  @type method :: :head | :get | :post | :put | :patch | :delete | :options
+  @type method ::
+          :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
   @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
@@ -88,11 +89,38 @@ defmodule Mojito do
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error}
-  def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
+  def request(method, url, headers \\ [], payload \\ "", opts \\ [])
+
+  def request(nil, _url, _headers, _payload, _opts) do
+    {:error, %Mojito.Error{message: "method cannot be nil"}}
+  end
+
+  def request("", _url, _headers, _payload, _opts) do
+    {:error, %Mojito.Error{message: "method cannot be blank"}}
+  end
+
+  def request(_method, nil, _headers, _payload, _opts) do
+    {:error, %Mojito.Error{message: "url cannot be nil"}}
+  end
+
+  def request(_method, "", _headers, _payload, _opts) do
+    {:error, %Mojito.Error{message: "url cannot be blank"}}
+  end
+
+  def request(method, url, headers, payload, opts) do
     timeout = opts[:timeout] || @request_timeout
 
     with {:ok, pid} <- Mojito.ConnServer.start_link(),
-         :ok <- Mojito.ConnServer.request(pid, self(), method, url, headers, payload, opts) do
+         :ok <-
+           Mojito.ConnServer.request(
+             pid,
+             self(),
+             method,
+             url,
+             headers,
+             payload,
+             opts
+           ) do
       receive do
         reply ->
           GenServer.stop(pid)

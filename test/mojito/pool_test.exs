@@ -21,7 +21,14 @@ defmodule Mojito.PoolTest do
     end
 
     defp get(pool, path, opts \\ []) do
-      Mojito.Pool.request(pool, :get, "http://localhost:#{@http_port}#{path}", [], "", opts)
+      Mojito.Pool.request(
+        pool,
+        :get,
+        "http://localhost:#{@http_port}#{path}",
+        [],
+        "",
+        opts
+      )
     end
 
     defp get_ssl(pool, path, opts \\ []) do
