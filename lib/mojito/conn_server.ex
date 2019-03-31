@@ -130,7 +130,7 @@ defmodule Mojito.ConnServer do
     Logger.debug(fn -> "Mojito.ConnServer #{inspect(self())}: cleaning up" end)
 
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
-      send(reply_to, {:error, :closed})
+      respond(reply_to, {:error, :closed})
     end)
 
     %{state | conn: nil, responses: %{}, reply_tos: %{}}
@@ -164,20 +164,24 @@ defmodule Mojito.ConnServer do
     r = Map.get(state.responses, request_ref)
     response = %{r | body: :erlang.list_to_binary(r.body)}
 
-    reply_to = Map.get(state.reply_tos, request_ref)
-    send(reply_to, {:ok, response})
-
-    Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: sent response to #{
-        inspect(reply_to)
-      }"
-    end)
+    Map.get(state.reply_tos, request_ref)
+    |> respond({:ok, response})
 
     %{
       state
       | responses: Map.delete(state.responses, request_ref),
         reply_tos: Map.delete(state.reply_tos, request_ref),
     }
+  end
+
+  defp respond(pid, message) do
+    send(pid, {:mojito_response, message})
+
+    Logger.debug(fn ->
+      "Mojito.ConnServer #{inspect(self())}: sent response to #{
+        inspect(pid)
+      }"
+    end)
   end
 
   @spec do_request(

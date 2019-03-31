@@ -77,7 +77,7 @@ defmodule Mojito.Pool do
            ) do
         :ok ->
           receive do
-            response -> response
+            {:mojito_response, response} -> response
           after
             timeout -> {:error, :timeout}
           end

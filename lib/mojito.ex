@@ -122,7 +122,7 @@ defmodule Mojito do
              opts
            ) do
       receive do
-        reply ->
+        {:mojito_response, reply} ->
           GenServer.stop(pid)
           reply
       after
