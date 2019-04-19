@@ -5,7 +5,7 @@ defmodule Mojito.MixProject do
     [
       app: :mojito,
       description: "Mojito is a high-level HTTP client based on Mint.",
-      version: "0.1.1",
+      version: "0.2.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -40,7 +40,7 @@ defmodule Mojito.MixProject do
 
   defp deps do
     [
-      {:mint, "~> 0.1"},
+      {:mint, "~> 0.2"},
       {:castore, "~> 0.1"},
       {:fuzzyurl, "~> 1.0"},
       {:poolboy, "~> 1.5"},
