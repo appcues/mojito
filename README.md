@@ -15,7 +15,7 @@ supported out of the box.
 
 Add `mojito` to your deps in `mix.exs`:
 
-    {:mojito, "~> 0.1.0"}
+    {:mojito, "~> 0.2.0"}
 
 ## Single-request example
 
