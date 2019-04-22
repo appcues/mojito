@@ -9,13 +9,13 @@ defmodule Mojito.ConnServer do
   @type state :: map
 
   @doc ~S"""
-  Starts an `Mojito.ConnServer`.
+  Starts a `Mojito.ConnServer`.
 
   `Mojito.ConnServer` is a GenServer that handles a single
   `Mojito.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
 
-  It's intended for usage through `Mojito` or `Mojito.Pool`.
+  It's intended for usage through `Mojito.Pool`.
 
   Example:
 
@@ -116,9 +116,8 @@ defmodule Mojito.ConnServer do
         {:error, %{state: :closed}, %{reason: :closed}, _} ->
           {:noreply, close_connections(state)}
 
-        other ->
-          Logger.error(fn -> "got unknown message: #{inspect(other)}" end)
-          raise RuntimeError, other
+        :unknown ->
+          {:noreply, state}
       end
     end
   end

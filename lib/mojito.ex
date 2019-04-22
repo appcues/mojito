@@ -59,21 +59,30 @@ defmodule Mojito do
       {:ok, %Mojito.Response{...}}
   """
 
+  @type method ::
+          :head | :get | :post | :put | :patch | :delete | :options | String.t()
+
   @type headers :: [{String.t(), String.t()}]
 
-  @type response :: %Mojito.Response{
+  @type request :: %{
+          method: method,
+          url: String.t(),
+          headers: headers | nil,
+          payload: String.t() | nil,
+          opts: Keyword.t() | nil,
+        }
+
+  @type response :: %{
           status_code: pos_integer,
           headers: headers,
           body: String.t(),
+          complete: boolean,
         }
 
-  @type error :: %Mojito.Error{
+  @type error :: %{
           reason: any,
-          message: any,
+          message: String.t() | nil,
         }
-
-  @type method ::
-          :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
@@ -85,31 +94,51 @@ defmodule Mojito do
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error}
-  def request(method, url, headers \\ [], payload \\ "", opts \\ [])
-
-  def request(nil, _url, _headers, _payload, _opts) do
-    {:error, %Mojito.Error{message: "method cannot be nil"}}
-  end
-
-  def request("", _url, _headers, _payload, _opts) do
-    {:error, %Mojito.Error{message: "method cannot be blank"}}
-  end
-
-  def request(_method, nil, _headers, _payload, _opts) do
-    {:error, %Mojito.Error{message: "url cannot be nil"}}
-  end
-
-  def request(_method, "", _headers, _payload, _opts) do
-    {:error, %Mojito.Error{message: "url cannot be blank"}}
-  end
-
-  def request(method, url, headers, payload, opts) do
+  def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     %Mojito.Request{
       method: method,
       url: url,
       headers: headers,
       payload: payload,
+      opts: opts,
     }
-    |> Mojito.Request.request(opts)
+    |> request
+  end
+
+  def request(%{method: nil}) do
+    {:error, %Mojito.Error{message: "method cannot be nil"}}
+  end
+
+  def request(%{method: ""}) do
+    {:error, %Mojito.Error{message: "method cannot be blank"}}
+  end
+
+  def request(%{url: nil}) do
+    {:error, %Mojito.Error{message: "url cannot be nil"}}
+  end
+
+  def request(%{url: ""}) do
+    {:error, %Mojito.Error{message: "url cannot be blank"}}
+  end
+
+  def request(%{headers: h}) when not is_list(h) and not is_nil(h) do
+    {:error, %Mojito.Error{message: "headers must be a list"}}
+  end
+
+  def request(%{payload: p}) when not is_binary(p) and not is_nil(p) do
+    {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
+  end
+
+  @doc ~S"""
+  Performs an HTTP request and returns the response.
+
+  Options:
+
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  """
+  @spec request(request) :: {:ok, response} | {:error, error}
+  def request(%{} = request) do
+    Mojito.Request.request(request)
   end
 end

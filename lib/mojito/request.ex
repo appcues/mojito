@@ -1,26 +1,32 @@
 defmodule Mojito.Request do
-  @moduledoc false
+  @moduledoc ~S"""
+  Represents an HTTP/HTTPS request to be performed.
+  """
 
-  defstruct [:method, :url, :headers, :payload]
+  defstruct method: nil,
+            url: nil,
+            headers: [],
+            payload: "",
+            opts: []
 
   require Logger
   alias Mojito.{Conn, Error, Response}
 
   @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
-  def request(%Mojito.Request{} = req, opts \\ []) do
+  @doc false
+  @spec request(Mojito.request()) ::
+          {:ok, Mojito.response()} | {:error, Mojito.error()}
+  def request(%Mojito.Request{} = req) do
+    opts = req.opts || []
+    headers = req.headers || []
+    payload = req.payload || ""
+
     timeout = opts[:timeout] || @request_timeout
 
     with {:ok, conn} <- Conn.connect(req.url, opts),
          {:ok, conn, _ref} <-
-           Conn.request(
-             conn,
-             req.method,
-             req.url,
-             req.headers,
-             req.payload,
-             opts
-           ) do
+           Conn.request(conn, req.method, req.url, headers, payload, opts) do
       receive_response(conn, %Response{}, timeout)
     end
   end
@@ -44,10 +50,6 @@ defmodule Mojito.Request do
 
           :unknown ->
             receive_response(conn, response, timeout)
-
-          other ->
-            raise RuntimeError,
-                  "unrecognized output from Mint: #{inspect(other)}"
         end
     after
       timeout -> {:error, %Error{reason: :timeout}}
