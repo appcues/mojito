@@ -113,9 +113,6 @@ defmodule Mojito.ConnServer do
           state = %{state | conn: state_conn}
           {:noreply, apply_resps(state, resps)}
 
-        {:error, %{state: :closed}, %{reason: :closed}, _} ->
-          {:noreply, close_connections(state)}
-
         :unknown ->
           {:noreply, state}
       end
@@ -189,7 +186,7 @@ defmodule Mojito.ConnServer do
           Mojito.headers(),
           String.t(),
           Keyword.t()
-        ) :: {:ok, String.t(), reference} | {:error, any}
+        ) :: {:ok, state, reference} | {:error, any}
   defp do_request(state, reply_to, method, url, headers, payload, opts) do
     with {:ok, state} <- ensure_connection(state, url, opts),
          {:ok, conn, request_ref} <-

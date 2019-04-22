@@ -45,9 +45,6 @@ defmodule Mojito.Request do
               receive_response(conn, response, timeout)
             end
 
-          {:error, %{state: :closed}, %{reason: :closed}, _} ->
-            {:error, %Error{reason: :closed}}
-
           :unknown ->
             receive_response(conn, response, timeout)
         end
@@ -71,7 +68,7 @@ defmodule Mojito.Request do
   end
 
   defp apply_resp(response, {:data, _request_ref, chunk}) do
-    %{response | body: [response.body || "" | [chunk]]}
+    %{response | body: [response.body | [chunk]]}
   end
 
   defp apply_resp(response, {:done, _request_ref}) do

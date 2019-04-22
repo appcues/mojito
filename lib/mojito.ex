@@ -1,13 +1,14 @@
 defmodule Mojito do
   @moduledoc ~S"""
-  Mojito is a simplified HTTP client built using the
+  Mojito is an easy-to-use HTTP client built using the
   low-level [Mint library](https://github.com/ericmj/mint).
 
   It provides an interface that will feel familiar to users of other
   Elixir HTTP client libraries.
 
-  WARNING! This library currently depends on brand new software (Mint).
-  It is not yet recommended to use Mojito in production.
+  HTTPS, one-off requests, connection pooling, and request pipelining are
+  supported out of the box.  Mojito supports the same process-less
+  architecture as Mint, i.e., it does not spawn a process per request.
 
   ## Installation
 
@@ -17,10 +18,33 @@ defmodule Mojito do
 
   ## Single-request example
 
-  `Mojito.request/5` can be used directly for making individual
-  requests:
+  `Mojito.request/1` or the equivalent `Mojito.request/5` can be used
+  directly for making individual requests:
 
       >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+      {:ok,
+       %Mojito.Response{
+         body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
+         headers: [
+           {"content-type", "application/json; charset=utf-8"},
+           {"content-length", "292"},
+           {"connection", "keep-alive"},
+           ...
+         ],
+         status_code: 200
+       }}
+
+  `Mojito.request/1,5` does not spawn any additional processes to handle the
+  HTTP response; TCP messages are received and handled within the caller
+  process.  In the common case, this results in faster performance and
+  lower overhead in the Erlang VM.
+
+  However, if the caller is also expecting to receive other messages at
+  the same time, this can cause conflict.  In this case, it's recommended
+  to wrap the call to `Mojito.request/1,5` in `Task.async/1`:
+
+      >>>> task = Task.async(fn () -> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1") end)
+      >>>> Task.await(task)
       {:ok,
        %Mojito.Response{
          body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
@@ -46,6 +70,10 @@ defmodule Mojito do
   Connection pooling in Mojito is implemented using
   [Poolboy](https://github.com/devinus/poolboy).
 
+  Currently, Mojito connection pools should only be used to access a single
+  protocol + hostname + port destination; otherwise, connections are
+  reused only sporadically.
+
   ## Self-signed SSL/TLS certificates
 
   To accept self-signed certificates in HTTPS connections, you can give the
@@ -64,7 +92,7 @@ defmodule Mojito do
 
   @type headers :: [{String.t(), String.t()}]
 
-  @type request :: %{
+  @type request :: %Mojito.Request{
           method: method,
           url: String.t(),
           headers: headers | nil,
@@ -72,20 +100,22 @@ defmodule Mojito do
           opts: Keyword.t() | nil,
         }
 
-  @type response :: %{
+  @type response :: %Mojito.Response{
           status_code: pos_integer,
           headers: headers,
           body: String.t(),
           complete: boolean,
         }
 
-  @type error :: %{
+  @type error :: %Mojito.Error{
           reason: any,
           message: String.t() | nil,
         }
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
+  Equivalent to `request/1`.
+  Does not spawn an additional process.
 
   Options:
 
@@ -93,7 +123,7 @@ defmodule Mojito do
     `Application.get_env(:mojito, :request_timeout, 5000)`.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
-          {:ok, response} | {:error, error}
+          {:ok, response} | {:error, error} | no_return
   def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
     %Mojito.Request{
       method: method,
@@ -104,6 +134,18 @@ defmodule Mojito do
     }
     |> request
   end
+
+  @doc ~S"""
+  Performs an HTTP request and returns the response.
+  Does not spawn an additional process.
+
+  Options:
+
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  """
+  @spec request(request) :: {:ok, response} | {:error, error} | no_return
+  def request(request)
 
   def request(%{method: nil}) do
     {:error, %Mojito.Error{message: "method cannot be nil"}}
@@ -129,15 +171,6 @@ defmodule Mojito do
     {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
   end
 
-  @doc ~S"""
-  Performs an HTTP request and returns the response.
-
-  Options:
-
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
-  """
-  @spec request(request) :: {:ok, response} | {:error, error}
   def request(%{} = request) do
     Mojito.Request.request(request)
   end
