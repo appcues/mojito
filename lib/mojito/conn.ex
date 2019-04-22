@@ -14,10 +14,10 @@ defmodule Mojito.Conn do
   Connects to the specified endpoint, returning a connection to the server.
   No requests are made.
   """
-  @spec connect(String.t()) :: {:ok, t} | {:error, any}
-  def connect(url) do
+  @spec connect(String.t(), Keyword.t()) :: {:ok, t} | {:error, any}
+  def connect(url, opts \\ []) do
     with {:ok, protocol, hostname, port} <- Utils.decompose_url(url) do
-      connect(protocol, hostname, port)
+      connect(protocol, hostname, port, opts)
     end
   end
 
@@ -25,7 +25,7 @@ defmodule Mojito.Conn do
   Connects to the server specified in the given URL,
   returning a connection to the server.  No requests are made.
   """
-  @spec connect(String.t(), String.t(), non_neg_integer) ::
+  @spec connect(String.t(), String.t(), non_neg_integer, Keyword.t()) ::
           {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
     :http

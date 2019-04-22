@@ -75,7 +75,6 @@ defmodule Mojito do
   @type method ::
           :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
-
   @doc ~S"""
   Performs an HTTP request and returns the response.
 
@@ -104,7 +103,6 @@ defmodule Mojito do
     {:error, %Mojito.Error{message: "url cannot be blank"}}
   end
 
-
   def request(method, url, headers, payload, opts) do
     %Mojito.Request{
       method: method,
@@ -114,6 +112,4 @@ defmodule Mojito do
     }
     |> Mojito.Request.request(opts)
   end
-
-
 end

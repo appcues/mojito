@@ -178,9 +178,7 @@ defmodule Mojito.ConnServer do
     send(pid, {:mojito_response, message})
 
     Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: sent response to #{
-        inspect(pid)
-      }"
+      "Mojito.ConnServer #{inspect(self())}: sent response to #{inspect(pid)}"
     end)
   end
 
