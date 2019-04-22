@@ -59,8 +59,6 @@ defmodule Mojito do
       {:ok, %Mojito.Response{...}}
   """
 
-  alias Mojito.{Error, Utils}
-
   @type headers :: [{String.t(), String.t()}]
 
   @type response :: %Mojito.Response{
@@ -77,7 +75,6 @@ defmodule Mojito do
   @type method ::
           :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
-  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
@@ -107,30 +104,16 @@ defmodule Mojito do
     {:error, %Mojito.Error{message: "url cannot be blank"}}
   end
 
-  def request(method, url, headers, payload, opts) do
-    timeout = opts[:timeout] || @request_timeout
 
-    with {:ok, pid} <- Mojito.ConnServer.start_link(),
-         :ok <-
-           Mojito.ConnServer.request(
-             pid,
-             self(),
-             method,
-             url,
-             headers,
-             payload,
-             opts
-           ) do
-      receive do
-        {:mojito_response, reply} ->
-          GenServer.stop(pid)
-          reply
-      after
-        timeout ->
-          GenServer.stop(pid)
-          {:error, %Error{reason: :timeout}}
-      end
-    end
-    |> Utils.wrap_return_value()
+  def request(method, url, headers, payload, opts) do
+    %Mojito.Request{
+      method: method,
+      url: url,
+      headers: headers,
+      payload: payload,
+    }
+    |> Mojito.Request.request(opts)
   end
+
+
 end
