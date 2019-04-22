@@ -28,18 +28,22 @@ defmodule Mojito.Utils do
 
       iex> Mojito.Utils.decompose_url("https://user:pass@example.com")
       {:ok, "https", "example.com", 443}
-
-      iex> Mojito.Utils.decompose_url("ssh://example.com")
-      {:error, "unsupported URL protocol ssh"}
   """
   @spec decompose_url(String.t()) ::
           {:ok, String.t(), String.t(), non_neg_integer} | {:error, any}
   def decompose_url(url) do
-    with {:ok, fu} <- fuzzyurl_from_string(url),
-         {:ok, protocol} <- get_protocol(fu),
-         {:ok, hostname} <- get_hostname(fu),
-         {:ok, port} <- get_port(fu) do
-      {:ok, protocol, hostname, port}
+    try do
+      uri = URI.parse(url)
+
+      cond do
+        !uri.scheme || !uri.host || !uri.port ->
+          {:error, %Error{message: "invalid URL: #{url}"}}
+
+        :else ->
+          {:ok, uri.scheme, uri.host, uri.port}
+      end
+    rescue
+      e -> {:error, %Error{message: "invalid URL", reason: e}}
     end
   end
 
@@ -50,24 +54,22 @@ defmodule Mojito.Utils do
   @spec get_relative_url_and_auth_headers(String.t()) ::
           {:ok, String.t(), Mojito.headers()} | {:error, any}
   def get_relative_url_and_auth_headers(url) do
-    with {:ok, fu} <- fuzzyurl_from_string(url) do
+    try do
+      uri = URI.parse(url)
+
       headers =
-        if !(fu.username in ["", nil]) do
-          user = fu.username || ""
-          pass = fu.password || ""
-          credentials = "#{user}:#{pass}" |> Base.encode64()
-          [{"authorization", "Basic #{credentials}"}]
-        else
-          []
+        case uri.userinfo do
+          nil -> []
+          userinfo -> [{"authorization", "Basic #{Base.encode64(userinfo)}"}]
         end
 
-      url_pieces = [
-        if(fu.path, do: "#{fu.path}", else: ""),
-        if(fu.query, do: "?#{fu.query}", else: ""),
-        if(fu.fragment, do: "##{fu.fragment}", else: ""),
-      ]
-
-      joined_url = url_pieces |> Enum.join("")
+      joined_url =
+        [
+          if(uri.path, do: "#{uri.path}", else: ""),
+          if(uri.query, do: "?#{uri.query}", else: ""),
+          if(uri.fragment, do: "##{uri.fragment}", else: ""),
+        ]
+        |> Enum.join("")
 
       relative_url =
         if String.starts_with?(joined_url, "/") do
@@ -77,6 +79,8 @@ defmodule Mojito.Utils do
         end
 
       {:ok, relative_url, headers}
+    rescue
+      e -> {:error, %Error{message: "invalid URL", reason: e}}
     end
   end
 
@@ -90,41 +94,4 @@ defmodule Mojito.Utils do
 
   def protocol_to_transport(proto),
     do: {:error, "unknown protocol #{inspect(proto)}"}
-
-  @spec fuzzyurl_from_string(String.t()) :: {:ok, Fuzzyurl.t()} | {:error, any}
-  defp fuzzyurl_from_string(url) do
-    try do
-      {:ok, Fuzzyurl.from_string(url)}
-    rescue
-      e -> {:error, e}
-    end
-  end
-
-  @spec get_protocol(Fuzzyurl.t()) :: {:ok, String.t()} | {:error, any}
-  defp get_protocol(fu) do
-    cond do
-      !fu.protocol -> {:error, "URL is missing protocol"}
-      String.downcase(fu.protocol) == "http" -> {:ok, "http"}
-      String.downcase(fu.protocol) == "https" -> {:ok, "https"}
-      :else -> {:error, "unsupported URL protocol #{fu.protocol}"}
-    end
-  end
-
-  @spec get_hostname(Fuzzyurl.t()) :: {:ok, String.t()} | {:error, any}
-  defp get_hostname(fu) do
-    cond do
-      !(fu.hostname in ["", nil]) -> {:ok, fu.hostname}
-      :else -> {:error, "no hostname found in URL"}
-    end
-  end
-
-  @spec get_port(Fuzzyurl.t()) :: {:ok, non_neg_integer} | {:error, any}
-  defp get_port(fu) do
-    cond do
-      !(fu.port in ["", nil]) -> {:ok, String.to_integer(fu.port)}
-      fu.protocol == "http" -> {:ok, 80}
-      fu.protocol == "https" -> {:ok, 443}
-      :else -> {:error, "couldn't determine URL port"}
-    end
-  end
 end

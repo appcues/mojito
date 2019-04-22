@@ -42,7 +42,6 @@ defmodule Mojito.MixProject do
     [
       {:mint, "~> 0.2"},
       {:castore, "~> 0.1"},
-      {:fuzzyurl, "~> 1.0"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},
       {:jason, "~> 1.0", only: :test},
