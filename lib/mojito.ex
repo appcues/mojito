@@ -8,13 +8,13 @@ defmodule Mojito do
 
   HTTPS, one-off requests, connection pooling, and request pipelining are
   supported out of the box.  Mojito supports the same process-less
-  architecture as Mint, i.e., it does not spawn a process per request.
+  architecture as Mint; i.e., it does not spawn a process per request.
 
   ## Installation
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.2.0"}
+      {:mojito, "~> 0.2.1"}
 
   ## Single-request example
 

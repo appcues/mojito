@@ -33,23 +33,27 @@ defmodule Mojito.Request do
 
   defp receive_response(conn, response, timeout) do
     receive do
-      msg ->
-        case Mint.HTTP.stream(conn.conn, msg) do
-          {:ok, mint_conn, resps} ->
-            conn = %{conn | conn: mint_conn}
-            response = apply_resps(response, resps)
-
-            if response.complete do
-              {:ok, response}
-            else
-              receive_response(conn, response, timeout)
-            end
-
-          :unknown ->
-            receive_response(conn, response, timeout)
-        end
+      {:tcp, _, _} = msg -> handle_msg(conn, response, timeout, msg)
+      {:ssl, _, _} = msg -> handle_msg(conn, response, timeout, msg)
     after
       timeout -> {:error, %Error{reason: :timeout}}
+    end
+  end
+
+  defp handle_msg(conn, response, timeout, msg) do
+    case Mint.HTTP.stream(conn.conn, msg) do
+      {:ok, mint_conn, resps} ->
+        conn = %{conn | conn: mint_conn}
+        response = apply_resps(response, resps)
+
+        if response.complete do
+          {:ok, response}
+        else
+          receive_response(conn, response, timeout)
+        end
+
+      :unknown ->
+        receive_response(conn, response, timeout)
     end
   end
 
