@@ -9,13 +9,13 @@ defmodule Mojito.ConnServer do
   @type state :: map
 
   @doc ~S"""
-  Starts an `Mojito.ConnServer`.
+  Starts a `Mojito.ConnServer`.
 
   `Mojito.ConnServer` is a GenServer that handles a single
   `Mojito.Conn`.  It supports automatic reconnection,
   connection keep-alive, and request pipelining.
 
-  It's intended for usage through `Mojito` or `Mojito.Pool`.
+  It's intended for usage through `Mojito.Pool`.
 
   Example:
 
@@ -113,12 +113,8 @@ defmodule Mojito.ConnServer do
           state = %{state | conn: state_conn}
           {:noreply, apply_resps(state, resps)}
 
-        {:error, %{state: :closed}, %{reason: :closed}, _} ->
-          {:noreply, close_connections(state)}
-
-        other ->
-          Logger.error(fn -> "got unknown message: #{inspect(other)}" end)
-          raise RuntimeError, other
+        :unknown ->
+          {:noreply, state}
       end
     end
   end
@@ -178,9 +174,7 @@ defmodule Mojito.ConnServer do
     send(pid, {:mojito_response, message})
 
     Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: sent response to #{
-        inspect(pid)
-      }"
+      "Mojito.ConnServer #{inspect(self())}: sent response to #{inspect(pid)}"
     end)
   end
 
@@ -192,7 +186,7 @@ defmodule Mojito.ConnServer do
           Mojito.headers(),
           String.t(),
           Keyword.t()
-        ) :: {:ok, String.t(), reference} | {:error, any}
+        ) :: {:ok, state, reference} | {:error, any}
   defp do_request(state, reply_to, method, url, headers, payload, opts) do
     with {:ok, state} <- ensure_connection(state, url, opts),
          {:ok, conn, request_ref} <-

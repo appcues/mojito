@@ -1,6 +1,6 @@
 defmodule Mojito.Pool do
   @moduledoc ~S"""
-  Mojito.Pool provides an HTTP 1.x request connection pool based on
+  Mojito.Pool provides an HTTP request connection pool based on
   Mojito and Poolboy.
 
   Example:
@@ -47,7 +47,8 @@ defmodule Mojito.Pool do
   @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
-  Makes an HTTP 1.x request using an existing connection pool.
+  Makes an HTTP request using an existing connection pool.
+  Equivalent to `request/2`.
 
   Options:
 
@@ -63,14 +64,66 @@ defmodule Mojito.Pool do
           Keyword.t()
         ) :: {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
+    req = %Mojito.Request{
+      method: method,
+      url: url,
+      headers: headers,
+      payload: payload,
+      opts: opts,
+    }
+
+    request(pool, req)
+  end
+
+  @doc ~S"""
+  Makes an HTTP request using an existing connection pool.
+
+  Options:
+
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  """
+  @spec request(pid, Mojito.request()) ::
+          {:ok, Mojito.response()} | {:error, Mojito.error()}
+  def request(pool, request)
+
+  def request(_pool, %{method: nil}) do
+    {:error, %Mojito.Error{message: "method cannot be nil"}}
+  end
+
+  def request(_pool, %{method: ""}) do
+    {:error, %Mojito.Error{message: "method cannot be blank"}}
+  end
+
+  def request(_pool, %{url: nil}) do
+    {:error, %Mojito.Error{message: "url cannot be nil"}}
+  end
+
+  def request(_pool, %{url: ""}) do
+    {:error, %Mojito.Error{message: "url cannot be blank"}}
+  end
+
+  def request(_pool, %{headers: h}) when not is_list(h) and not is_nil(h) do
+    {:error, %Mojito.Error{message: "headers must be a list"}}
+  end
+
+  def request(_pool, %{payload: p}) when not is_binary(p) and not is_nil(p) do
+    {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
+  end
+
+  def request(pool, request) do
+    opts = request.opts || []
+    headers = request.headers || []
+    payload = request.payload || ""
+
     timeout = opts[:timeout] || @request_timeout
 
     worker_fn = fn worker ->
       case Mojito.ConnServer.request(
              worker,
              self(),
-             method,
-             url,
+             request.method,
+             request.url,
              headers,
              payload,
              opts

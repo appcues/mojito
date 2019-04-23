@@ -2,14 +2,15 @@
 
 # Mojito [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
 
-Mojito is a simplified HTTP client for Elixir, built using the
+Mojito is an easy-to-use HTTP client for Elixir, built using the
 low-level [Mint client](https://github.com/ericmj/mint).
 
 It provides an interface that will feel familiar to users of other
 Elixir HTTP client libraries.
 
 HTTPS, one-off requests, connection pooling, and request pipelining are
-supported out of the box.
+supported out of the box.  Mojito supports the same process-less
+architecture as Mint; i.e., it does not spawn a process per request.
 
 ## Installation
 
@@ -19,10 +20,33 @@ Add `mojito` to your deps in `mix.exs`:
 
 ## Single-request example
 
-`Mojito.request/5` can be used directly for making individual
-requests:
+`Mojito.request/1` or the equivalent `Mojito.request/5` can be used
+directly for making individual requests:
 
     >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+    {:ok,
+     %Mojito.Response{
+       body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
+       headers: [
+         {"content-type", "application/json; charset=utf-8"},
+         {"content-length", "292"},
+         {"connection", "keep-alive"},
+         ...
+       ],
+       status_code: 200
+     }}
+
+`Mojito.request/1,5` does not spawn any additional processes to handle the
+HTTP response; TCP messages are received and handled within the caller
+process.  In the common case, this results in faster performance and
+lower overhead in the Erlang VM.
+
+However, if the caller is also expecting to receive other messages at
+the same time, this can cause conflict.  In this case, it's recommended
+to wrap the call to `Mojito.request/1,5` in `Task.async/1`:
+
+    >>>> task = Task.async(fn () -> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1") end)
+    >>>> Task.await(task)
     {:ok,
      %Mojito.Response{
        body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
@@ -48,11 +72,15 @@ connections is desired:
 Connection pooling in Mojito is implemented using
 [Poolboy](https://github.com/devinus/poolboy).
 
+Currently, Mojito connection pools should only be used to access a single
+protocol + hostname + port destination; otherwise, connections are
+reused only sporadically.
+
 ## Self-signed SSL/TLS certificates
 
 To accept self-signed certificates in HTTPS connections, you can give the
-`transport_opts: [verify: :verify_none]` option to `Mojito.request/5`
-or `Mojito.Pool.request/6`:
+`transport_opts: [verify: :verify_none]` option to `Mojito.request/1,5`
+or `Mojito.Pool.request/2,6`:
 
     >>>> Mojito.request(:get, "https://localhost:8443/")
     {:error, {:tls_alert, 'bad certificate'}}

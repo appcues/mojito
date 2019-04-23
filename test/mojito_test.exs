@@ -140,7 +140,7 @@ defmodule MojitoTest do
           {:ok, %{status_code: 200} = response} = get_with_user("/auth", "hi")
         )
 
-        assert(%{"user" => "hi", "pass" => ""} = Jason.decode!(response.body))
+        assert(%{"user" => "hi", "pass" => nil} = Jason.decode!(response.body))
 
         assert(
           {:ok, %{status_code: 200} = response} =
