@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 (2019-04-23)
+
+Refactored `Mojito.request/5` so it doesn't spawn a process.  Now all
+TCP messages are handled within the caller process.
+
+Added `Mojito.request/1` and `Mojito.Pool.request/2`, which accept a
+`%Mojito.Request{}` struct as input.
+
+Removed dependency on Fuzzyurl in favor of built-in URI module.
+
 ## O.2.0 (2019-04-19)
 
 Messages sent by Mojito now contain a `:mojito_response` prefix, to allow
