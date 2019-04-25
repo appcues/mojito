@@ -31,16 +31,29 @@ defmodule Mojito.Request do
     end
   end
 
-  defp receive_response(conn, response, timeout) do
+  defp time, do: System.monotonic_time(:millisecond)
+
+  def receive_response(conn, response, timeout) do
+    start_time = time()
+
     receive do
-      {:tcp, _, _} = msg -> handle_msg(conn, response, timeout, msg)
-      {:ssl, _, _} = msg -> handle_msg(conn, response, timeout, msg)
+      {:tcp, _, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
+      {:ssl, _, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
     after
       timeout -> {:error, %Error{reason: :timeout}}
     end
   end
 
-  defp handle_msg(conn, response, timeout, msg) do
+  defp handle_msg(conn, response, timeout, msg, start_time) do
+    new_timeout = fn ->
+      time_elapsed = time() - start_time
+
+      case timeout - time_elapsed do
+        x when x < 0 -> 0
+        x -> x
+      end
+    end
+
     case Mint.HTTP.stream(conn.conn, msg) do
       {:ok, mint_conn, resps} ->
         conn = %{conn | conn: mint_conn}
@@ -49,11 +62,14 @@ defmodule Mojito.Request do
         if response.complete do
           {:ok, response}
         else
-          receive_response(conn, response, timeout)
+          receive_response(conn, response, new_timeout.())
         end
 
+      {:error, _, e, _} ->
+        {:error, %Error{reason: e}}
+
       :unknown ->
-        receive_response(conn, response, timeout)
+        receive_response(conn, response, new_timeout.())
     end
   end
 

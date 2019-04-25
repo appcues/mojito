@@ -122,6 +122,48 @@ defmodule MojitoTest do
         assert({:error, %Error{reason: :timeout}} = get("/wait1", timeout: 100))
       end
 
+      it "handles timeouts even on long requests" do
+        port = Application.get_env(:mojito, :test_server_http_port)
+        {:ok, conn} = Mojito.Conn.connect("http://localhost:#{port}")
+
+        mint_conn =
+          Map.put(conn.conn, :request, %{
+            ref: nil,
+            state: :status,
+            method: :get,
+            version: nil,
+            status: nil,
+            headers_buffer: [],
+            content_length: nil,
+            connection: [],
+            transfer_encoding: [],
+            body: nil,
+          })
+
+        conn = %{conn | conn: mint_conn}
+
+        pid = self()
+
+        spawn(fn ->
+          socket = conn.conn.socket
+          Process.sleep(30)
+          send(pid, {:tcp, socket, "HTTP/1.1 200 OK\r\nserver: Cowboy"})
+          Process.sleep(30)
+          send(pid, {:tcp, socket, "\r\ndate: Thu, 25 Apr 2019 10:48:25"})
+          Process.sleep(30)
+          send(pid, {:tcp, socket, " GMT\r\ncontent-length: 12\r\ncache-"})
+          Process.sleep(30)
+          send(pid, {:tcp, socket, "control: max-age=0, private, must-"})
+          Process.sleep(30)
+          send(pid, {:tcp, socket, "revalidate\r\n\r\nHello world!"})
+        end)
+
+        assert(
+          {:error, %{reason: :timeout}} =
+            Mojito.Request.receive_response(conn, %Mojito.Response{}, 100)
+        )
+      end
+
       it "handles URL query params" do
         assert({:ok, %{body: "Hello Alice!"}} = get("/?name=Alice"))
         assert({:ok, %{body: "Hello Alice!"}} = get("?name=Alice"))
