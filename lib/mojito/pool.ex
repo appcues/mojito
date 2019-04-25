@@ -117,8 +117,6 @@ defmodule Mojito.Pool do
 
     timeout = opts[:timeout] || @request_timeout
 
-    pid = self()
-
     start_time = time()
 
     worker_fn = fn worker ->

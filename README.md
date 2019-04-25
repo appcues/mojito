@@ -16,7 +16,7 @@ architecture as Mint; i.e., it does not spawn a process per request.
 
 Add `mojito` to your deps in `mix.exs`:
 
-    {:mojito, "~> 0.2.1"}
+    {:mojito, "~> 0.2.2"}
 
 ## Single-request example
 
