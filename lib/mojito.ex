@@ -34,14 +34,14 @@ defmodule Mojito do
          status_code: 200
        }}
 
-  `Mojito.request/1,5` does not spawn any additional processes to handle the
+  `Mojito.request` does not spawn any additional processes to handle the
   HTTP response; TCP messages are received and handled within the caller
   process.  In the common case, this results in faster performance and
   lower overhead in the Erlang VM.
 
   However, if the caller is also expecting to receive other messages at
   the same time, this can cause conflict.  In this case, it's recommended
-  to wrap the call to `Mojito.request/1,5` in `Task.async/1`:
+  to wrap the call to `Mojito.request` in `Task.async/1`:
 
       >>>> task = Task.async(fn () -> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1") end)
       >>>> Task.await(task)
@@ -59,8 +59,8 @@ defmodule Mojito do
 
   ## Pool example
 
-  `Mojito.Pool.request/6` can be used when a pool of persistent HTTP
-  connections is desired:
+  `Mojito.Pool.request/2` or the equivalent `Mojito.Pool.request/6` can be
+  used when a pool of persistent HTTP connections is desired:
 
       >>>> children = [Mojito.Pool.child_spec(MyPool)]
       >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
@@ -77,8 +77,8 @@ defmodule Mojito do
   ## Self-signed SSL/TLS certificates
 
   To accept self-signed certificates in HTTPS connections, you can give the
-  `transport_opts: [verify: :verify_none]` option to `Mojito.request/5`
-  or `Mojito.Pool.request/6`:
+  `transport_opts: [verify: :verify_none]` option to `Mojito.request`
+  or `Mojito.Pool.request`:
 
       >>>> Mojito.request(:get, "https://localhost:8443/")
       {:error, {:tls_alert, 'bad certificate'}}
@@ -114,13 +114,8 @@ defmodule Mojito do
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
-  Equivalent to `request/1`.
-  Does not spawn an additional process.
 
-  Options:
-
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  See `request/1` for documentation.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -137,14 +132,22 @@ defmodule Mojito do
 
   @doc ~S"""
   Performs an HTTP request and returns the response.
-  Does not spawn an additional process.
+
+  Does not spawn an additional process.  Messages of the form `{:tcp, _, _}`
+  or `{:ssl, _, _}` will be sent to and handled by the caller.  If the
+  caller process expects to receive other `:tcp` or `:ssl` messages at the same
+  time, conflicts can occur; in this case, it is recommended to wrap
+  `request/1` in `Task.async/1`.
 
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
+  * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
+    Most commonly used to perform insecure HTTPS requests via
+    `transport_opts: [verify: :verify_none]`.
   """
-  @spec request(request) :: {:ok, response} | {:error, error} | no_return
+  @spec request(request) :: {:ok, response} | {:error, error}
   def request(request)
 
   def request(%{method: nil}) do

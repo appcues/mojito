@@ -1,7 +1,5 @@
 defmodule Mojito.Request do
-  @moduledoc ~S"""
-  Represents an HTTP/HTTPS request to be performed.
-  """
+  @moduledoc false
 
   defstruct method: nil,
             url: nil,
@@ -33,6 +31,7 @@ defmodule Mojito.Request do
 
   defp time, do: System.monotonic_time(:millisecond)
 
+  @doc false
   def receive_response(conn, response, timeout) do
     start_time = time()
 

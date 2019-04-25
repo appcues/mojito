@@ -47,13 +47,9 @@ defmodule Mojito.Pool do
   @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
-  Makes an HTTP request using an existing connection pool.
-  Equivalent to `request/2`.
+  Makes an HTTP request using the given connection pool.
 
-  Options:
-
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  See `request/2` for documentation.
   """
   @spec request(
           pid,
@@ -76,12 +72,15 @@ defmodule Mojito.Pool do
   end
 
   @doc ~S"""
-  Makes an HTTP request using an existing connection pool.
+  Makes an HTTP request using the given connection pool.
 
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
+  * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
+    Most commonly used to perform insecure HTTPS requests via
+    `transport_opts: [verify: :verify_none]`.
   """
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
