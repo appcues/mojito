@@ -117,10 +117,14 @@ defmodule Mojito.Pool do
 
     timeout = opts[:timeout] || @request_timeout
 
+    pid = self()
+
+    start_time = time()
+
     worker_fn = fn worker ->
       case Mojito.ConnServer.request(
              worker,
-             self(),
+             self,
              request.method,
              request.url,
              headers,
@@ -128,25 +132,22 @@ defmodule Mojito.Pool do
              opts
            ) do
         :ok ->
+          new_timeout = timeout - (time() - start_time)
+
           receive do
             {:mojito_response, response} -> response
           after
-            timeout -> {:error, :timeout}
+            new_timeout -> {:error, :timeout}
           end
 
-        err ->
-          err
+        e ->
+          e
       end
     end
 
-    task =
-      fn -> :poolboy.transaction(pool, worker_fn) end
-      |> Task.async()
-
-    case Task.yield(task, timeout) || Task.shutdown(task) do
-      nil -> {:error, :timeout}
-      {:ok, reply} -> reply
-    end
+    :poolboy.transaction(pool, worker_fn, timeout)
     |> Utils.wrap_return_value()
   end
+
+  defp time, do: System.monotonic_time(:millisecond)
 end
