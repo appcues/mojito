@@ -17,6 +17,10 @@ defmodule Mojito.MixProject do
       aliases: [
         docs: "docs --source-url https://github.com/appcues/mojito",
       ],
+      docs: [
+        logo: "assets/mojito.png",
+        main: "Mojito",
+      ],
     ]
   end
 

@@ -47,13 +47,9 @@ defmodule Mojito.Pool do
   @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
-  Makes an HTTP request using an existing connection pool.
-  Equivalent to `request/2`.
+  Makes an HTTP request using the given connection pool.
 
-  Options:
-
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  See `request/2` for documentation.
   """
   @spec request(
           pid,
@@ -76,12 +72,15 @@ defmodule Mojito.Pool do
   end
 
   @doc ~S"""
-  Makes an HTTP request using an existing connection pool.
+  Makes an HTTP request using the given connection pool.
 
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
+  * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
+    Most commonly used to perform insecure HTTPS requests via
+    `transport_opts: [verify: :verify_none]`.
   """
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
@@ -118,10 +117,14 @@ defmodule Mojito.Pool do
 
     timeout = opts[:timeout] || @request_timeout
 
+    pid = self()
+
+    start_time = time()
+
     worker_fn = fn worker ->
       case Mojito.ConnServer.request(
              worker,
-             self(),
+             self,
              request.method,
              request.url,
              headers,
@@ -129,25 +132,22 @@ defmodule Mojito.Pool do
              opts
            ) do
         :ok ->
+          new_timeout = timeout - (time() - start_time)
+
           receive do
             {:mojito_response, response} -> response
           after
-            timeout -> {:error, :timeout}
+            new_timeout -> {:error, :timeout}
           end
 
-        err ->
-          err
+        e ->
+          e
       end
     end
 
-    task =
-      fn -> :poolboy.transaction(pool, worker_fn) end
-      |> Task.async()
-
-    case Task.yield(task, timeout) || Task.shutdown(task) do
-      nil -> {:error, :timeout}
-      {:ok, reply} -> reply
-    end
+    :poolboy.transaction(pool, worker_fn, timeout)
     |> Utils.wrap_return_value()
   end
+
+  defp time, do: System.monotonic_time(:millisecond)
 end
