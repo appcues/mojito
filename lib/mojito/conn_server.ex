@@ -113,6 +113,9 @@ defmodule Mojito.ConnServer do
           state = %{state | conn: state_conn}
           {:noreply, apply_resps(state, resps)}
 
+        {:error, mint_conn, _error, _resps} ->
+          {:noreply, close_connections(state)}
+
         :unknown ->
           {:noreply, state}
       end
