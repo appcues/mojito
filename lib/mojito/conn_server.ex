@@ -161,7 +161,7 @@ defmodule Mojito.ConnServer do
 
   defp apply_resp(state, {:done, request_ref}) do
     r = Map.get(state.responses, request_ref)
-    response = %{r | body: :erlang.list_to_binary(r.body)}
+    response = %{r | complete: true, body: :erlang.list_to_binary(r.body)}
 
     Map.get(state.reply_tos, request_ref)
     |> respond({:ok, response})

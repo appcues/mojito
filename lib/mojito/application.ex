@@ -5,7 +5,7 @@ defmodule Mojito.Application do
 
   def start(_type, _args) do
     children = [
-      {Mojito.Autopool.Manager, [name: Mojito.Autopool.Manager]},
+      Mojito.Autopool.Manager,
       {Registry,
        keys: :unique,
        name: Mojito.Autopool.Registry,
