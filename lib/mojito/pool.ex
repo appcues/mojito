@@ -15,11 +15,20 @@ defmodule Mojito.Pool do
 
   defp pool_opts, do: Application.get_env(:mojito, :pool_opts, [])
 
+  @doc false
+  @deprecated "Use child_spec/1 instead"
+  def child_spec(name, opts) do
+    opts
+    |> Keyword.put(:name, name)
+    |> child_spec
+  end
+
   @doc ~S"""
   Returns a child spec suitable to pass to e.g., `Supervisor.start_link/2`.
 
   Options:
 
+  * `:name` sets a global name for the pool.  Optional.
   * `:size` sets the initial pool size.  Default is 10.
   * `:max_overflow` sets the maximum number of additional connections
     under high load.  Default is 5.
@@ -28,18 +37,25 @@ defmodule Mojito.Pool do
 
   The `:size` and `:max_overflow` options are passed to Poolboy.
   """
-  def child_spec(name, opts \\ []) do
+  def child_spec(opts \\ [])
+
+  def child_spec(name) when is_binary(name) do
+    child_spec(name: name)
+  end
+
+  def child_spec(opts) do
+    name = opts[:name]
     size = opts[:size] || pool_opts()[:size] || 10
     max_overflow = opts[:max_overflow] || pool_opts()[:max_overflow] || 5
     strategy = opts[:strategy] || pool_opts()[:strategy] || :lifo
 
-    poolboy_config = [
-      {:name, {:local, name}},
-      {:worker_module, Mojito.ConnServer},
-      {:size, size},
-      {:max_overflow, max_overflow},
-      {:strategy, strategy},
-    ]
+    poolboy_config =
+      [
+        {:worker_module, Mojito.ConnServer},
+        {:size, size},
+        {:max_overflow, max_overflow},
+        {:strategy, strategy},
+      ] ++ if name, do: [{:name, {:local, name}}], else: []
 
     :poolboy.child_spec(name, poolboy_config)
   end
@@ -84,50 +100,26 @@ defmodule Mojito.Pool do
   """
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, request)
-
-  def request(_pool, %{method: nil}) do
-    {:error, %Mojito.Error{message: "method cannot be nil"}}
-  end
-
-  def request(_pool, %{method: ""}) do
-    {:error, %Mojito.Error{message: "method cannot be blank"}}
-  end
-
-  def request(_pool, %{url: nil}) do
-    {:error, %Mojito.Error{message: "url cannot be nil"}}
-  end
-
-  def request(_pool, %{url: ""}) do
-    {:error, %Mojito.Error{message: "url cannot be blank"}}
-  end
-
-  def request(_pool, %{headers: h}) when not is_list(h) and not is_nil(h) do
-    {:error, %Mojito.Error{message: "headers must be a list"}}
-  end
-
-  def request(_pool, %{payload: p}) when not is_binary(p) and not is_nil(p) do
-    {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
-  end
-
   def request(pool, request) do
-    opts = request.opts || []
-    headers = request.headers || []
-    payload = request.payload || ""
+    with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
+      do_request(pool, valid_request)
+    end
+  end
 
-    timeout = opts[:timeout] || @request_timeout
+  defp do_request(pool, request) do
+    timeout = request.opts[:timeout] || @request_timeout
 
     start_time = time()
 
     worker_fn = fn worker ->
       case Mojito.ConnServer.request(
              worker,
-             self,
+             self(),
              request.method,
              request.url,
-             headers,
-             payload,
-             opts
+             request.headers,
+             request.payload,
+             request.opts
            ) do
         :ok ->
           new_timeout = timeout - (time() - start_time)

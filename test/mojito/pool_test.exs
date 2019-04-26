@@ -16,7 +16,7 @@ defmodule Mojito.PoolTest do
     end
 
     defp start_pool(name, opts) do
-      children = [Mojito.Pool.child_spec(name, opts)]
+      children = [Mojito.Pool.child_spec([{:name, name} | opts])]
       Supervisor.start_link(children, strategy: :one_for_one)
     end
 

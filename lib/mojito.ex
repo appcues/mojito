@@ -148,33 +148,9 @@ defmodule Mojito do
     `transport_opts: [verify: :verify_none]`.
   """
   @spec request(request) :: {:ok, response} | {:error, error}
-  def request(request)
-
-  def request(%{method: nil}) do
-    {:error, %Mojito.Error{message: "method cannot be nil"}}
-  end
-
-  def request(%{method: ""}) do
-    {:error, %Mojito.Error{message: "method cannot be blank"}}
-  end
-
-  def request(%{url: nil}) do
-    {:error, %Mojito.Error{message: "url cannot be nil"}}
-  end
-
-  def request(%{url: ""}) do
-    {:error, %Mojito.Error{message: "url cannot be blank"}}
-  end
-
-  def request(%{headers: h}) when not is_list(h) and not is_nil(h) do
-    {:error, %Mojito.Error{message: "headers must be a list"}}
-  end
-
-  def request(%{payload: p}) when not is_binary(p) and not is_nil(p) do
-    {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
-  end
-
-  def request(%{} = request) do
-    Mojito.Request.request(request)
+  def request(request) do
+    with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
+      Mojito.Request.request(request)
+    end
   end
 end
