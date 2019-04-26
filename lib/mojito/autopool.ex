@@ -12,49 +12,19 @@ defmodule Mojito.Autopool do
   end
 
   defp get_pool(proto, host, port) do
-    pool_id = {proto, host, port}
+    pool_key = {proto, host, port}
 
-    case Registry.lookup(Autopool.Registry, pool_id) do
+    case Registry.lookup(Autopool.Registry, pool_key) do
       [{_, pid} | _] ->
         {:ok, pid}
 
       [] ->
-        Logger.debug("Mojito.Autopool: starting pool for #{inspect(pool_id)}")
-        start_pool(pool_id)
+        Logger.debug("Mojito.Autopool: starting pool for #{inspect(pool_key)}")
+        start_pool(pool_key)
     end
   end
 
-  defp start_pool({proto, host, port}) do
-    GenServer.call(Mojito.Autopool.Manager, {:start_pool, proto, host, port})
-  end
-end
-
-defmodule Mojito.Autopool.Manager do
-  use GenServer
-
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
-  end
-
-  def init(args) do
-    {:ok, %{args: args}}
-  end
-
-  def handle_call({:start_pool, proto, host, port}, _from, state) do
-    child_spec = Mojito.Pool.child_spec()
-
-    reply =
-      with {:ok, pool_pid} <-
-             Supervisor.start_child(Mojito.Supervisor, child_spec),
-           {:ok, _} <-
-             Registry.register(
-               Mojito.Autopool.Registry,
-               {proto, host, port},
-               pool_pid
-             ) do
-        {:ok, pool_pid}
-      end
-
-    {:reply, reply, state}
+  defp start_pool(pool_key) do
+    GenServer.call(Mojito.Autopool.Manager, {:start_pool, pool_key})
   end
 end

@@ -135,7 +135,17 @@ defmodule Mojito.Pool do
       end
     end
 
-    :poolboy.transaction(pool, worker_fn, timeout)
+    old_trap_exit = Process.flag(:trap_exit, true)
+
+    try do
+      :poolboy.transaction(pool, worker_fn, timeout)
+    rescue
+      e -> {:error, e}
+    catch
+      :exit, _ -> {:error, :checkout_timeout}
+    after
+      Process.flag(:trap_exit, old_trap_exit)
+    end
     |> Utils.wrap_return_value()
   end
 

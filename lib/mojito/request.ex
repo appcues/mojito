@@ -94,11 +94,11 @@ defmodule Mojito.Request do
     %{response | complete: true, body: :erlang.iolist_to_binary(response.body)}
   end
 
-
   @doc ~S"""
   Checks for errors and returns a canonicalized version of the request.
   """
-  @spec validate_request(map | %Mojito.Request{}) :: {:ok, Mojito.request} | {:error, Mojito.error}
+  @spec validate_request(map | %Mojito.Request{}) ::
+          {:ok, Mojito.request()} | {:error, Mojito.error()}
 
   def validate_request(%{} = request) do
     cond do

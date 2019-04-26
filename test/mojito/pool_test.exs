@@ -64,6 +64,8 @@ defmodule Mojito.PoolTest do
         spawn(fn -> get(pool_name, "/wait1") end)
         :timer.sleep(100)
 
+        assert({:error, %{reason: :checkout_timeout}} = get(pool_name, "/wait1", timeout: 50))
+
         ## 0 ready, 1 waiting, 3 in-progress
         assert({:full, 0, 1, 3} = :poolboy.status(pool_name))
 
