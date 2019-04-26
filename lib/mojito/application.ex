@@ -5,7 +5,10 @@ defmodule Mojito.Application do
 
   def start(_type, _args) do
     children = [
-      # {Mojito.Worker, arg},
+      {Registry,
+       keys: :unique,
+       name: Mojito.Autopool.Registry,
+       partitions: System.schedulers_online()},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
