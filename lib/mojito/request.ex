@@ -8,19 +8,62 @@ defmodule Mojito.Request do
             opts: []
 
   require Logger
-  alias Mojito.{Conn, Error, Response}
+  alias Mojito.{Config, Conn, Error, Request, Response}
 
-  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
+  @doc ~S"""
+  Checks for errors and returns a canonicalized version of the request.
+  """
+  @spec validate_request(map | Mojito.request()) ::
+          {:ok, Mojito.request()} | {:error, Mojito.error()}
 
-  @doc false
+  def validate_request(%{} = request) do
+    cond do
+      Map.get(request, :method) == nil ->
+        {:error, %Error{message: "method cannot be nil"}}
+
+      Map.get(request, :method) == "" ->
+        {:error, %Error{message: "method cannot be blank"}}
+
+      Map.get(request, :url) == nil ->
+        {:error, %Error{message: "url cannot be nil"}}
+
+      Map.get(request, :url) == "" ->
+        {:error, %Error{message: "url cannot be blank"}}
+
+      !is_list(Map.get(request, :headers, [])) ->
+        {:error, %Error{message: "headers must be a list"}}
+
+      !is_binary(Map.get(request, :payload, "")) ->
+        {:error, %Error{message: "payload must be a UTF-8 string"}}
+
+      :else ->
+        {:ok,
+         %Request{
+           method: request.method,
+           url: request.url,
+           headers: request.headers || [],
+           payload: request.payload || "",
+           opts: request.opts || [],
+         }}
+    end
+  end
+
+  def validate_request(_request) do
+    {:error, %Error{message: "request must be a map"}}
+  end
+
+  @doc ~S"""
+  Performs a single HTTP request, receiving `:tcp` and `:ssl` messages
+  in the caller process.
+  """
   @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(%Mojito.Request{} = req) do
+  def request(%Request{} = req) do
     opts = req.opts || []
     headers = req.headers || []
     payload = req.payload || ""
 
-    timeout = opts[:timeout] || @request_timeout
+    timeout = opts[:timeout] || Config.request_timeout()
 
     with {:ok, conn} <- Conn.connect(req.url, opts),
          {:ok, conn, _ref} <-
@@ -92,47 +135,5 @@ defmodule Mojito.Request do
 
   defp apply_resp(response, {:done, _request_ref}) do
     %{response | complete: true, body: :erlang.iolist_to_binary(response.body)}
-  end
-
-  @doc ~S"""
-  Checks for errors and returns a canonicalized version of the request.
-  """
-  @spec validate_request(map | %Mojito.Request{}) ::
-          {:ok, Mojito.request()} | {:error, Mojito.error()}
-
-  def validate_request(%{} = request) do
-    cond do
-      Map.get(request, :method) == nil ->
-        {:error, %Error{message: "method cannot be nil"}}
-
-      Map.get(request, :method) == "" ->
-        {:error, %Error{message: "method cannot be blank"}}
-
-      Map.get(request, :url) == nil ->
-        {:error, %Error{message: "url cannot be nil"}}
-
-      Map.get(request, :url) == "" ->
-        {:error, %Error{message: "url cannot be blank"}}
-
-      !is_list(Map.get(request, :headers, [])) ->
-        {:error, %Error{message: "headers must be a list"}}
-
-      !is_binary(Map.get(request, :payload, "")) ->
-        {:error, %Error{message: "payload must be a UTF-8 string"}}
-
-      :else ->
-        {:ok,
-         %Mojito.Request{
-           method: request.method,
-           url: request.url,
-           headers: request.headers || [],
-           payload: request.payload || "",
-           opts: request.opts || [],
-         }}
-    end
-  end
-
-  def validate_request(request) do
-    {:error, %Error{message: "request must be a map"}}
   end
 end

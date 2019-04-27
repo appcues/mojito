@@ -11,9 +11,7 @@ defmodule Mojito.Pool do
       {:ok, %Mojito.Response{...}}
   """
 
-  alias Mojito.Utils
-
-  defp pool_opts, do: Application.get_env(:mojito, :pool_opts, [])
+  alias Mojito.{Config, Utils}
 
   @doc false
   @deprecated "Use child_spec/1 instead"
@@ -44,10 +42,11 @@ defmodule Mojito.Pool do
   end
 
   def child_spec(opts) do
+    pool_opts = Config.pool_opts()
     name = opts[:name]
-    size = opts[:size] || pool_opts()[:size] || 10
-    max_overflow = opts[:max_overflow] || pool_opts()[:max_overflow] || 5
-    strategy = opts[:strategy] || pool_opts()[:strategy] || :lifo
+    size = opts[:size] || pool_opts[:size] || 10
+    max_overflow = opts[:max_overflow] || pool_opts[:max_overflow] || 5
+    strategy = opts[:strategy] || pool_opts[:strategy] || :lifo
 
     poolboy_config =
       [
@@ -59,8 +58,6 @@ defmodule Mojito.Pool do
 
     :poolboy.child_spec(name, poolboy_config)
   end
-
-  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
 
   @doc ~S"""
   Makes an HTTP request using the given connection pool.
@@ -107,7 +104,7 @@ defmodule Mojito.Pool do
   end
 
   defp do_request(pool, request) do
-    timeout = request.opts[:timeout] || @request_timeout
+    timeout = request.opts[:timeout] || Config.request_timeout()
 
     start_time = time()
 

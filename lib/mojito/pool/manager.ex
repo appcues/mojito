@@ -1,4 +1,9 @@
 defmodule Mojito.Autopool.Manager do
+  ## I'd prefer to start new pools directly in the caller process, but
+  ## they'd end up disappearing from the registry when the process
+  ## terminates.  So instead we start new pools from here, a long-lived
+  ## GenServer, and link them to Mojito.Supervisor instead of to here.
+
   @moduledoc false
 
   use GenServer

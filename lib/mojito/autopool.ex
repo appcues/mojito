@@ -25,6 +25,6 @@ defmodule Mojito.Autopool do
   end
 
   defp start_pool(pool_key) do
-    GenServer.call(Mojito.Autopool.Manager, {:start_pool, pool_key})
+    GenServer.call(Autopool.Manager, {:start_pool, pool_key})
   end
 end

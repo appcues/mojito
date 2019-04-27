@@ -150,7 +150,7 @@ defmodule Mojito do
   @spec request(request) :: {:ok, response} | {:error, error}
   def request(request) do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
-      Mojito.Request.request(request)
+      Mojito.Request.request(valid_request)
     end
   end
 end
