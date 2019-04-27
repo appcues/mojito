@@ -1,9 +1,9 @@
 defmodule Mojito.PoolTest do
   use ExSpec, async: true
-  doctest Mojito.Pool
+  doctest Mojito.Pool.Single
   doctest Mojito.ConnServer
 
-  context "live tests" do
+  context "Mojito.Pool.Single" do
     @http_port Application.get_env(:mojito, :test_server_http_port)
     @https_port Application.get_env(:mojito, :test_server_https_port)
 
@@ -16,12 +16,12 @@ defmodule Mojito.PoolTest do
     end
 
     defp start_pool(name, opts) do
-      children = [Mojito.Pool.child_spec([{:name, name} | opts])]
+      children = [Mojito.Pool.Single.child_spec([{:name, name} | opts])]
       Supervisor.start_link(children, strategy: :one_for_one)
     end
 
     defp get(pool, path, opts \\ []) do
-      Mojito.Pool.request(
+      Mojito.Pool.Single.request(
         pool,
         :get,
         "http://localhost:#{@http_port}#{path}",
@@ -32,7 +32,7 @@ defmodule Mojito.PoolTest do
     end
 
     defp get_ssl(pool, path, opts \\ []) do
-      Mojito.Pool.request(
+      Mojito.Pool.Single.request(
         pool,
         :get,
         "https://localhost:#{@https_port}#{path}",

@@ -1,4 +1,4 @@
-defmodule Mojito.Autopool.Manager do
+defmodule Mojito.Pool.Manager do
   ## I'd prefer to start new pools directly in the caller process, but
   ## they'd end up disappearing from the registry when the process
   ## terminates.  So instead we start new pools from here, a long-lived
@@ -18,14 +18,15 @@ defmodule Mojito.Autopool.Manager do
 
   ## pool_key is {protocol, host, port}
   def handle_call({:start_pool, pool_key}, _from, state) do
-    child_spec = Mojito.Pool.child_spec()
+    child_spec =
+      Mojito.Config.pool_opts(pool_key) |> Mojito.Pool.Single.child_spec()
 
     reply =
       with {:ok, pool_pid} <-
              Supervisor.start_child(Mojito.Supervisor, child_spec),
            {:ok, _} <-
              Registry.register(
-               Mojito.Autopool.Registry,
+               Mojito.Pool.Registry,
                pool_key,
                pool_pid
              ) do
