@@ -20,20 +20,9 @@ defmodule Mojito.Config do
 
   def pool_opts(nil), do: pool_opts()
 
-  def pool_opts({host, port}) do
-    opts = pool_opts()
-    destinations = Map.get(opts, :destinations, %{})
-    host_opts = Map.get(destinations, host, [])
-    host_and_port_opts = Map.get(destinations, "#{host}:#{port}", [])
-
-    opts
-    |> Keyword.merge(host_opts)
-    |> Keyword.merge(host_and_port_opts)
-  end
-
   def pool_opts(key) do
     opts = pool_opts()
-    destinations = Map.get(opts, :destinations, %{})
+    destinations = Keyword.get(opts, :destinations, %{})
     key_opts = Map.get(destinations, key, [])
 
     opts |> Keyword.merge(key_opts)
