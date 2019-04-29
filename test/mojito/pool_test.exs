@@ -2,7 +2,7 @@ defmodule Mojito.PoolTest do
   use ExSpec, async: false
   doctest Mojito.Pool
 
-  context "Mojito.Pool.Single" do
+  context "Mojito.Pool" do
     @http_port Application.get_env(:mojito, :test_server_http_port)
     @https_port Application.get_env(:mojito, :test_server_https_port)
 
@@ -33,7 +33,7 @@ defmodule Mojito.PoolTest do
     end
 
     it "can make a shitload of HTTP requests" do
-      1..100 |> Enum.each(fn _ -> spawn(fn -> get("/wait1") end) end)
+      1..100 |> Enum.each(fn _ -> spawn_link(fn -> get("/wait1") end) end)
     end
   end
 end
