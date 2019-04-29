@@ -6,7 +6,7 @@ defmodule Mojito.Config do
   @type pool_opt ::
           {:size, pos_integer}
           | {:max_overflow, non_neg_integer}
-          | {:max_shards, pos_integer}
+          | {:max_pools, pos_integer}
           | {:name, atom}
           | {:strategy, :lifo | :fifo}
 

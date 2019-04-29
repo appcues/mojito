@@ -34,6 +34,10 @@ defmodule Mojito.Pool.Manager do
                pool_pid
              ) do
         {:ok, pool_pid}
+      else
+        {:error, {:already_started, pid}} ->
+          ## There was a race; we lost and that is fine
+          {:ok, pid}
       end
 
     state =

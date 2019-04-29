@@ -31,5 +31,9 @@ defmodule Mojito.PoolTest do
       assert({:ok, response} = get_ssl("/"))
       assert(200 == response.status_code)
     end
+
+    it "can make a shitload of HTTP requests" do
+      1..100 |> Enum.each(fn _ -> spawn(fn -> get("/wait1") end) end)
+    end
   end
 end

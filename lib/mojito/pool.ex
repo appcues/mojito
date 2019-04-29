@@ -4,24 +4,32 @@ defmodule Mojito.Pool do
   alias Mojito.{Pool, Utils}
   require Logger
 
+  @spec request(Mojito.request) :: {:ok, Mojito.response} | {:error, Mojito.error}
   def request(%{} = request) do
     with {:ok, _proto, host, port} <- Utils.decompose_url(request.url),
-         {:ok, pool} <- get_pool(host, port) do
+         pool_key <- pool_key(host, port),
+         {:ok, pool} <- get_pool(pool_key) do
       Pool.Single.request(pool, request)
     end
   end
 
-  defp get_pool(host, port) do
-    pool_key = pool_key(host, port)
-
-    case Registry.lookup(Pool.Registry, pool_key) do
-      [{_, pid} | _] ->
-        {:ok, pid}
-
+  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error}
+  defp get_pool(pool_key) do
+    case get_pools(pool_key) do
       [] ->
-        Logger.debug("Mojito.Autopool: starting pool for #{inspect(pool_key)}")
+        Logger.debug("Mojito.Pool: starting pool for #{inspect(pool_key)}")
         start_pool(pool_key)
+
+      pools ->
+        {:ok, Enum.random(pools)}
     end
+  end
+
+  @spec get_pools(any) :: [pid]
+  defp get_pools(pool_key) do
+    Mojito.Pool.Registry
+    |> Registry.lookup(pool_key)
+    |> Enum.map(fn {_, pid} -> pid end)
   end
 
   defp start_pool(pool_key) do
