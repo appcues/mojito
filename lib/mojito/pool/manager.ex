@@ -16,10 +16,14 @@ defmodule Mojito.Pool.Manager do
     {:ok, %{args: args}}
   end
 
-  ## pool_key is {protocol, host, port}
   def handle_call({:start_pool, pool_key}, _from, state) do
+    npools = state.pools |> Map.get(pool_key, []) |> Enum.count()
+
     child_spec =
-      Mojito.Config.pool_opts(pool_key) |> Mojito.Pool.Single.child_spec()
+      Mojito.Config.pool_opts(pool_key)
+      |> Keyword.put(:id, {Mojito.Pool, pool_key, npools})
+      |> Mojito.Pool.Single.child_spec()
+      |> IO.inspect
 
     reply =
       with {:ok, pool_pid} <-
@@ -34,5 +38,9 @@ defmodule Mojito.Pool.Manager do
       end
 
     {:reply, reply, state}
+  end
+
+  def handle_call({:get_pools, pool_key}, _from, state) do
+    {:reply, Map.get(state.pools, pool_key, []), state}
   end
 end

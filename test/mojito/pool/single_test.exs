@@ -1,4 +1,4 @@
-defmodule Mojito.PoolTest do
+defmodule Mojito.Pool.SingleTest do
   use ExSpec, async: true
   doctest Mojito.Pool.Single
   doctest Mojito.ConnServer
