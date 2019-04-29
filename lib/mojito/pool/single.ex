@@ -42,21 +42,24 @@ defmodule Mojito.Pool.Single do
   def child_spec(opts) do
     pool_key = opts[:key]
     pool_opts = Config.pool_opts(pool_key) |> Keyword.merge(opts)
+    name_opts = case pool_opts[:name] do
+      nil -> []
+      name -> [name: name]
+    end
 
-    name = pool_opts[:name]
-    size = pool_opts[:size] || 10
-    max_overflow = pool_opts[:max_overflow] || 5
-    strategy = pool_opts[:strategy] || :lifo
+    poolboy_opts = [{:worker_module, Mojito.ConnServer} | pool_opts]
+    poolboy_opts = case pool_opts[:name] do
+      nil -> poolboy_opts
+      name -> [{:name, {:local, name}} | poolboy_opts]
+    end
 
-    poolboy_config =
-      [
-        {:worker_module, Mojito.ConnServer},
-        {:size, size},
-        {:max_overflow, max_overflow},
-        {:strategy, strategy},
-      ] ++ if name, do: [{:name, {:local, name}}], else: []
-
-    :poolboy.child_spec(name, poolboy_config)
+    %{
+      id: pool_opts[:name] || make_ref(),
+      start: {:poolboy, :start_link, [poolboy_opts, name_opts]},
+      restart: :permanent,
+      shutdown: 5000,
+      type: :worker,
+    }
   end
 
   @doc ~S"""
