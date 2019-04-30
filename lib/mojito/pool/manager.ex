@@ -20,7 +20,7 @@ defmodule Mojito.Pool.Manager do
     pools = state.pools |> Map.get(pool_key, [])
 
     child_spec =
-      Mojito.Config.pool_opts(pool_key)
+      Mojito.Pool.pool_opts(pool_key)
       |> Keyword.put(:id, {Mojito.Pool, pool_key, Enum.count(pools)})
       |> Mojito.Pool.Single.child_spec()
 
