@@ -1,13 +1,13 @@
 defmodule Mojito.Pool.Single do
   @moduledoc ~S"""
-  Mojito.Pool provides an HTTP request connection pool based on
-  Mojito and Poolboy.
+  Mojito.Pool.Single provides an HTTP request connection pool based on
+  Mojito and Poolboy.  It is intended for use through `Mojito.Pool`.
 
   Example:
 
-      >>>> children = [Mojito.Pool.Single.child_spec(MyPool)]
-      >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> Mojito.Pool.Single.request(MyPool, :get, "http://example.com")
+      >>>> children = [Mojito.Pool.Single.child_spec()]
+      >>>> {:ok, pool_pid} = Supervisor.start_link(children, strategy: :one_for_one)
+      >>>> Mojito.Pool.Single.request(pool_pid, :get, "http://example.com")
       {:ok, %Mojito.Response{...}}
   """
 
@@ -95,7 +95,7 @@ defmodule Mojito.Pool.Single do
 
   Options:
 
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
+  * `:timeout` - Request timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via

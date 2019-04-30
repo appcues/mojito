@@ -41,11 +41,8 @@ defmodule Mojito.Pool.Manager do
           {:ok, pid}
       end
 
-    state =
-      case reply do
-        {:ok, pool_pid} -> put_in(state, [:pools, pool_key], [pool_pid | pools])
-        _ -> state
-      end
+    {:ok, pool_pid} = reply
+    state = put_in(state, [:pools, pool_key], [pool_pid | pools])
 
     {:reply, reply, state}
   end

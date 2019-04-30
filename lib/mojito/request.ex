@@ -7,7 +7,6 @@ defmodule Mojito.Request do
             payload: "",
             opts: []
 
-  require Logger
   alias Mojito.{Error, Request}
 
   @doc ~S"""
@@ -51,5 +50,4 @@ defmodule Mojito.Request do
   def validate_request(_request) do
     {:error, %Error{message: "request must be a map"}}
   end
-
 end

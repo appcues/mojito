@@ -58,13 +58,13 @@ defmodule Mojito.Pool do
           | {:max_pools, pos_integer}
           | {:strategy, :lifo | :fifo}
 
-  @typep pool_key :: {String.t, pos_integer}
+  @typep pool_key :: {String.t(), pos_integer}
 
   @default_pool_opts [
     size: 5,
     max_overflow: 10,
     max_pools: 5,
-    strategy: :lifo,
+    strategy: :lifo
   ]
 
   @doc ~S"""
@@ -115,7 +115,7 @@ defmodule Mojito.Pool do
 
   ## Returns a key representing the given destination.
   @doc false
-  @spec pool_key(String.t, pos_integer) :: pool_key
+  @spec pool_key(String.t(), pos_integer) :: pool_key
   def pool_key(host, port) do
     {host, port}
   end
@@ -124,11 +124,12 @@ defmodule Mojito.Pool do
   @doc false
   @spec pool_opts(pool_key) :: pool_opts
   def pool_opts({host, port}) do
-    destination_key = try do
-      "#{host}:#{port}" |> String.to_existing_atom
-    rescue
-      _ -> :none
-    end
+    destination_key =
+      try do
+        "#{host}:#{port}" |> String.to_existing_atom()
+      rescue
+        _ -> :none
+      end
 
     config_pool_opts = Application.get_env(:mojito, :pool_opts, [])
 
