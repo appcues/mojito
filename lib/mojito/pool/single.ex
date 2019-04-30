@@ -40,25 +40,24 @@ defmodule Mojito.Pool.Single do
   end
 
   def child_spec(opts) do
-    pool_key = opts[:key]
-    pool_opts = Config.pool_opts(pool_key) |> Keyword.merge(opts)
+    name = opts[:name]
 
     name_opts =
-      case pool_opts[:name] do
+      case name do
         nil -> []
         name -> [name: name]
       end
 
-    poolboy_opts = [{:worker_module, Mojito.ConnServer} | pool_opts]
+    poolboy_opts = [{:worker_module, Mojito.ConnServer} | opts]
 
     poolboy_opts =
-      case pool_opts[:name] do
+      case name do
         nil -> poolboy_opts
         name -> [{:name, {:local, name}} | poolboy_opts]
       end
 
     %{
-      id: pool_opts[:id] || {Mojito.Pool, make_ref()},
+      id: opts[:id] || {Mojito.Pool, make_ref()},
       start: {:poolboy, :start_link, [poolboy_opts, name_opts]},
       restart: :permanent,
       shutdown: 5000,
