@@ -1,19 +1,38 @@
 defmodule Mojito.Pool do
-  @moduledoc false
+  @moduledoc ~S"""
+  Mojito.Pool is an HTTP client with high-performance, easy-to-use
+  connection pools.
 
-  alias Mojito.{Pool, Utils}
+  Pools are maintained automatically by Mojito, requests are matched to
+  the correct pool without user intervention, and multiple pools can be
+  used for the same destination in order to reduce concurrency bottlenecks.
+
+  `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`,
+  but can also be used directly.
+
+  Pool options can be specified by ...
+  """
+
+  alias Mojito.{Request, Utils}
   require Logger
 
-  @spec request(Mojito.request) :: {:ok, Mojito.response} | {:error, Mojito.error}
+  @doc ~S"""
+  Performs an HTTP request using a connection pool, creating that pool if
+  it didn't already exist.  Requests are always matched to a pool that is
+  connected to the correct destination host and port.
+  """
+  @spec request(Mojito.request()) ::
+          {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%{} = request) do
-    with {:ok, _proto, host, port} <- Utils.decompose_url(request.url),
+    with {:ok, valid_request} <- Request.validate_request(request),
+         {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
          pool_key <- pool_key(host, port),
          {:ok, pool} <- get_pool(pool_key) do
-      Pool.Single.request(pool, request)
+      Mojito.Pool.Single.request(pool, valid_request)
     end
   end
 
-  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error}
+  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
   defp get_pool(pool_key) do
     case get_pools(pool_key) do
       [] ->
@@ -32,8 +51,9 @@ defmodule Mojito.Pool do
     |> Enum.map(fn {_, pid} -> pid end)
   end
 
+  @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
   defp start_pool(pool_key) do
-    GenServer.call(Pool.Manager, {:start_pool, pool_key})
+    GenServer.call(Mojito.Pool.Manager, {:start_pool, pool_key})
   end
 
   @doc false

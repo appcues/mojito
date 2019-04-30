@@ -35,7 +35,8 @@ defmodule Mojito.Pool.Manager do
              ) do
         {:ok, pool_pid}
       else
-        {:error, {msg, pid}} when msg in [:already_started, :already_registered] ->
+        {:error, {msg, pid}}
+        when msg in [:already_started, :already_registered] ->
           ## There was a race; we lost and that is fine
           {:ok, pid}
       end
