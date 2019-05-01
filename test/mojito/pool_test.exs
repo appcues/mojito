@@ -32,8 +32,17 @@ defmodule Mojito.PoolTest do
       assert(200 == response.status_code)
     end
 
-    it "can make a shitload of HTTP requests" do
-      1..100 |> Enum.each(fn _ -> spawn_link(fn -> get("/wait1") end) end)
+    it "can saturate many pools" do
+      tasks =
+        1..100
+        |> Enum.map(fn _ ->
+          Task.async(fn -> get("/wait1", timeout: 5000) end)
+        end)
+
+      Task.yield_many(tasks, 5100)
+
+      GenServer.call(Mojito.Pool.Manager, :state)
+      |> IO.inspect()
     end
   end
 end

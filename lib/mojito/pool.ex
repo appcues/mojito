@@ -79,7 +79,18 @@ defmodule Mojito.Pool do
          {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
          pool_key <- pool_key(host, port),
          {:ok, pool} <- get_pool(pool_key) do
-      Mojito.Pool.Single.request(pool, valid_request)
+      do_request(pool, pool_key, valid_request)
+    end
+  end
+
+  defp do_request(pool, pool_key, request) do
+    case Mojito.Pool.Single.request(pool, request) do
+      {:error, %{reason: :checkout_timeout}} ->
+        {:ok, pid} = start_pool(pool_key)
+        Mojito.Pool.Single.request(pid, request)
+
+      other ->
+        other
     end
   end
 

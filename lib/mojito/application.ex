@@ -7,7 +7,7 @@ defmodule Mojito.Application do
     children = [
       Mojito.Pool.Manager,
       {Registry,
-       keys: :unique,
+       keys: :duplicate,
        name: Mojito.Pool.Registry,
        partitions: System.schedulers_online()},
     ]
