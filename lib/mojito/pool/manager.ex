@@ -20,48 +20,18 @@ defmodule Mojito.Pool.Manager do
 
   def handle_call({:start_pool, pool_key}, _from, state) do
     pool_opts = Mojito.Pool.pool_opts(pool_key)
-    max_pools = pool_opts[:max_pools]
+    max_pools = pool_opts[:pools]
 
     pools = state.pools |> Map.get(pool_key, [])
     npools = Enum.count(pools)
-
-    time_now = time()
-    last_start_at = state.last_start_at |> Map.get(pool_key)
 
     cond do
       npools >= max_pools ->
         ## We're at max, don't start a new pool
         {:reply, {:ok, Enum.random(pools)}, state}
 
-      last_start_at && time_now < last_start_at + pool_opts[:refractory_period] ->
-        ## Wait longer before starting a new pool
-        {:reply, {:ok, Enum.random(pools)}, state}
-
       :else ->
-        ## Actually start a pool
-        pool_id = {Mojito.Pool, pool_key, npools}
-
-        child_spec =
-          pool_opts
-          |> Keyword.put(:id, pool_id)
-          |> Mojito.Pool.Single.child_spec()
-
-        with {:ok, pool_pid} <-
-               Supervisor.start_child(Mojito.Supervisor, child_spec),
-             {:ok, _} <-
-               Registry.register(Mojito.Pool.Registry, pool_key, pool_pid) do
-          state =
-            state
-            |> put_in([:pools, pool_key], [pool_pid | pools])
-            |> put_in([:last_start_at, pool_key], time_now)
-
-          {:reply, {:ok, pool_pid}, state}
-        else
-          {:error, {msg, _pid}}
-          when msg in [:already_started, :already_registered] ->
-            ## There was a race; we lost and that is fine
-            {:reply, {:ok, Enum.random(pools)}, state}
-        end
+        actually_start_pool(pool_key, pool_opts, pools, npools, state)
     end
   end
 
@@ -91,8 +61,8 @@ defmodule Mojito.Pool.Manager do
   end
 
   defp get_poolboy_state(pool_pid) do
-    {:state, supervisor, workers, waiting, monitors, size, overflow, max_overflow, strategy} =
-      :sys.get_state(pool_pid)
+    {:state, supervisor, workers, waiting, monitors, size, overflow,
+     max_overflow, strategy} = :sys.get_state(pool_pid)
 
     %{
       supervisor: supervisor,
@@ -102,7 +72,39 @@ defmodule Mojito.Pool.Manager do
       size: size,
       overflow: overflow,
       max_overflow: max_overflow,
-      strategy: strategy
+      strategy: strategy,
     }
   end
+
+  ## This is designed to be able to launch pools on-demand, but for now we
+  ## launch all pools at once in Mojito.Pool.
+  defp actually_start_pool(pool_key, pool_opts, pools, npools, state) do
+    pool_id = {Mojito.Pool, pool_key, npools}
+
+    child_spec =
+      pool_opts
+      |> Keyword.put(:id, pool_id)
+      |> Mojito.Pool.Single.child_spec()
+
+    with {:ok, pool_pid} <-
+           Supervisor.start_child(Mojito.Supervisor, child_spec),
+         {:ok, _} <- Registry.register(Mojito.Pool.Registry, pool_key, pool_pid) do
+      state =
+        state
+        |> put_in([:pools, pool_key], [pool_pid | pools])
+        |> put_in([:last_start_at, pool_key], time())
+
+      {:reply, {:ok, pool_pid}, state}
+    else
+      {:error, {msg, _pid}}
+      when msg in [:already_started, :already_registered] ->
+        ## There was a race; we lost and that is fine
+        {:reply, {:ok, Enum.random(pools)}, state}
+
+      error ->
+        {:reply, error, state}
+    end
+  end
+
+
 end

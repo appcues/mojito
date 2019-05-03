@@ -24,7 +24,7 @@ defmodule Mojito.Pool do
   * `:max_overflow` (integer) sets the number of additional connections
     per pool, opened under conditions of heavy load.
     Default is 10.
-  * `:max_pools` (integer) sets the maximum number of pools to open for a
+  * `:pools` (integer) sets the maximum number of pools to open for a
     single destination host and port (not the maximum number of total
     pools to open).  Default is 5.
   * `:strategy` is either `:lifo` or `:fifo`, and selects which connection
@@ -45,7 +45,7 @@ defmodule Mojito.Pool do
           "example.com:443": [
             size: 20,
             max_overflow: 20,
-            max_pools: 10
+            pools: 10
           ]
         ]
   """
@@ -58,7 +58,7 @@ defmodule Mojito.Pool do
   @type pool_opt ::
           {:size, pos_integer}
           | {:max_overflow, non_neg_integer}
-          | {:max_pools, pos_integer}
+          | {:pools, pos_integer}
           | {:strategy, :lifo | :fifo}
           | {:refractory_period, non_neg_integer}
 
@@ -67,7 +67,7 @@ defmodule Mojito.Pool do
   @default_pool_opts [
     size: 5,
     max_overflow: 10,
-    max_pools: 5,
+    pools: 5,
     strategy: :lifo,
     refractory_period: 3000
   ]
@@ -99,14 +99,17 @@ defmodule Mojito.Pool do
     end
   end
 
-  ## Returns a pool for the given destination, starting one if necessary.
+  ## Returns a pool for the given destination, starting one or more
+  ## if necessary.
   @doc false
   @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
   def get_pool(pool_key) do
     case get_pools(pool_key) do
       [] ->
-        Logger.debug("Mojito.Pool: starting pool for #{inspect(pool_key)}")
-        start_pool(pool_key)
+        Logger.debug("Mojito.Pool: starting pools for #{inspect(pool_key)}")
+        opts = pool_opts(pool_key)
+        1..(opts[:pools]) |> Enum.each(fn _ -> start_pool(pool_key) end)
+        get_pool(pool_key)
 
       pools ->
         {:ok, Enum.random(pools)}

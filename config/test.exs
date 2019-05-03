@@ -6,10 +6,10 @@ config :mojito,
   pool_opts: [
     size: 2,
     max_overflow: 2,
-    max_pools: 5,
+    pools: 5,
     destinations: [
       "localhost:18443": [
-        max_pools: 10,
+        pools: 10,
       ],
     ],
   ]
