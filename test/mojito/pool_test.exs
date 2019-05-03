@@ -36,12 +36,16 @@ defmodule Mojito.PoolTest do
       tasks =
         1..100
         |> Enum.map(fn _ ->
-          Task.async(fn -> get("/wait1", timeout: 5000) end)
+          Task.async(fn -> get("/wait?d=100", timeout: 500) end)
         end)
 
-      Task.yield_many(tasks, 5100)
+      Task.yield_many(tasks, 600)
+      |> IO.inspect()
 
       GenServer.call(Mojito.Pool.Manager, :state)
+      |> IO.inspect()
+
+      GenServer.call(Mojito.Pool.Manager, :get_all_pool_states)
       |> IO.inspect()
     end
   end

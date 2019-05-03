@@ -18,8 +18,6 @@ defmodule Mojito.Pool.Manager do
 
   defp time, do: System.monotonic_time(:millisecond)
 
-  @refractory_period 3000
-
   def handle_call({:start_pool, pool_key}, _from, state) do
     pool_opts = Mojito.Pool.pool_opts(pool_key)
     max_pools = pool_opts[:max_pools]
@@ -35,7 +33,7 @@ defmodule Mojito.Pool.Manager do
         ## We're at max, don't start a new pool
         {:reply, {:ok, Enum.random(pools)}, state}
 
-      last_start_at && time_now < last_start_at + @refractory_period ->
+      last_start_at && time_now < last_start_at + pool_opts[:refractory_period] ->
         ## Wait longer before starting a new pool
         {:reply, {:ok, Enum.random(pools)}, state}
 
@@ -56,6 +54,7 @@ defmodule Mojito.Pool.Manager do
             state
             |> put_in([:pools, pool_key], [pool_pid | pools])
             |> put_in([:last_start_at, pool_key], time_now)
+
           {:reply, {:ok, pool_pid}, state}
         else
           {:error, {msg, _pid}}
@@ -66,11 +65,44 @@ defmodule Mojito.Pool.Manager do
     end
   end
 
+  def handle_call(:get_all_pool_states, _from, state) do
+    all_pool_states =
+      state.pools
+      |> Enum.map(fn {pool_key, pools} ->
+        {pool_key, pools |> Enum.map(&get_poolboy_state/1)}
+      end)
+      |> Enum.into(%{})
+
+    {:reply, all_pool_states, state}
+  end
+
+  def handle_call({:get_pool_states, pool_key}, _from, state) do
+    pools = state.pools |> Map.get(pool_key, [])
+    pool_states = pools |> Enum.map(&get_poolboy_state/1)
+    {:reply, pool_states, state}
+  end
+
   def handle_call({:get_pools, pool_key}, _from, state) do
     {:reply, Map.get(state.pools, pool_key, []), state}
   end
 
   def handle_call(:state, _from, state) do
     {:reply, state, state}
+  end
+
+  defp get_poolboy_state(pool_pid) do
+    {:state, supervisor, workers, waiting, monitors, size, overflow, max_overflow, strategy} =
+      :sys.get_state(pool_pid)
+
+    %{
+      supervisor: supervisor,
+      workers: workers,
+      waiting: waiting,
+      monitors: monitors,
+      size: size,
+      overflow: overflow,
+      max_overflow: max_overflow,
+      strategy: strategy
+    }
   end
 end
