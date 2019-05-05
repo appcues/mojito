@@ -13,7 +13,7 @@ defmodule Mojito do
 
   ## Quickstart
 
-      {:ok, response} = Mojito.request(method: :get, url: "https://github.com")
+      {:ok, response} = Mojito.get("https://github.com")
 
   ## Why Mojito?
 
@@ -120,6 +120,10 @@ defmodule Mojito do
          ],
          status_code: 200
        }}
+
+  In addition to `Mojito.request/5`, Mojito also provides convenience functions like `Mojito.head/3`,
+  `Mojito.get/3`, `Mojito.post/4`, `Mojito.put/4`, `Mojito.patch/4`,
+  `Mojito.delete/3`, and `Mojito.options/3` for each corresponding HTTP methods.
 
   By default, Mojito will use a connection pool for requests, automatically
   handling the creation and reuse of pools.  If this is not desired,
@@ -273,5 +277,96 @@ defmodule Mojito do
         other -> other
       end
     end
+  end
+
+  @doc ~S"""
+  Perform an HTTP HEAD request and returns the response.
+
+  This is equivalent to Mojito.request(:head, url, headers, "", opts)
+
+  See `request/1` for documentation.
+  """
+  @spec head(String.t(), headers, Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def head(url, headers \\ [], opts \\ []) do
+    request(:head, url, headers, "", opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP GET request and returns the response.
+
+  This is equivalent to Mojito.request(:get, url, headers, "", opts)
+
+  See `request/1` for documentation.
+  """
+  @spec get(String.t(), headers, Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def get(url, headers \\ [], opts \\ []) do
+    request(:get, url, headers, "", opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP POST request and returns the response.
+
+  This is equivalent to Mojito.request(:post, url, headers, payload, opts)
+
+  See `request/1` for documentation.
+  """
+  @spec post(String.t(), headers, String.t(), Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def post(url, headers \\ [], payload \\ "", opts \\ []) do
+    request(:post, url, headers, payload, opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP PUT request and returns the response.
+
+  This is equivalent to Mojito.request(:put, url, headers, payload, opts)
+
+  See `request/1` for documentation.
+  """
+  @spec put(String.t(), headers, String.t(), Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def put(url, headers \\ [], payload \\ "", opts \\ []) do
+    request(:put, url, headers, payload, opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP PATCH request and returns the response.
+
+  This is equivalent to Mojito.request(:patch, url, headers, payload, opts)
+
+  See `request/1` for documentation.
+  """
+  @spec patch(String.t(), headers, String.t(), Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def patch(url, headers \\ [], payload \\ "", opts \\ []) do
+    request(:patch, url, headers, payload, opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP DELETE request and returns the response.
+
+  This is equivalent to Mojito.request(:delete, url, headers, "", opts)
+
+  See `request/1` for documentation.
+  """
+  @spec delete(String.t(), headers, Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def delete(url, headers \\ [], opts \\ []) do
+    request(:delete, url, headers, "", opts)
+  end
+
+  @doc ~S"""
+  Perform an HTTP OPTIONS request and returns the response.
+
+  This is equivalent to Mojito.request(:options, url, headers, "", opts)
+
+  See `request/1` for documentation.
+  """
+  @spec options(String.t(), headers, Keyword.t()) ::
+          {:ok, response} | {:error, error} | no_return
+  def options(url, headers \\ [], opts \\ []) do
+    request(:options, url, headers, "", opts)
   end
 end

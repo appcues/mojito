@@ -26,6 +26,8 @@ end
 defmodule Mojito.TestServer.PlugRouter do
   use Plug.Router
 
+  plug Plug.Head
+
   plug(:match)
 
   plug(
@@ -45,6 +47,26 @@ defmodule Mojito.TestServer.PlugRouter do
   post "/post" do
     name = conn.body_params["name"] || "Bob"
     send_resp(conn, 200, Jason.encode!(%{name: name}))
+  end
+
+  patch "/patch" do
+    name = conn.body_params["name"] || "Bob"
+    send_resp(conn, 200, Jason.encode!(%{name: name}))
+  end
+
+  put "/put" do
+    name = conn.body_params["name"] || "Bob"
+    send_resp(conn, 200, Jason.encode!(%{name: name}))
+  end
+
+  delete "/delete" do
+    send_resp(conn, 200, "")
+  end
+
+  options _ do
+    conn
+    |> merge_resp_headers([{"Allow", "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE"}])
+    |> send_resp(200, "")
   end
 
   get "/auth" do
