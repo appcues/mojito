@@ -50,12 +50,12 @@ defmodule Mojito.ConnServer do
         method,
         url,
         headers \\ [],
-        payload \\ "",
+        body \\ "",
         opts \\ []
       ) do
     GenServer.call(
       pid,
-      {:request, reply_to, method, url, headers, payload, opts}
+      {:request, reply_to, method, url, headers, body, opts}
     )
   end
 
@@ -82,7 +82,7 @@ defmodule Mojito.ConnServer do
   end
 
   def handle_call(
-        {:request, reply_to, method, url, headers, payload, opts},
+        {:request, reply_to, method, url, headers, body, opts},
         _from,
         state
       ) do
@@ -91,7 +91,7 @@ defmodule Mojito.ConnServer do
     end)
 
     with {:ok, state, _ref} <-
-           do_request(state, reply_to, method, url, headers, payload, opts) do
+           do_request(state, reply_to, method, url, headers, body, opts) do
       {:reply, :ok, state}
     else
       err -> {:reply, err, close_connections(state)}
@@ -190,10 +190,10 @@ defmodule Mojito.ConnServer do
           String.t(),
           Keyword.t()
         ) :: {:ok, state, reference} | {:error, any}
-  defp do_request(state, reply_to, method, url, headers, payload, opts) do
+  defp do_request(state, reply_to, method, url, headers, body, opts) do
     with {:ok, state} <- ensure_connection(state, url, opts),
          {:ok, conn, request_ref} <-
-           Conn.request(state.conn, method, url, headers, payload, opts) do
+           Conn.request(state.conn, method, url, headers, body, opts) do
       responses = state.responses |> Map.put(request_ref, %Response{body: []})
       reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
       state = %{state | conn: conn, responses: responses, reply_tos: reply_tos}

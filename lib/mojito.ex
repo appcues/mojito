@@ -1,27 +1,32 @@
 defmodule Mojito do
   @moduledoc ~S"""
-  Mojito is an easy-to-use HTTP client built using the
+  Mojito is an easy-to-use, high-performance HTTP client built using the
   low-level [Mint library](https://github.com/ericmj/mint).
 
-  It provides an interface that will feel familiar to users of other
-  Elixir HTTP client libraries.
+  Mojito is built for comfort _and_ for speed.  Behind a simple and
+  predictable interface, there is a sophisticated connection pool manager
+  that delivers maximum throughput with no intervention from the user.
 
-  HTTPS, one-off requests, connection pooling, and request pipelining are
-  supported out of the box.  Mojito supports the same process-less
-  architecture as Mint; i.e., it does not spawn a process per request.
+  Just want to make one request and bail?  No problem.  Mojito can make
+  one-off requests as well, using the same process-less architecture as
+  Mint.
 
   ## Installation
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.2.2"}
+      {:mojito, "~> 0.3.0"}
 
-  ## Single-request example
+  ## Common usage
 
-  `Mojito.request/1` or the equivalent `Mojito.request/5` can be used
-  directly for making individual requests:
+  Make requests with `Mojito.request/1` or `Mojito.request/5`:
 
       >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+      ## or...
+      >>>> Mojito.request(%{method: :get, url: "https://jsonplaceholder.typicode.com/posts/1"})
+      ## or...
+      >>>> Mojito.request(method: :get, url: "https://jsonplaceholder.typicode.com/posts/1")
+
       {:ok,
        %Mojito.Response{
          body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
@@ -34,45 +39,11 @@ defmodule Mojito do
          status_code: 200
        }}
 
-  `Mojito.request` does not spawn any additional processes to handle the
-  HTTP response; TCP messages are received and handled within the caller
-  process.  In the common case, this results in faster performance and
-  lower overhead in the Erlang VM.
-
-  However, if the caller is also expecting to receive other messages at
-  the same time, this can cause conflict.  In this case, it's recommended
-  to wrap the call to `Mojito.request` in `Task.async/1`:
-
-      >>>> task = Task.async(fn () -> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1") end)
-      >>>> Task.await(task)
-      {:ok,
-       %Mojito.Response{
-         body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
-         headers: [
-           {"content-type", "application/json; charset=utf-8"},
-           {"content-length", "292"},
-           {"connection", "keep-alive"},
-           ...
-         ],
-         status_code: 200
-       }}
-
-  ## Pool example
-
-  `Mojito.Pool.request/2` or the equivalent `Mojito.Pool.request/6` can be
-  used when a pool of persistent HTTP connections is desired:
-
-      >>>> children = [Mojito.Pool.child_spec(MyPool)]
-      >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> Mojito.Pool.request(MyPool, :get, "http://example.com")
-      {:ok, %Mojito.Response{...}}
-
-  Connection pooling in Mojito is implemented using
-  [Poolboy](https://github.com/devinus/poolboy).
-
-  Currently, Mojito connection pools should only be used to access a single
-  protocol + hostname + port destination; otherwise, connections are
-  reused only sporadically.
+  By default, Mojito will use a connection pool for requests, automatically
+  handling the creation and reuse of pools.  If this is not desired,
+  specify the `pool: false` option with a request to perform a one-off request,
+  or `pool: pool_name_or_pid` to use a specific user-created `Mojito.Pool.Single`
+  pool.  See the documentation for `request/1` for more details.
 
   ## Self-signed SSL/TLS certificates
 
@@ -80,11 +51,11 @@ defmodule Mojito do
   `transport_opts: [verify: :verify_none]` option to `Mojito.request`
   or `Mojito.Pool.request`:
 
-      >>>> Mojito.request(:get, "https://localhost:8443/")
+      >>>> Mojito.request(method: :get, url: "https://localhost:8443/")
       {:error, {:tls_alert, 'bad certificate'}}
 
-      >>>> Mojito.request(:get, "https://localhost:4443/", [], "", transport_opts: [verify: :verify_none])
-      {:ok, %Mojito.Response{...}}
+      >>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
+      {:ok, %Mojito.Response{ ... }}
   """
 
   @type method ::
@@ -96,7 +67,7 @@ defmodule Mojito do
           method: method,
           url: String.t(),
           headers: headers | nil,
-          payload: String.t() | nil,
+          body: String.t() | nil,
           opts: Keyword.t() | nil,
         }
 
@@ -119,12 +90,12 @@ defmodule Mojito do
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
-  def request(method, url, headers \\ [], payload \\ "", opts \\ []) do
+  def request(method, url, headers \\ [], body \\ "", opts \\ []) do
     %Mojito.Request{
       method: method,
       url: url,
       headers: headers,
-      payload: payload,
+      body: body,
       opts: opts,
     }
     |> request

@@ -29,9 +29,6 @@ defmodule Mojito.Pool do
     pools to open).  Default is 5.
   * `:strategy` is either `:lifo` or `:fifo`, and selects which connection
     should be checked out of a single pool.  Default is `:lifo`.
-  * `:refractory_period` (integer, milliseconds) configures how long Mojito
-    should wait after starting a pool before starting another one to the same
-    destination.  Default 3000.
   * `:destinations` (keyword list of `t:pool_opts`) allows these parameters
     to be set for individual `:"host:port"` destinations.
 
@@ -60,7 +57,6 @@ defmodule Mojito.Pool do
           | {:max_overflow, non_neg_integer}
           | {:pools, pos_integer}
           | {:strategy, :lifo | :fifo}
-          | {:refractory_period, non_neg_integer}
 
   @typep pool_key :: {String.t(), pos_integer}
 

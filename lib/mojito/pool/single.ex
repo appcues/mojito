@@ -78,12 +78,12 @@ defmodule Mojito.Pool.Single do
           String.t(),
           Keyword.t()
         ) :: {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
+  def request(pool, method, url, headers \\ [], body \\ "", opts \\ []) do
     req = %Request{
       method: method,
       url: url,
       headers: headers,
-      payload: payload,
+      body: body,
       opts: opts,
     }
 
@@ -121,7 +121,7 @@ defmodule Mojito.Pool.Single do
              request.method,
              request.url,
              request.headers,
-             request.payload,
+             request.body,
              request.opts
            ) do
         :ok ->

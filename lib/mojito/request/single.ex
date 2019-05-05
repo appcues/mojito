@@ -13,13 +13,13 @@ defmodule Mojito.Request.Single do
   def request(%Request{} = req) do
     opts = req.opts || []
     headers = req.headers || []
-    payload = req.payload || ""
+    body = req.body || ""
 
     timeout = opts[:timeout] || Config.request_timeout()
 
     with {:ok, conn} <- Conn.connect(req.url, opts),
          {:ok, conn, _ref} <-
-           Conn.request(conn, req.method, req.url, headers, payload, opts) do
+           Conn.request(conn, req.method, req.url, headers, body, opts) do
       receive_response(conn, %Response{}, timeout)
     end
   end

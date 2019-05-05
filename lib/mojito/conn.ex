@@ -61,7 +61,7 @@ defmodule Mojito.Conn do
           String.t(),
           Keyword.t()
         ) :: {:ok, t, reference} | {:error, any}
-  def request(conn, method, url, headers, payload, _opts \\ []) do
+  def request(conn, method, url, headers, body, _opts \\ []) do
     with {:ok, relative_url, auth_headers} <-
            Utils.get_relative_url_and_auth_headers(url),
          {:ok, mint_conn, request_ref} <-
@@ -70,7 +70,7 @@ defmodule Mojito.Conn do
              method_to_string(method),
              relative_url,
              auth_headers ++ headers,
-             payload
+             body
            ) do
       {:ok, %{conn | conn: mint_conn}, request_ref}
     end

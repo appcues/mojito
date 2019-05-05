@@ -4,7 +4,7 @@ defmodule Mojito.Request do
   defstruct method: nil,
             url: nil,
             headers: [],
-            payload: "",
+            body: "",
             opts: []
 
   alias Mojito.{Error, Request}
@@ -32,8 +32,8 @@ defmodule Mojito.Request do
       !is_list(Map.get(request, :headers, [])) ->
         {:error, %Error{message: "headers must be a list"}}
 
-      !is_binary(Map.get(request, :payload, "")) ->
-        {:error, %Error{message: "payload must be a UTF-8 string"}}
+      !is_binary(Map.get(request, :body, "")) ->
+        {:error, %Error{message: "body must be a UTF-8 string"}}
 
       :else ->
         {:ok,
@@ -41,10 +41,14 @@ defmodule Mojito.Request do
            method: request.method,
            url: request.url,
            headers: request.headers || [],
-           payload: request.payload || "",
+           body: request.body || "",
            opts: request.opts || [],
          }}
     end
+  end
+
+  def validate_request(request) when is_list(request) do
+    request |> Enum.into(%{}) |> validate_request
   end
 
   def validate_request(_request) do
