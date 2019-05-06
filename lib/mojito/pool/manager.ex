@@ -105,6 +105,4 @@ defmodule Mojito.Pool.Manager do
         {:reply, error, state}
     end
   end
-
-
 end

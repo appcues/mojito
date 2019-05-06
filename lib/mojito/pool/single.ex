@@ -5,11 +5,12 @@ defmodule Mojito.Pool.Single do
 
   Example:
 
-      >>>> children = [Mojito.Pool.Single.child_spec()]
-      >>>> {:ok, pool_pid} = Supervisor.start_link(children, strategy: :one_for_one)
+      >>>> child_spec = Mojito.Pool.Single.child_spec()
+      >>>> {:ok, pool_pid} = Supervisor.start_child(Mojito.Supervisor, child_spec)
       >>>> Mojito.Pool.Single.request(pool_pid, :get, "http://example.com")
       {:ok, %Mojito.Response{...}}
   """
+  @moduledoc false
 
   alias Mojito.{Config, ConnServer, Request, Utils}
 

@@ -40,13 +40,13 @@ defmodule Mojito.PoolTest do
         end)
 
       Task.yield_many(tasks, 600)
-      #|> IO.inspect()
+      # |> IO.inspect()
 
       GenServer.call(Mojito.Pool.Manager, :state)
-      #|> IO.inspect()
+      # |> IO.inspect()
 
       GenServer.call(Mojito.Pool.Manager, :get_all_pool_states)
-      #|> IO.inspect()
+      # |> IO.inspect()
     end
   end
 end

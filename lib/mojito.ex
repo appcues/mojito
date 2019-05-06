@@ -56,6 +56,12 @@ defmodule Mojito do
 
       >>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
       {:ok, %Mojito.Response{ ... }}
+
+  ## Authorship and License
+
+  Copyright 2019, Appcues, Inc.
+
+  This software is released under the MIT License.
   """
 
   @type method ::
@@ -70,6 +76,15 @@ defmodule Mojito do
           body: String.t() | nil,
           opts: Keyword.t() | nil,
         }
+
+  @type request_kwlist :: [request_field]
+
+  @type request_field ::
+    {:method, method} |
+    {:url, String.t} |
+    {:headers, headers} |
+    {:body, String.t} |
+    {:opts, Keyword.t}
 
   @type response :: %Mojito.Response{
           status_code: pos_integer,
@@ -86,7 +101,7 @@ defmodule Mojito do
   @doc ~S"""
   Performs an HTTP request and returns the response.
 
-  See `request/1` for documentation.
+  See `request/1` for details.
   """
   @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -104,24 +119,40 @@ defmodule Mojito do
   @doc ~S"""
   Performs an HTTP request and returns the response.
 
-  Does not spawn an additional process.  Messages of the form `{:tcp, _, _}`
-  or `{:ssl, _, _}` will be sent to and handled by the caller.  If the
-  caller process expects to receive other `:tcp` or `:ssl` messages at the same
-  time, conflicts can occur; in this case, it is recommended to wrap
-  `request/1` in `Task.async/1`.
+  If the `pool: true` option is given, or `:pool` is not specified, the
+  request will be made using Mojito's automatic connection pooling system.
+  For more details, see `Mojito.Pool.request/1`.  This is the default
+  mode of operation, and is recommended for best performance.
+
+  If `pool: false` is given as an option, the request will be made on
+  a brand new connection.  This does not spawn an additional process.
+  Messages of the form `{:tcp, _, _}` or `{:ssl, _, _}` will be sent to
+  and handled by the caller.  If the caller process expects to receive
+  other `:tcp` or `:ssl` messages at the same time, conflicts can occur;
+  in this case, it is recommended to wrap `request/1` in `Task.async/1`,
+  or use one of the pooled request modes.
+
+  `pool: <pid or name>` can be provided to run the request against a
+  manually-created `Mojito.Pool.Single` pool using
+  `Mojito.Pool.Single.request/2`.
 
   Options:
 
+  * `:pool` - See above.
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :request_timeout, 5000)`.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
   """
-  @spec request(request) :: {:ok, response} | {:error, error}
+  @spec request(request | request_kwlist) :: {:ok, response} | {:error, error}
   def request(request) do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
-      Mojito.Pool.request(valid_request)
+      case Keyword.get(valid_request.opts, :pool, true) do
+        true -> Mojito.Pool.request(valid_request)
+        false -> Mojito.Request.Single.request(valid_request)
+        pool -> Mojito.Pool.Single.request(pool, valid_request)
+      end
     end
   end
 end

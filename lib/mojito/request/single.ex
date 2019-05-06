@@ -1,4 +1,7 @@
 defmodule Mojito.Request.Single do
+  @moduledoc ~S"""
+  Make a single request, without spawning any processes.
+  """
   @moduledoc false
 
   alias Mojito.{Config, Conn, Error, Request, Response}
@@ -7,6 +10,14 @@ defmodule Mojito.Request.Single do
   @doc ~S"""
   Performs a single HTTP request, receiving `:tcp` and `:ssl` messages
   in the caller process.
+
+  Options:
+
+  * `:timeout` - Response timeout in milliseconds.  Defaults to
+    `Application.get_env(:mojito, :request_timeout, 5000)`.
+  * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
+    Most commonly used to perform insecure HTTPS requests via
+    `transport_opts: [verify: :verify_none]`.
   """
   @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}

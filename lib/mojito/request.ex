@@ -40,9 +40,9 @@ defmodule Mojito.Request do
          %Request{
            method: request.method,
            url: request.url,
-           headers: request.headers || [],
-           body: request.body || "",
-           opts: request.opts || [],
+           headers: Map.get(request, :headers, []),
+           body: Map.get(request, :body, ""),
+           opts: Map.get(request, :opts, []),
          }}
     end
   end

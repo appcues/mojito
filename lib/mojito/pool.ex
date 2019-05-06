@@ -104,7 +104,7 @@ defmodule Mojito.Pool do
       [] ->
         Logger.debug("Mojito.Pool: starting pools for #{inspect(pool_key)}")
         opts = pool_opts(pool_key)
-        1..(opts[:pools]) |> Enum.each(fn _ -> start_pool(pool_key) end)
+        1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
         get_pool(pool_key)
 
       pools ->
