@@ -2,6 +2,8 @@ defmodule Mojito.Pool.Single do
   @moduledoc ~S"""
   Mojito.Pool.Single provides an HTTP request connection pool based on
   Mojito and Poolboy.  It is intended for use through `Mojito.Pool`.
+  End users probably don't want to use it directly; use `Mojito.request/1`
+  instead.
 
   Example:
 
@@ -10,7 +12,6 @@ defmodule Mojito.Pool.Single do
       >>>> Mojito.Pool.Single.request(pool_pid, :get, "http://example.com")
       {:ok, %Mojito.Response{...}}
   """
-  @moduledoc false
 
   alias Mojito.{Config, ConnServer, Request, Utils}
 
