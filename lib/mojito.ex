@@ -80,11 +80,11 @@ defmodule Mojito do
   @type request_kwlist :: [request_field]
 
   @type request_field ::
-    {:method, method} |
-    {:url, String.t} |
-    {:headers, headers} |
-    {:body, String.t} |
-    {:opts, Keyword.t}
+          {:method, method}
+          | {:url, String.t()}
+          | {:headers, headers}
+          | {:body, String.t()}
+          | {:opts, Keyword.t()}
 
   @type response :: %Mojito.Response{
           status_code: pos_integer,
