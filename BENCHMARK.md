@@ -7,7 +7,6 @@ server running on separate m5.4xlarge
 <table>
 <thead><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></thead>
 <tfoot><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></tfoot>
-<tr><td>Client</td><td>PoolCount</td><td>PoolSize</td><td>Concurrency</td><td>Requests/s</td><td>Error</td><td>%</td></tr>
 <tr><td>Mojito</td><td>32</td><td>512</td><td>16384</td><td>4525</td><td>19.0</td></tr>
 <tr><td>Mojito</td><td>16</td><td>512</td><td>16384</td><td>6467</td><td>17.6</td></tr>
 <tr><td>Mojito</td><td>8</td><td>512</td><td>16384</td><td>10153</td><td>14.6</td></tr>
