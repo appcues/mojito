@@ -227,7 +227,7 @@ defmodule Mojito do
       url: url,
       headers: headers,
       body: body,
-      opts: opts,
+      opts: opts
     }
     |> request
   end
@@ -260,14 +260,15 @@ defmodule Mojito do
   @spec request(request | request_kwlist) :: {:ok, response} | {:error, error}
   def request(request) do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
-      request_fn = case Keyword.get(valid_request.opts, :pool, true) do
-        true -> fn -> Mojito.Pool.request(valid_request) end
-        false -> fn -> Mojito.Request.Single.request(valid_request) end
-        pool -> fn -> Mojito.Pool.Single.request(pool, valid_request) end
-      end
+      request_fn =
+        case Keyword.get(valid_request.opts, :pool, true) do
+          true -> fn -> Mojito.Pool.request(valid_request) end
+          false -> fn -> Mojito.Request.Single.request(valid_request) end
+          pool -> fn -> Mojito.Pool.Single.request(pool, valid_request) end
+        end
 
       ## Retry connection-closed errors once
-      case request_fn.() |> Mojito.Utils.wrap_return_value do
+      case request_fn.() |> Mojito.Utils.wrap_return_value() do
         {:error, %{reason: %{reason: :closed}}} -> request_fn.()
         other -> other
       end

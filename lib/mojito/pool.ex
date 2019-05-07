@@ -101,7 +101,7 @@ defmodule Mojito.Pool do
 
   ## Returns the configured `t:pool_opts` for the given destination.
   @doc false
-  @spec pool_opts(pool_key) :: Mojito.pool_opts
+  @spec pool_opts(pool_key) :: Mojito.pool_opts()
   def pool_opts({host, port}) do
     destination_key =
       try do
