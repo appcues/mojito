@@ -29,7 +29,9 @@ clients, combining the following design goals:
   (and [HTTPoison](https://github.com/edgurgel/httpoison)),
   [Ibrowse](https://github.com/cmullaparthi/ibrowse) (and
   [HTTPotion](https://github.com/myfreeweb/httpotion)), and
-  Erlang's built-in httpc offer this feature.
+  Erlang's built-in [httpc](http://erlang.org/doc/man/httpc.html)
+  offer this feature.
+
 
 * _Connection pools used only for a single destination._  Using a pool
   for making requests against multiple destinations is less than ideal,
