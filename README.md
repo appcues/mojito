@@ -32,7 +32,6 @@ clients, combining the following design goals:
   Erlang's built-in [httpc](http://erlang.org/doc/man/httpc.html)
   offer this feature.
 
-
 * _Connection pools used only for a single destination._  Using a pool
   for making requests against multiple destinations is less than ideal,
   as many of the connections need to be reset before use.  Mojito assigns
