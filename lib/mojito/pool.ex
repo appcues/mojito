@@ -1,51 +1,15 @@
 defmodule Mojito.Pool do
-  @moduledoc ~S"""
-  Mojito.Pool is an HTTP client with high-performance, easy-to-use
-  connection pools.
+  @moduledoc false
 
-  Pools are maintained automatically by Mojito, requests are matched to
-  the correct pool without user intervention, and multiple pools can be
-  used for the same destination in order to reduce concurrency bottlenecks.
-
-  `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`,
-  but can also be used directly.
-
-  ## Configuration
-
-  Pool options can be specified in your config file like this:
-
-      use Mix.Config
-      config :mojito, pool_opts: [ ... ]
-
-  The available options are:
-
-  * `:size` (integer) sets the number of steady-state connections per pool.
-    Default is 5.
-  * `:max_overflow` (integer) sets the number of additional connections
-    per pool, opened under conditions of heavy load.
-    Default is 10.
-  * `:pools` (integer) sets the maximum number of pools to open for a
-    single destination host and port (not the maximum number of total
-    pools to open).  Default is 5.
-  * `:strategy` is either `:lifo` or `:fifo`, and selects which connection
-    should be checked out of a single pool.  Default is `:lifo`.
-  * `:destinations` (keyword list of `t:pool_opts`) allows these parameters
-    to be set for individual `:"host:port"` destinations.
-
-  For example:
-
-      use Mix.Config
-
-      config :mojito, :pool_opts,
-        size: 10,
-        destinations: [
-          "example.com:443": [
-            size: 20,
-            max_overflow: 20,
-            pools: 10
-          ]
-        ]
-  """
+  ## Mojito.Pool is an HTTP client with high-performance, easy-to-use
+  ## connection pools.
+  ##
+  ## Pools are maintained automatically by Mojito, requests are matched to
+  ## the correct pool without user intervention, and multiple pools can be
+  ## used for the same destination in order to reduce concurrency bottlenecks.
+  ##
+  ## `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`.
+  ## Config parameters are explained in the `Mojito` moduledocs.
 
   alias Mojito.{Request, Utils}
   require Logger
@@ -137,7 +101,7 @@ defmodule Mojito.Pool do
 
   ## Returns the configured `t:pool_opts` for the given destination.
   @doc false
-  @spec pool_opts(pool_key) :: pool_opts
+  @spec pool_opts(pool_key) :: Mojito.pool_opts
   def pool_opts({host, port}) do
     destination_key =
       try do
