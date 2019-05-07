@@ -1,123 +1,215 @@
 Benchmarked using https://github.com/gamache/httpc_bench
 
-10ms requests
+10ms GET requests
 clients running on m5.4xlarge (16 vCPUs, 64 GB RAM)
-server running on m5.metal (96 vCPUs, 384 GB RAM)
+server running on separate m5.4xlarge
 
-```
-Client     PoolCount  PoolSize  Concurrency  Requests/s  Error %
+<table>
+<thead><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></thead>
+<tfoot><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></tfoot>
+<tr><td>Client</td><td>PoolCount</td><td>PoolSize</td><td>Concurrency</td><td>Requests/s</td><td>Error</td><td>%</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>16384</td><td>4525</td><td>19.0</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>16384</td><td>6467</td><td>17.6</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>16384</td><td>10153</td><td>14.6</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>16384</td><td>14638</td><td>14.8</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>16384</td><td>30870</td><td>5.6</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>16384</td><td>34942</td><td>89.6</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>16384</td><td>11493</td><td>98.1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>16384</td><td>13061</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>16384</td><td>4514</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>16384</td><td>12271</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>16384</td><td>6234</td><td>21.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>16384</td><td>8524</td><td>31.6</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>16384</td><td>18409</td><td>7.2</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>16384</td><td>46866</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>16384</td><td>19310</td><td>5.4</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>16384</td><td>18052</td><td>94.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>16384</td><td>7152</td><td>98.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>16384</td><td>17272</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>16384</td><td>4367</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>16384</td><td>16527</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>16384</td><td>11462</td><td>19.3</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>16384</td><td>19618</td><td>11.6</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>16384</td><td>51538</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>16384</td><td>43128</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>16384</td><td>9425</td><td>47.4</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>16384</td><td>8624</td><td>97.6</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>16384</td><td>3934</td><td>99.4</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>16384</td><td>10590</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>16384</td><td>4828</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>16384</td><td>10655</td><td>3.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>16384</td><td>21054</td><td>8.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>16384</td><td>50294</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>16384</td><td>42537</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>16384</td><td>22923</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>16384</td><td>97</td><td>98.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>16384</td><td>4321</td><td>98.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>16384</td><td>2072</td><td>99.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>16384</td><td>5673</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>16384</td><td>4087</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>16384</td><td>5756</td><td>30.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>16384</td><td>48470</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>16384</td><td>41480</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>16384</td><td>22644</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>16384</td><td>11015</td><td>48.2</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>16384</td><td>47</td><td>99.4</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>16384</td><td>2144</td><td>99.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>16384</td><td>1119</td><td>99.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>16384</td><td>2883</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>16384</td><td>4564</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>16384</td><td>2901</td><td>55.1</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>16384</td><td>254</td><td>79.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>8192</td><td>5715</td><td>24.4</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>8192</td><td>6690</td><td>16.5</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>8192</td><td>9518</td><td>11.3</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>8192</td><td>17157</td><td>9.5</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>8192</td><td>37407</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>8192</td><td>36833</td><td>89.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>8192</td><td>14884</td><td>97.3</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>8192</td><td>14954</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>8192</td><td>4884</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>8192</td><td>12787</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>8192</td><td>6547</td><td>12.7</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>8192</td><td>11276</td><td>11.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>8192</td><td>15332</td><td>9.7</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>8192</td><td>49134</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>8192</td><td>21336</td><td>1.1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>8192</td><td>18531</td><td>94.9</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>8192</td><td>8110</td><td>98.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>8192</td><td>19033</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>8192</td><td>4480</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>8192</td><td>17007</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>8192</td><td>11361</td><td>10.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>8192</td><td>14673</td><td>10.6</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>8192</td><td>51287</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>8192</td><td>43224</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>8192</td><td>11260</td><td>1.3</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>8192</td><td>9403</td><td>97.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>8192</td><td>4122</td><td>99.4</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>8192</td><td>11151</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>8192</td><td>5173</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>8192</td><td>11232</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>8192</td><td>14882</td><td>8.5</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>8192</td><td>50848</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>8192</td><td>43531</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>8192</td><td>22677</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>8192</td><td>4878</td><td>49.6</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>8192</td><td>4427</td><td>98.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>8192</td><td>2282</td><td>99.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>8192</td><td>5758</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>8192</td><td>4885</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>8192</td><td>5788</td><td>3.4</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>8192</td><td>48103</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>8192</td><td>41318</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>8192</td><td>22745</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>8192</td><td>10855</td><td>1.7</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>8192</td><td>1897</td><td>74.2</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>8192</td><td>2160</td><td>99.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>8192</td><td>1195</td><td>99.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>8192</td><td>2899</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>8192</td><td>4421</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>8192</td><td>2892</td><td>31.5</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>8192</td><td>227</td><td>51.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>4096</td><td>7538</td><td>16.2</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>4096</td><td>9673</td><td>5.7</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>4096</td><td>9617</td><td>7.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>4096</td><td>15318</td><td>5.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>4096</td><td>42255</td><td>0.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>4096</td><td>34417</td><td>89.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>4096</td><td>7998</td><td>96.3</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>4096</td><td>16821</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>4096</td><td>5436</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>4096</td><td>13291</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>4096</td><td>9852</td><td>4.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>4096</td><td>10162</td><td>4.3</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>4096</td><td>17022</td><td>4.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>4096</td><td>51116</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>4096</td><td>22588</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>4096</td><td>18692</td><td>94.9</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>4096</td><td>10181</td><td>98.3</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>4096</td><td>21226</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>4096</td><td>5026</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>4096</td><td>17626</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>4096</td><td>11634</td><td>4.6</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>4096</td><td>15636</td><td>3.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>4096</td><td>52105</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>4096</td><td>42845</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>4096</td><td>11552</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>4096</td><td>9626</td><td>97.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>4096</td><td>5170</td><td>99.2</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>4096</td><td>11418</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>4096</td><td>5370</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>4096</td><td>11488</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>4096</td><td>15179</td><td>6.2</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>4096</td><td>50336</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>4096</td><td>41900</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>4096</td><td>22698</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>4096</td><td>5809</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>4096</td><td>4774</td><td>98.7</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>4096</td><td>2745</td><td>99.6</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>4096</td><td>5791</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>4096</td><td>5300</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>4096</td><td>5805</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>4096</td><td>50930</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>4096</td><td>41842</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>4096</td><td>22677</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>4096</td><td>11540</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>4096</td><td>2477</td><td>59.5</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>4096</td><td>2203</td><td>99.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>4096</td><td>1500</td><td>99.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>4096</td><td>2902</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>4096</td><td>5464</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>4096</td><td>2900</td><td>3.8</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>4096</td><td>206</td><td>35.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>2048</td><td>14780</td><td>1.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>2048</td><td>15334</td><td>1.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>2048</td><td>15385</td><td>2.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>2048</td><td>26924</td><td>2.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>2048</td><td>43437</td><td>0.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>2048</td><td>31889</td><td>89.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>2048</td><td>19493</td><td>95.1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>2048</td><td>17619</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>2048</td><td>5438</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>2048</td><td>13318</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>2048</td><td>12050</td><td>2.6</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>2048</td><td>14794</td><td>1.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>2048</td><td>15459</td><td>1.6</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>2048</td><td>52519</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>2048</td><td>22843</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>2048</td><td>16973</td><td>94.9</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>2048</td><td>10737</td><td>97.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>2048</td><td>21885</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>2048</td><td>5506</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>2048</td><td>17655</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>2048</td><td>12315</td><td>2.6</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>2048</td><td>24494</td><td>1.7</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>2048</td><td>51621</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>2048</td><td>43183</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>2048</td><td>11602</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>2048</td><td>9036</td><td>97.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>2048</td><td>5319</td><td>99.0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>2048</td><td>11491</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>2048</td><td>5691</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>2048</td><td>11567</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>2048</td><td>24210</td><td>1.4</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>2048</td><td>51064</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>2048</td><td>42020</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>2048</td><td>22727</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>2048</td><td>5810</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>2048</td><td>4793</td><td>98.7</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>2048</td><td>2860</td><td>99.5</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>2048</td><td>5798</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>2048</td><td>5698</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>2048</td><td>5791</td><td>0.0</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>2048</td><td>47914</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>2048</td><td>40702</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>2048</td><td>22282</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>2048</td><td>11583</td><td>1.0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>2048</td><td>2905</td><td>1.0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>2048</td><td>2386</td><td>99.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>2048</td><td>1592</td><td>99.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>2048</td><td>2903</td><td>0.0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>2048</td><td>5265</td><td>0.0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>2048</td><td>2887</td><td>0.1</td></tr>
+</table>
 
-Mojito            16       512        16384       35737      2.7
-Mojito             4       512        16384       35060      2.4
-Mojito             1       512        16384       31318      5.0
-Buoy               1       512        16384       35131     89.6
-Dlhttpc            1       512        16384       12227     98.0
-Hackney            1       512        16384       12914      0.0
-Mojito            16       256        16384       20854      2.3
-Mojito             4       256        16384       20673      2.4
-Mojito             1       256        16384       19540      4.2
-Buoy               1       256        16384       18359     94.8
-Dlhttpc            1       256        16384        3959     98.9
-Hackney            1       256        16384       17938      0.0
-Mojito            16       128        16384       18012     25.4
-Mojito             4       128        16384       17202     24.2
-Mojito             1       128        16384        9490     47.3
-Buoy               1       128        16384        8791     97.6
-Dlhttpc            1       128        16384        3499     99.5
-Hackney            1       128        16384       10598      0.0
-
-Mojito            16       512         8192       38587      1.0
-Mojito             4       512         8192       38841      1.0
-Mojito             1       512         8192       36915      1.1
-Buoy               1       512         8192       37010     89.8
-Dlhttpc            1       512         8192        8944     97.2
-Hackney            1       512         8192       14627      0.0
-Mojito            16       256         8192       21708      1.1
-Mojito             4       256         8192       21721      1.1
-Mojito             1       256         8192       21190      1.1
-Buoy               1       256         8192       18859     94.9
-Dlhttpc            1       256         8192        8535     98.7
-Hackney            1       256         8192       19457      0.0
-Mojito            16       128         8192       11358      1.4
-Mojito             4       128         8192       11357      1.4
-Mojito             1       128         8192       11216      1.3
-Buoy               1       128         8192        9617     97.4
-Dlhttpc            1       128         8192        4236     99.4
-Hackney            1       128         8192       11178      0.0
-
-Mojito            16       512         4096       42205      0.9
-Mojito             4       512         4096       39519      1.1
-Mojito             1       512         4096       42355      0.9
-Buoy               1       512         4096       34579     89.8
-Dlhttpc            1       512         4096       10904     95.3
-Hackney            1       512         4096       15923      0.0
-Mojito            16       256         4096       22436      1.0
-Mojito             4       256         4096       22460      1.0
-Mojito             1       256         4096       22472      1.0
-Buoy               1       256         4096       19005     94.9
-Dlhttpc            1       256         4096        9647     98.4
-Hackney            1       256         4096       20945      0.0
-Mojito            16       128         4096       11521      1.0
-Mojito             4       128         4096       11513      1.0
-Mojito             1       128         4096       11515      1.0
-Buoy               1       128         4096        9646     97.5
-Dlhttpc            1       128         4096        5282     99.2
-Hackney            1       128         4096       11389      0.0
-
-Mojito            16       512         2048       42338      0.9
-Mojito             4       512         2048       36611      1.3
-Mojito             1       512         2048       37827      1.2
-Buoy               1       512         2048       30955     89.8
-Dlhttpc            1       512         2048       10697     92.7
-Hackney            1       512         2048       17491      0.0
-Mojito            16       256         2048       22262      1.0
-Mojito             4       256         2048       22827      1.0
-Mojito             1       256         2048       21251      1.1
-Buoy               1       256         2048       17157     94.9
-Dlhttpc            1       256         2048        3155     97.7
-Hackney            1       256         2048       21750      0.0
-Mojito            16       128         2048       11563      1.0
-Mojito             4       128         2048       11559      1.0
-Mojito             1       128         2048       11566      1.0
-Buoy               1       128         2048        9061     97.4
-Dlhttpc            1       128         2048        5546     99.0
-Hackney            1       128         2048       11439      0.0
-
-Mojito            16       512         1024       32506      2.0
-Mojito             4       512         1024       33232      1.8
-Mojito             1       512         1024       35554      1.6
-Buoy               1       512         1024       16372     70.9
-Dlhttpc            1       512         1024       12927     85.1
-Hackney            1       512         1024       19103      0.0
-Mojito            16       256         1024       22802      1.0
-Mojito             4       256         1024       22850      1.0
-Mojito             1       256         1024       21994      1.0
-Buoy               1       256         1024        8120     92.1
-Dlhttpc            1       256         1024        4019     95.2
-Hackney            1       256         1024       22366      0.0
-Mojito            16       128         1024       11582      1.0
-Mojito             4       128         1024       11573      1.0
-Mojito             1       128         1024       11570      1.0
-Buoy               1       128         1024        8535     97.4
-Dlhttpc            1       128         1024        4900     98.6
-Hackney            1       128         1024       11469      0.0
-
-Mojito            16       512          512       30411      1.9
-Mojito             4       512          512       30169      2.1
-Mojito             1       512          512       27952      2.1
-Buoy               1       512          512       19900     37.0
-Dlhttpc            1       512          512       17722     72.2
-Hackney            1       512          512       17181      0.0
-Mojito            16       256          512       22730      1.0
-Mojito             4       256          512       18661      1.7
-Mojito             1       256          512       18579      2.3
-Buoy               1       256          512       10878     58.1
-Dlhttpc            1       256          512        3618     92.1
-Hackney            1       256          512       22009      0.0
-Mojito            16       128          512       11569      1.0
-Mojito             4       128          512       10111      2.0
-Mojito             1       128          512       11563      1.0
-Buoy               1       128          512        4115     94.4
-Dlhttpc            1       128          512        4266     98.0
-Hackney            1       128          512       11472      0.0
-```
