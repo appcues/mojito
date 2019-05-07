@@ -14,7 +14,7 @@ defmodule Mojito.Request.Single do
   Options:
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
+    `Application.get_env(:mojito, :timeout, 5000)`.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
@@ -26,7 +26,7 @@ defmodule Mojito.Request.Single do
     headers = req.headers || []
     body = req.body || ""
 
-    timeout = opts[:timeout] || Config.request_timeout()
+    timeout = opts[:timeout] || Config.timeout()
 
     with {:ok, conn} <- Conn.connect(req.url, opts),
          {:ok, conn, _ref} <-

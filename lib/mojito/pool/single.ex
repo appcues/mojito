@@ -96,7 +96,7 @@ defmodule Mojito.Pool.Single do
   Options:
 
   * `:timeout` - Request timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
+    `Application.get_env(:mojito, :timeout, 5000)`.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
@@ -110,7 +110,7 @@ defmodule Mojito.Pool.Single do
   end
 
   defp do_request(pool, request) do
-    timeout = request.opts[:timeout] || Config.request_timeout()
+    timeout = request.opts[:timeout] || Config.timeout()
 
     start_time = time()
 
