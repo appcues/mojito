@@ -31,22 +31,5 @@ defmodule Mojito.PoolTest do
       assert({:ok, response} = get_ssl("/"))
       assert(200 == response.status_code)
     end
-
-    it "can saturate many pools" do
-      tasks =
-        1..100
-        |> Enum.map(fn _ ->
-          Task.async(fn -> get("/wait?d=100", timeout: 500) end)
-        end)
-
-      Task.yield_many(tasks, 600)
-      # |> IO.inspect()
-
-      GenServer.call(Mojito.Pool.Manager, :state)
-      # |> IO.inspect()
-
-      GenServer.call(Mojito.Pool.Manager, :get_all_pool_states)
-      # |> IO.inspect()
-    end
   end
 end
