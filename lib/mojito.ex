@@ -17,7 +17,7 @@ defmodule Mojito do
 
   ## Why Mojito?
 
-  Mojito exists to fill an as-yet-vacant niche in Erlang and Elixir HTTP
+  Mojito exists to fill a previously vacant niche in Erlang and Elixir HTTP
   clients, combining the following design goals:
 
   * _Little or no configuration needed._  Use Mojito to make requests to as
@@ -27,7 +27,8 @@ defmodule Mojito do
     (and [HTTPoison](https://github.com/edgurgel/httpoison)),
     [Ibrowse](https://github.com/cmullaparthi/ibrowse) (and
     [HTTPotion](https://github.com/myfreeweb/httpotion)), and
-    Erlang's built-in httpc offer this feature.
+    Erlang's built-in [httpc](http://erlang.org/doc/man/httpc.html)
+    offer this feature.
 
   * _Connection pools used only for a single destination._  Using a pool
     for making requests against multiple destinations is less than ideal,

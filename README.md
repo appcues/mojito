@@ -19,7 +19,7 @@ Mint.
 
 ## Why Mojito?
 
-Mojito exists to fill an as-yet-vacant niche in Erlang and Elixir HTTP
+Mojito exists to fill a previously vacant niche in Erlang and Elixir HTTP
 clients, combining the following design goals:
 
 * _Little or no configuration needed._  Use Mojito to make requests to as
