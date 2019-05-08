@@ -48,7 +48,7 @@ Mojito exists to satisfy the following design goals:
 
 * _Ludicrous speed._  Mojito meets or exceeds the performance of
   every other HTTP client for Erlang or Elixir.
-  [Check out the benchmarks.](https://github.com/appcues/mojito/blob/master/BENCHMARKS.md)
+  [Check out the benchmarks.](https://github.com/appcues/mojito/blob/0.3.0-rc/BENCHMARKS.md)
 
 ## Installation
 
