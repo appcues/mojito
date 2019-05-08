@@ -1,7 +1,6 @@
 defmodule Mojito.Request.Single do
-  @moduledoc ~S"""
-  Make a single request, without spawning any processes.
-  """
+  ## Make a single request, without spawning any processes.
+
   @moduledoc false
 
   alias Mojito.{Config, Conn, Error, Request, Response}
