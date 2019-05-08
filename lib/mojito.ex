@@ -52,7 +52,7 @@ defmodule Mojito do
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.3.0"}
+      {:mojito, "~> 0.3.0_rc"}
 
   ## Configuration
 
