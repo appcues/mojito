@@ -17,8 +17,7 @@ defmodule Mojito do
 
   ## Why Mojito?
 
-  Mojito exists to fill a previously vacant niche in Erlang and Elixir HTTP
-  clients, combining the following design goals:
+  Mojito exists to satisfy the following design goals:
 
   * _Little or no configuration needed._  Use Mojito to make requests to as
     many different destinations as you like, without thinking about
@@ -28,22 +27,22 @@ defmodule Mojito do
     [Ibrowse](https://github.com/cmullaparthi/ibrowse) (and
     [HTTPotion](https://github.com/myfreeweb/httpotion)), and
     Erlang's built-in [httpc](http://erlang.org/doc/man/httpc.html)
-    offer this feature.
+    offer this feature, except that...
 
-  * _Connection pools used only for a single destination._  Using a pool
-    for making requests against multiple destinations is less than ideal,
-    as many of the connections need to be reset before use.  Mojito assigns
-    requests to the correct pools transparently to the user.  Other clients,
-    such as [Buoy](https://github.com/lpgauth/buoy), Hackney/HTTPoison, and
-    [Gun](https://github.com/ninenines/gun), force the user to handle this
+  * _Connection pools should be used only for a single destination._
+    Using a pool for making requests against multiple destinations is less
+    than ideal, as many of the connections need to be reset before use.
+    Mojito assigns requests to the correct pools transparently to the user.
+    Other clients, such as [Buoy](https://github.com/lpgauth/buoy), Hackney/
+    HTTPoison, Ibrowse/HTTPotion, etc. force the user to handle this
     themselves, which is often inconvenient if the full set of HTTP
     destinations is not known at compile time.
 
   * _Redundant pools to reduce GenServer-related bottlenecks._  Mojito can
     serve requests to the same destination from more than one connection
     pool, and those pools can be selected by round-robin at runtime in order
-    to minimize resource contention in the Erlang VM.  No other HTTP client
-    for Erlang or Elixir supports this.
+    to minimize resource contention in the Erlang VM.  This feature is
+    unique to Mojito.
 
   * _Ludicrous speed._  Mojito meets or exceeds the performance of
     every other HTTP client for Erlang or Elixir.
