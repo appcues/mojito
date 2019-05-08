@@ -1,6 +1,6 @@
 # Mojito benchmarks
 
-These benchmarks were conducted using [https:github.com/gamache/httpc_bench].
+These benchmarks were conducted using [https:github.com/gamache/httpc_bench](https:github.com/gamache/httpc_bench).
 
 GET requests lasting 10 ms were performed.
 
