@@ -49,32 +49,34 @@ defmodule MojitoTest do
     @http_port Application.get_env(:mojito, :test_server_http_port)
     @https_port Application.get_env(:mojito, :test_server_https_port)
 
-    defp get(path, opts \\ []) do
-      Mojito.request(
-        :get,
+    defp head(path, opts \\ []) do
+      Mojito.head(
         "http://localhost:#{@http_port}#{path}",
         [],
-        "",
+        opts
+      )
+    end
+
+    defp get(path, opts \\ []) do
+      Mojito.get(
+        "http://localhost:#{@http_port}#{path}",
+        [],
         opts
       )
     end
 
     defp get_with_user(path, user, opts \\ []) do
-      Mojito.request(
-        :get,
+      Mojito.get(
         "http://#{user}@localhost:#{@http_port}#{path}",
         [],
-        "",
         opts
       )
     end
 
     defp get_with_user_and_pass(path, user, pass, opts \\ []) do
-      Mojito.request(
-        :get,
+      Mojito.get(
         "http://#{user}:#{pass}@localhost:#{@http_port}#{path}",
         [],
-        "",
         opts
       )
     end
@@ -83,8 +85,7 @@ defmodule MojitoTest do
       body = Jason.encode!(body_obj)
       headers = [{"content-type", "application/json"}]
 
-      Mojito.request(
-        :post,
+      Mojito.post(
         "http://localhost:#{@http_port}#{path}",
         headers,
         body,
@@ -92,12 +93,50 @@ defmodule MojitoTest do
       )
     end
 
+    defp put(path, body_obj, opts \\ []) do
+      body = Jason.encode!(body_obj)
+      headers = [{"content-type", "application/json"}]
+
+      Mojito.put(
+        "http://localhost:#{@http_port}#{path}",
+        headers,
+        body,
+        opts
+      )
+    end
+
+    defp patch(path, body_obj, opts \\ []) do
+      body = Jason.encode!(body_obj)
+      headers = [{"content-type", "application/json"}]
+
+      Mojito.patch(
+        "http://localhost:#{@http_port}#{path}",
+        headers,
+        body,
+        opts
+      )
+    end
+
+    defp delete(path, opts \\ []) do
+      Mojito.delete(
+        "http://localhost:#{@http_port}#{path}",
+        [],
+        opts
+      )
+    end
+
+    defp options(path, opts \\ []) do
+      Mojito.options(
+        "http://localhost:#{@http_port}#{path}",
+        [],
+        opts
+      )
+    end
+
     defp get_ssl(path, opts \\ []) do
-      Mojito.request(
-        :get,
+      Mojito.get(
         "https://localhost:#{@https_port}#{path}",
         [],
-        "",
         [transport_opts: [verify: :verify_none]] ++ opts
       )
     end
@@ -236,6 +275,38 @@ defmodule MojitoTest do
       )
 
       assert(%{"user" => "hi", "pass" => "mom"} = Jason.decode!(response.body))
+    end
+
+    it "can make HEAD request" do
+      assert({:ok, response} = head("/"))
+      assert(200 == response.status_code)
+      assert("" == response.body)
+      assert("12" == Headers.get(response.headers, "content-length"))
+    end
+
+    it "can make PATCH request" do
+      assert({:ok, response} = patch("/patch", %{name: "Charlie"}))
+      resp_body = response.body |> Jason.decode!()
+      assert("Charlie" == resp_body["name"])
+    end
+
+    it "can make PUT request" do
+      assert({:ok, response} = put("/put", %{name: "Charlie"}))
+      resp_body = response.body |> Jason.decode!()
+      assert("Charlie" == resp_body["name"])
+    end
+
+    it "can make DELETE request" do
+      assert({:ok, response} = delete("/delete"))
+      assert(200 == response.status_code)
+    end
+
+    it "can make OPTIONS request" do
+      assert({:ok, response} = options("/"))
+      assert(
+        "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE" ==
+          Headers.get(response.headers, "allow")
+      )
     end
   end
 
