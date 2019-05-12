@@ -45,7 +45,7 @@ defmodule Mojito do
     unique to Mojito.
 
   * _Ludicrous speed._  Mojito meets or exceeds the performance of
-    every other HTTP client for Erlang or Elixir.
+    every other HTTP1/2 client for Erlang or Elixir.
     [Check out the benchmarks.](https://github.com/appcues/mojito/blob/0.3.0-rc/BENCHMARK.md)
 
   ## Installation
@@ -282,8 +282,6 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP HEAD request and returns the response.
 
-  This is equivalent to Mojito.request(:head, url, headers, "", opts)
-
   See `request/1` for documentation.
   """
   @spec head(String.t(), headers, Keyword.t()) ::
@@ -294,8 +292,6 @@ defmodule Mojito do
 
   @doc ~S"""
   Perform an HTTP GET request and returns the response.
-
-  This is equivalent to Mojito.request(:get, url, headers, "", opts)
 
   See `request/1` for documentation.
   """
@@ -308,8 +304,6 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP POST request and returns the response.
 
-  This is equivalent to Mojito.request(:post, url, headers, payload, opts)
-
   See `request/1` for documentation.
   """
   @spec post(String.t(), headers, String.t(), Keyword.t()) ::
@@ -320,8 +314,6 @@ defmodule Mojito do
 
   @doc ~S"""
   Perform an HTTP PUT request and returns the response.
-
-  This is equivalent to Mojito.request(:put, url, headers, payload, opts)
 
   See `request/1` for documentation.
   """
@@ -334,8 +326,6 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP PATCH request and returns the response.
 
-  This is equivalent to Mojito.request(:patch, url, headers, payload, opts)
-
   See `request/1` for documentation.
   """
   @spec patch(String.t(), headers, String.t(), Keyword.t()) ::
@@ -347,8 +337,6 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP DELETE request and returns the response.
 
-  This is equivalent to Mojito.request(:delete, url, headers, "", opts)
-
   See `request/1` for documentation.
   """
   @spec delete(String.t(), headers, Keyword.t()) ::
@@ -359,8 +347,6 @@ defmodule Mojito do
 
   @doc ~S"""
   Perform an HTTP OPTIONS request and returns the response.
-
-  This is equivalent to Mojito.request(:options, url, headers, "", opts)
 
   See `request/1` for documentation.
   """

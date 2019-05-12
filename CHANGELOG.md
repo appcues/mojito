@@ -4,7 +4,11 @@
 
 Major refactor.
 
-`Mojito.request/1,5` is now the main user interface.
+All end-user requests pass through `Mojito.request/1`, which now
+accepts keyword list input as well.  `Mojito.request/5` remains
+as an alias, and convenience methods for `get/3`, `post/4`, `put/4`,
+`patch/4`, `delete/3`, `head/3`, and `options/3` have been added
+(thanks, [@danhuynhdev](https://github.com/danhuynhdev)!).
 
 Connection pools are handled automatically, sorting requests to the
 correct pools, starting pools when necessary, and maintaining
@@ -14,11 +18,11 @@ multiple redundant pools for GenServer efficiency.
 
 Fixed a bug where long requests could exceed the given timeout without
 failing (#17).  Thanks for the report,
-[mischov](https://github.com/mischov)!
+[@mischov](https://github.com/mischov)!
 
 Improved documentation about receiving `:tcp` and `:ssl` messages.
 Thanks for the report,
-[axelson](https://github.com/axelson)!
+[@axelson](https://github.com/axelson)!
 
 Removed an extra `Task` process creation in `Mojito.Pool.request/2`.
 
