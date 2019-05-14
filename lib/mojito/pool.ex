@@ -11,7 +11,7 @@ defmodule Mojito.Pool do
   ## `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`.
   ## Config parameters are explained in the `Mojito` moduledocs.
 
-  alias Mojito.{Request, Utils}
+  alias Mojito.{Config, Request, Utils}
   require Logger
 
   @type pool_opts :: [pool_opt | {:destinations, [pool_opt]}]
@@ -89,7 +89,18 @@ defmodule Mojito.Pool do
   @doc false
   @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
   def start_pool(pool_key) do
-    GenServer.call(Mojito.Pool.Manager, {:start_pool, pool_key})
+    old_trap_exit = Process.flag(:trap_exit, true)
+
+    try do
+      GenServer.call(Mojito.Pool.Manager, {:start_pool, pool_key}, Config.timeout)
+    rescue
+      e -> {:error, e}
+    catch
+      :exit, _ -> {:error, :checkout_timeout}
+    after
+      Process.flag(:trap_exit, old_trap_exit)
+    end
+    |> Utils.wrap_return_value()
   end
 
   ## Returns a key representing the given destination.
