@@ -29,7 +29,6 @@ defmodule Mojito.Pool do
     max_overflow: 10,
     pools: 5,
     strategy: :lifo,
-    refractory_period: 3000
   ]
 
   @doc ~S"""
