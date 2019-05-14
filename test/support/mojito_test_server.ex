@@ -26,7 +26,7 @@ end
 defmodule Mojito.TestServer.PlugRouter do
   use Plug.Router
 
-  plug Plug.Head
+  plug(Plug.Head)
 
   plug(:match)
 
@@ -65,7 +65,9 @@ defmodule Mojito.TestServer.PlugRouter do
 
   options _ do
     conn
-    |> merge_resp_headers([{"Allow", "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE"}])
+    |> merge_resp_headers([
+      {"Allow", "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE"},
+    ])
     |> send_resp(200, "")
   end
 

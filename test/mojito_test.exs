@@ -303,6 +303,7 @@ defmodule MojitoTest do
 
     it "can make OPTIONS request" do
       assert({:ok, response} = options("/"))
+
       assert(
         "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE" ==
           Headers.get(response.headers, "allow")

@@ -92,7 +92,11 @@ defmodule Mojito.Pool do
     old_trap_exit = Process.flag(:trap_exit, true)
 
     try do
-      GenServer.call(Mojito.Pool.Manager, {:start_pool, pool_key}, Config.timeout)
+      GenServer.call(
+        Mojito.Pool.Manager,
+        {:start_pool, pool_key},
+        Config.timeout()
+      )
     rescue
       e -> {:error, e}
     catch
