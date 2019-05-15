@@ -2,11 +2,387 @@
 
 These benchmarks were conducted using [https:github.com/gamache/httpc_bench](https:github.com/gamache/httpc_bench).
 
-GET requests lasting 10 ms were performed.
+GET requests lasting 10 ms are performed.
 
-Clients ran on AWS m5.4xlarge (16 vCPUs, 64 GB RAM)
+Clients ran on AWS m5.4xlarge (16 vCPUs, 64 GB RAM) running Ubuntu 18.04.
 
-The server ran on a separate m5.4xlarge.
+The server ran on a separate m5.4xlarge, configured identically.
+
+Clients:
+
+* Mojito 0.3.0 (Mint 0.2.1)
+* Buoy `b65c06f`
+* MachineGun 0.1.5 (Gun 1.3.0)
+* Dlhttpc `1072652`
+* Hackney 1.15.1
+* Ibrowse 4.4.1
+* Httpc (OTP 21.2)
+* Mint 0.2.1, without pooling or keepalive, as a reference client.
+
+## Current results (2019-05-15)
+
+This benchmark was run after optimizing the servers for high-concurrency
+tasks by executing `ulimit -n 12000000` to increase the allowable number
+of open files.  This configuration is very different from the default
+`ulimit -n 1024` on Ubuntu systems.
+
+The enhanced configuration showed that Buoy and Gun really shine when
+they are allowed to stretch their legs.  Mojito performs well but has
+catch-up work to do!  Likely areas of improvement are in pipelining (we
+use none, currently) and concurrency-friendly connection checkout in a
+similar manner to Shackle or Dispcount.
+
+<table>
+<thead><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></thead>
+<tfoot><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></tfoot>
+<tr><td>Buoy</td><td>1</td><td>1024</td><td>4096</td><td>101280</td><td>79.6</td></tr>
+<tr><td>Buoy</td><td>1</td><td>1024</td><td>8192</td><td>97029</td><td>79.7</td></tr>
+<tr><td>Buoy</td><td>1</td><td>1024</td><td>2048</td><td>96272</td><td>79.5</td></tr>
+<tr><td>Buoy</td><td>1</td><td>1024</td><td>16384</td><td>85672</td><td>79.6</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>4096</td><td>84345</td><td>89.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>2048</td><td>78757</td><td>89.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>8192</td><td>77945</td><td>90</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>1024</td><td>2048</td><td>72950</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>16384</td><td>72247</td><td>90</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>1024</td><td>4096</td><td>72108</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>1024</td><td>1024</td><td>71219</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>4096</td><td>62332</td><td>94.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>4096</td><td>62068</td><td>0.8</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>1024</td><td>8192</td><td>61205</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>4096</td><td>59354</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>8192</td><td>59353</td><td>0.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>1024</td><td>1024</td><td>59273</td><td>79.4</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>2048</td><td>59069</td><td>94.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>8192</td><td>58707</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>8192</td><td>58066</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>16384</td><td>57690</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>2048</td><td>57468</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>16384</td><td>57098</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>8192</td><td>56712</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>16384</td><td>56690</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>8192</td><td>56645</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>4096</td><td>56325</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>16384</td><td>56198</td><td>0.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>8192</td><td>55993</td><td>95.1</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>4096</td><td>55633</td><td>0.6</td></tr>
+<tr><td>Mojito</td><td>16</td><td>1024</td><td>2048</td><td>55272</td><td>0.7</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>4096</td><td>55131</td><td>0.9</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>1024</td><td>16384</td><td>55055</td><td>2.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>1024</td><td>54993</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>8192</td><td>54943</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>16384</td><td>54500</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>1024</td><td>4096</td><td>54381</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>8192</td><td>54240</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>16384</td><td>53882</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>1024</td><td>1024</td><td>53848</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>2048</td><td>53814</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>4096</td><td>53731</td><td>1</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>4096</td><td>53702</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>4096</td><td>53622</td><td>0.6</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>2048</td><td>53610</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>4096</td><td>53488</td><td>0.7</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>2048</td><td>53451</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>1024</td><td>2048</td><td>53283</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>1024</td><td>2048</td><td>53091</td><td>1.5</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>2048</td><td>53006</td><td>0.7</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>4096</td><td>52844</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>1024</td><td>4096</td><td>52789</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>2048</td><td>52650</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>16384</td><td>52511</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>1024</td><td>4096</td><td>52297</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>2048</td><td>52247</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>1024</td><td>1024</td><td>52235</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>4096</td><td>52169</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>4096</td><td>52016</td><td>0.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>16384</td><td>51785</td><td>95.1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>1024</td><td>4096</td><td>51780</td><td>0.7</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>2048</td><td>51741</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>1024</td><td>2048</td><td>51627</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>8192</td><td>51388</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>2048</td><td>51387</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>2048</td><td>51378</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>8192</td><td>51008</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>2048</td><td>50834</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>2048</td><td>50630</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>1024</td><td>1024</td><td>50204</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>2048</td><td>50108</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>1024</td><td>50034</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>32</td><td>64</td><td>1024</td><td>49968</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>16384</td><td>49966</td><td>1.8</td></tr>
+<tr><td>Buoy</td><td>1</td><td>512</td><td>1024</td><td>49709</td><td>89.8</td></tr>
+<tr><td>Mojito</td><td>4</td><td>256</td><td>1024</td><td>49635</td><td>1.5</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>1024</td><td>49613</td><td>1</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>16384</td><td>49330</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>1024</td><td>49264</td><td>1</td></tr>
+<tr><td>Mojito</td><td>32</td><td>32</td><td>4096</td><td>49209</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>4096</td><td>49164</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>2048</td><td>49152</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>8192</td><td>48732</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>256</td><td>8192</td><td>48395</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>128</td><td>1024</td><td>48349</td><td>1.5</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>1024</td><td>48100</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>16384</td><td>48067</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>16</td><td>128</td><td>1024</td><td>47859</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>1024</td><td>47576</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>1</td><td>1024</td><td>8192</td><td>47573</td><td>0.8</td></tr>
+<tr><td>Mojito</td><td>8</td><td>256</td><td>1024</td><td>47218</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>8192</td><td>46845</td><td>1.7</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>8192</td><td>46811</td><td>1.4</td></tr>
+<tr><td>Mojito</td><td>16</td><td>1024</td><td>1024</td><td>46721</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>4</td><td>1024</td><td>8192</td><td>46195</td><td>1.3</td></tr>
+<tr><td>Mojito</td><td>16</td><td>512</td><td>16384</td><td>46190</td><td>1.6</td></tr>
+<tr><td>Mojito</td><td>32</td><td>128</td><td>1024</td><td>45386</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>256</td><td>1024</td><td>45115</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>16</td><td>64</td><td>1024</td><td>45082</td><td>1.4</td></tr>
+<tr><td>Mojito</td><td>4</td><td>512</td><td>16384</td><td>44398</td><td>1.2</td></tr>
+<tr><td>Mojito</td><td>8</td><td>1024</td><td>16384</td><td>43890</td><td>2.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>512</td><td>1024</td><td>43529</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>512</td><td>2048</td><td>43491</td><td>0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>4096</td><td>43476</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>8192</td><td>43327</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>16384</td><td>43300</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>8192</td><td>43240</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>2048</td><td>43067</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>4096</td><td>42978</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>8192</td><td>42936</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>16384</td><td>42892</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>16384</td><td>42858</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>8192</td><td>42817</td><td>1.4</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>2048</td><td>42718</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>4096</td><td>42662</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>4</td><td>128</td><td>1024</td><td>42556</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>2048</td><td>42497</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>2048</td><td>42367</td><td>0.9</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>512</td><td>4096</td><td>42362</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>4096</td><td>42187</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>8</td><td>64</td><td>1024</td><td>41979</td><td>0.9</td></tr>
+<tr><td>Mojito</td><td>16</td><td>32</td><td>1024</td><td>41876</td><td>0.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>4096</td><td>40492</td><td>97.5</td></tr>
+<tr><td>Buoy</td><td>1</td><td>256</td><td>1024</td><td>40148</td><td>94.9</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>512</td><td>8192</td><td>39488</td><td>1.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>1024</td><td>39362</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>8192</td><td>37746</td><td>0.9</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>512</td><td>16384</td><td>37613</td><td>3.1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>2048</td><td>37507</td><td>97.5</td></tr>
+<tr><td>Mojito</td><td>32</td><td>1024</td><td>8192</td><td>36927</td><td>0.7</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>8192</td><td>36476</td><td>97.5</td></tr>
+<tr><td>Mojito</td><td>16</td><td>1024</td><td>8192</td><td>33914</td><td>0.8</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>8192</td><td>33847</td><td>4.4</td></tr>
+<tr><td>Mojito</td><td>32</td><td>512</td><td>16384</td><td>33554</td><td>2.2</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>4096</td><td>33002</td><td>3.9</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>2048</td><td>31958</td><td>2.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>16384</td><td>31956</td><td>97.6</td></tr>
+<tr><td>Mojito</td><td>32</td><td>1024</td><td>4096</td><td>31289</td><td>3.1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>128</td><td>1024</td><td>30956</td><td>97.4</td></tr>
+<tr><td>Mojito</td><td>8</td><td>1024</td><td>8192</td><td>30955</td><td>2.4</td></tr>
+<tr><td>Mojito</td><td>1</td><td>512</td><td>16384</td><td>30296</td><td>5.2</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>16384</td><td>30091</td><td>4.9</td></tr>
+<tr><td>Mojito</td><td>1</td><td>1024</td><td>16384</td><td>28546</td><td>8.6</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>1024</td><td>1024</td><td>28443</td><td>70.5</td></tr>
+<tr><td>Mojito</td><td>16</td><td>1024</td><td>16384</td><td>27933</td><td>2.4</td></tr>
+<tr><td>Mojito</td><td>8</td><td>512</td><td>16384</td><td>27761</td><td>2.2</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>32</td><td>1024</td><td>27589</td><td>0.1</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>4096</td><td>26942</td><td>0.2</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>2048</td><td>26386</td><td>0.4</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>8192</td><td>26133</td><td>0.7</td></tr>
+<tr><td>Mojito</td><td>32</td><td>1024</td><td>2048</td><td>25969</td><td>4.4</td></tr>
+<tr><td>Mojito</td><td>32</td><td>1024</td><td>16384</td><td>24921</td><td>2.8</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>16384</td><td>24618</td><td>0.4</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>4096</td><td>23537</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>1024</td><td>8192</td><td>23528</td><td>95.2</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>64</td><td>1024</td><td>23308</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>256</td><td>1024</td><td>23134</td><td>0.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>256</td><td>2048</td><td>23058</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>1024</td><td>16384</td><td>22908</td><td>4.3</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>256</td><td>4096</td><td>22816</td><td>0.1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>4096</td><td>22782</td><td>98.7</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>4096</td><td>22759</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>1024</td><td>22702</td><td>1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>16384</td><td>22666</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>2048</td><td>22637</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>8192</td><td>22620</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>4096</td><td>22604</td><td>1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>8192</td><td>22598</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>16384</td><td>22469</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>4096</td><td>22469</td><td>1</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>2048</td><td>22469</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>2048</td><td>22463</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>2048</td><td>22384</td><td>1</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>8192</td><td>22330</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>1024</td><td>22316</td><td>0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>64</td><td>1024</td><td>22296</td><td>1</td></tr>
+<tr><td>Mojito</td><td>8</td><td>32</td><td>1024</td><td>22239</td><td>1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>256</td><td>8192</td><td>22063</td><td>1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>2048</td><td>21941</td><td>98.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>2048</td><td>21694</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>256</td><td>16384</td><td>21479</td><td>3.3</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>16384</td><td>21437</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>8192</td><td>21220</td><td>1.1</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>8192</td><td>21124</td><td>98.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>4096</td><td>21031</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>128</td><td>1024</td><td>20333</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>16384</td><td>20244</td><td>98.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>2048</td><td>19964</td><td>94.9</td></tr>
+<tr><td>Buoy</td><td>1</td><td>64</td><td>1024</td><td>19597</td><td>98.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>8192</td><td>19085</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>256</td><td>16384</td><td>19067</td><td>5.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>1024</td><td>18643</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>4096</td><td>18626</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>1024</td><td>16384</td><td>18513</td><td>96.5</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>4096</td><td>18133</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>2048</td><td>17955</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>8192</td><td>17925</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>256</td><td>16384</td><td>17633</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>1024</td><td>2048</td><td>17571</td><td>87.6</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>2048</td><td>17538</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>16384</td><td>17126</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>1024</td><td>4096</td><td>16957</td><td>92.6</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>256</td><td>1024</td><td>16948</td><td>0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>16384</td><td>15805</td><td>6.2</td></tr>
+<tr><td>Mojito</td><td>32</td><td>1024</td><td>1024</td><td>15511</td><td>8.5</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>8192</td><td>15265</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>8192</td><td>13699</td><td>97.6</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>4096</td><td>13698</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>16384</td><td>13285</td><td>14.7</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>8192</td><td>13145</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>2048</td><td>13078</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>16384</td><td>12705</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>512</td><td>16384</td><td>12579</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>2048</td><td>12492</td><td>99.4</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>512</td><td>1024</td><td>12369</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>8192</td><td>11657</td><td>99.4</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>128</td><td>1024</td><td>11615</td><td>0.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>128</td><td>2048</td><td>11606</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>1024</td><td>11603</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>2048</td><td>11596</td><td>1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>1024</td><td>2048</td><td>11573</td><td>0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>4096</td><td>11571</td><td>1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>128</td><td>4096</td><td>11570</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>4096</td><td>11568</td><td>1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>1024</td><td>1024</td><td>11566</td><td>0</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>2048</td><td>11556</td><td>1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>8192</td><td>11550</td><td>1</td></tr>
+<tr><td>Mojito</td><td>4</td><td>32</td><td>1024</td><td>11517</td><td>1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>1024</td><td>11465</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>4096</td><td>11463</td><td>99.4</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>16384</td><td>11443</td><td>99.4</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>2048</td><td>11438</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>128</td><td>8192</td><td>11432</td><td>0.9</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>4096</td><td>11430</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>128</td><td>8192</td><td>11249</td><td>1.3</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>8192</td><td>11152</td><td>0</td></tr>
+<tr><td>Buoy</td><td>1</td><td>32</td><td>1024</td><td>10956</td><td>99.4</td></tr>
+<tr><td>Hackney</td><td>1</td><td>1024</td><td>4096</td><td>10725</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>128</td><td>16384</td><td>10544</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>2048</td><td>10270</td><td>97.7</td></tr>
+<tr><td>Hackney</td><td>1</td><td>1024</td><td>8192</td><td>9662</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>1024</td><td>9114</td><td>96.8</td></tr>
+<tr><td>Hackney</td><td>1</td><td>1024</td><td>16384</td><td>8551</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>1024</td><td>8393</td><td>89.9</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>1024</td><td>4096</td><td>8365</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>4096</td><td>8319</td><td>95.9</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>1024</td><td>2048</td><td>8149</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>1024</td><td>8192</td><td>8121</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>8192</td><td>7993</td><td>15.3</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>8192</td><td>7966</td><td>98.7</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>1024</td><td>16384</td><td>7962</td><td>0</td></tr>
+<tr><td>Ibrowse</td><td>1</td><td>1024</td><td>1024</td><td>7828</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>512</td><td>16384</td><td>6968</td><td>98.2</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>16384</td><td>6722</td><td>99</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>64</td><td>1024</td><td>5810</td><td>0.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>64</td><td>4096</td><td>5807</td><td>0.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>64</td><td>2048</td><td>5807</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>2048</td><td>5806</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>1024</td><td>5806</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>4096</td><td>5805</td><td>1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>1024</td><td>5791</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>2048</td><td>5787</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>4096</td><td>5781</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>1024</td><td>5753</td><td>98.6</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>8192</td><td>5746</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>1024</td><td>5742</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>64</td><td>16384</td><td>5682</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>2048</td><td>5680</td><td>99</td></tr>
+<tr><td>Httpc</td><td>1</td><td>1024</td><td>2048</td><td>5571</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>1024</td><td>5568</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>4096</td><td>5562</td><td>17.4</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>1024</td><td>5560</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>1024</td><td>5543</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>4096</td><td>5532</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>2048</td><td>5488</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>1024</td><td>5467</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>4096</td><td>5408</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>1024</td><td>4096</td><td>5397</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>1024</td><td>1024</td><td>5340</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>2048</td><td>5263</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>2048</td><td>5231</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>2048</td><td>5186</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>4096</td><td>5184</td><td>99.2</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>2048</td><td>5143</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>8192</td><td>5082</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>4096</td><td>5031</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>8192</td><td>5013</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>8192</td><td>5001</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>4096</td><td>4998</td><td>0</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>8192</td><td>4991</td><td>31.8</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>8192</td><td>4973</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>4096</td><td>4971</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>1024</td><td>8192</td><td>4718</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>64</td><td>16384</td><td>4590</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>8192</td><td>4540</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>256</td><td>16384</td><td>4525</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>32</td><td>16384</td><td>4427</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>1024</td><td>16384</td><td>4408</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>8192</td><td>4364</td><td>99.4</td></tr>
+<tr><td>Httpc</td><td>1</td><td>128</td><td>16384</td><td>4298</td><td>0</td></tr>
+<tr><td>Httpc</td><td>1</td><td>512</td><td>16384</td><td>4268</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>128</td><td>16384</td><td>3693</td><td>99.5</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>2048</td><td>3474</td><td>2</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>1024</td><td>3440</td><td>2</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>256</td><td>4096</td><td>3374</td><td>98.4</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>8192</td><td>3326</td><td>6.6</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>1024</td><td>3178</td><td>99.4</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>2048</td><td>3170</td><td>99.5</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>4096</td><td>3114</td><td>8.7</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>32</td><td>2048</td><td>2906</td><td>0.1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>2048</td><td>2903</td><td>1</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>1024</td><td>2903</td><td>1</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>1024</td><td>2898</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>4096</td><td>2897</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>2048</td><td>2897</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>8192</td><td>2896</td><td>0</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>32</td><td>1024</td><td>2891</td><td>0</td></tr>
+<tr><td>Hackney</td><td>1</td><td>32</td><td>16384</td><td>2885</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>4096</td><td>2622</td><td>99.6</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>32</td><td>4096</td><td>2362</td><td>42.2</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>8192</td><td>2155</td><td>99.7</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>64</td><td>16384</td><td>2091</td><td>99.7</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>64</td><td>8192</td><td>1871</td><td>77.1</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>2048</td><td>1681</td><td>99.8</td></tr>
+<tr><td>Mint</td><td>1</td><td>1</td><td>16384</td><td>1658</td><td>0</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>1024</td><td>1606</td><td>99.7</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>4096</td><td>1411</td><td>99.8</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>8192</td><td>1209</td><td>99.9</td></tr>
+<tr><td>Dlhttpc</td><td>1</td><td>32</td><td>16384</td><td>1022</td><td>99.9</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>128</td><td>16384</td><td>467</td><td>97.1</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>64</td><td>16384</td><td>196</td><td>98.8</td></tr>
+<tr><td>Mojito</td><td>1</td><td>64</td><td>16384</td><td>96</td><td>98.8</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>32</td><td>16384</td><td>96</td><td>99.4</td></tr>
+<tr><td>MachineGun</td><td>1</td><td>32</td><td>8192</td><td>48</td><td>99.4</td></tr>
+<tr><td>Mojito</td><td>1</td><td>32</td><td>16384</td><td>47</td><td>99.4</td></tr>
+</table>
+
+
+
+
+
+## The original benchmark
+
+With server specs as above, except using Ubuntu's default `ulimit -n 1024`.
+This benchmark rightly showed that Mojito is fast, but wrongly showed it
+being faster than Buoy.  It does tell us that Mojito excels in
+resource-constrained environments, or where configuring custom `ulimit`s
+is not possible.
 
 <table>
 <thead><tr><th>Client</th><th>Pool Count</th><th>Pool Size</th><th>Concurrency</th><th>Req/sec</th><th>Error %</th></tr></thead>

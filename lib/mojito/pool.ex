@@ -28,7 +28,7 @@ defmodule Mojito.Pool do
     size: 5,
     max_overflow: 10,
     pools: 5,
-    strategy: :lifo,
+    strategy: :lifo
   ]
 
   @doc ~S"""

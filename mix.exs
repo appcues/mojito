@@ -1,7 +1,7 @@
 defmodule Mojito.MixProject do
   use Mix.Project
 
-  @version "0.3.0-rc"
+  @version "0.3.0"
   @repo_url "https://github.com/appcues/mojito"
 
   def project do

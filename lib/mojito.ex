@@ -13,7 +13,7 @@ defmodule Mojito do
 
   ## Quickstart
 
-      {:ok, response} = Mojito.get("https://github.com")
+      {:ok, response} = Mojito.request(method: :get, url: "https://github.com")
 
   ## Why Mojito?
 
@@ -38,22 +38,25 @@ defmodule Mojito do
     themselves, which is often inconvenient if the full set of HTTP
     destinations is not known at compile time.
 
-  * _Redundant pools to reduce GenServer-related bottlenecks._  Mojito can
+  * _Redundant pools to reduce concurrency-related bottlenecks._  Mojito can
     serve requests to the same destination from more than one connection
     pool, and those pools can be selected by round-robin at runtime in order
     to minimize resource contention in the Erlang VM.  This feature is
     unique to Mojito.
-
-  * _Do it fast._  Mojito meets or exceeds the performance of every other
-    HTTP/1+2 client for Erlang or Elixir.  (We don't beat every HTTP/1-only
-    client... yet.)  [Check out the
-    benchmarks.](https://github.com/appcues/mojito/blob/0.3.0-rc/BENCHMARK.md)
 
   ## Installation
 
   Add `mojito` to your deps in `mix.exs`:
 
       {:mojito, "~> 0.3.0"}
+
+  ## Upgrading from 0.2
+
+  Using request methods other than those in the `Mojito` module is deprecated.
+  A handful of new config parameters appeared as well.
+
+  Upgrading 0.2 to 0.3 cannot be performed safely inside a hot upgrade.
+  Deploy a regular release instead.
 
   ## Configuration
 
