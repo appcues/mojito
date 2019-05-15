@@ -17,7 +17,7 @@ defmodule Mojito do
 
   ## Why Mojito?
 
-  Mojito exists to satisfy the following design goals:
+  Mojito addresses the following design goals:
 
   * _Little or no configuration needed._  Use Mojito to make requests to as
     many different destinations as you like, without thinking about
@@ -44,15 +44,16 @@ defmodule Mojito do
     to minimize resource contention in the Erlang VM.  This feature is
     unique to Mojito.
 
-  * _Ludicrous speed._  Mojito meets or exceeds the performance of
-    every other HTTP1/2 client for Erlang or Elixir.
-    [Check out the benchmarks.](https://github.com/appcues/mojito/blob/0.3.0-rc/BENCHMARK.md)
+  * _Do it fast._  Mojito meets or exceeds the performance of every other
+    HTTP/1+2 client for Erlang or Elixir.  (We don't beat every HTTP/1-only
+    client... yet.)  [Check out the
+    benchmarks.](https://github.com/appcues/mojito/blob/0.3.0-rc/BENCHMARK.md)
 
   ## Installation
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.3.0-rc"}
+      {:mojito, "~> 0.3.0"}
 
   ## Configuration
 
