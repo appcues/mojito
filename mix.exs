@@ -1,11 +1,14 @@
 defmodule Mojito.MixProject do
   use Mix.Project
 
+  @version "0.3.0"
+  @repo_url "https://github.com/appcues/mojito"
+
   def project do
     [
       app: :mojito,
-      description: "Mojito is a high-level HTTP client based on Mint.",
-      version: "0.2.2",
+      description: "Fast, easy to use HTTP client based on Mint",
+      version: @version,
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -14,12 +17,11 @@ defmodule Mojito.MixProject do
       dialyzer: [
         plt_add_apps: [:mix],
       ],
-      aliases: [
-        docs: "docs --source-url https://github.com/appcues/mojito",
-      ],
       docs: [
         logo: "assets/mojito.png",
         main: "Mojito",
+        source_ref: @version,
+        source_url: @repo_url,
       ],
     ]
   end
@@ -31,7 +33,7 @@ defmodule Mojito.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["pete gamache <pete@appcues.com>"],
-      links: %{github: "https://github.com/appcues/mojito"},
+      links: %{github: @repo_url},
     ]
   end
 
@@ -44,7 +46,7 @@ defmodule Mojito.MixProject do
 
   defp deps do
     [
-      {:mint, "~> 0.2"},
+      {:mint, "~> 0.2.1"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},

@@ -1,151 +1,139 @@
 defmodule Mojito.Pool do
-  @moduledoc ~S"""
-  Mojito.Pool provides an HTTP request connection pool based on
-  Mojito and Poolboy.
+  @moduledoc false
 
-  Example:
+  ## Mojito.Pool is an HTTP client with high-performance, easy-to-use
+  ## connection pools.
+  ##
+  ## Pools are maintained automatically by Mojito, requests are matched to
+  ## the correct pool without user intervention, and multiple pools can be
+  ## used for the same destination in order to reduce concurrency bottlenecks.
+  ##
+  ## `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`.
+  ## Config parameters are explained in the `Mojito` moduledocs.
 
-      >>>> children = [Mojito.Pool.child_spec(MyPool)]
-      >>>> {:ok, _pid} = Supervisor.start_link(children, strategy: :one_for_one)
-      >>>> Mojito.Pool.request(MyPool, :get, "http://example.com")
-      {:ok, %Mojito.Response{...}}
-  """
+  alias Mojito.{Config, Request, Utils}
+  require Logger
 
-  alias Mojito.Utils
+  @type pool_opts :: [pool_opt | {:destinations, [pool_opt]}]
 
-  defp pool_opts, do: Application.get_env(:mojito, :pool_opts, [])
+  @type pool_opt ::
+          {:size, pos_integer}
+          | {:max_overflow, non_neg_integer}
+          | {:pools, pos_integer}
+          | {:strategy, :lifo | :fifo}
 
-  @doc ~S"""
-  Returns a child spec suitable to pass to e.g., `Supervisor.start_link/2`.
+  @typep pool_key :: {String.t(), pos_integer}
 
-  Options:
-
-  * `:size` sets the initial pool size.  Default is 10.
-  * `:max_overflow` sets the maximum number of additional connections
-    under high load.  Default is 5.
-  * `:strategy` sets the pool connection-grabbing strategy. Valid values
-    are `:fifo` and `:lifo` (default).
-
-  The `:size` and `:max_overflow` options are passed to Poolboy.
-  """
-  def child_spec(name, opts \\ []) do
-    size = opts[:size] || pool_opts()[:size] || 10
-    max_overflow = opts[:max_overflow] || pool_opts()[:max_overflow] || 5
-    strategy = opts[:strategy] || pool_opts()[:strategy] || :lifo
-
-    poolboy_config = [
-      {:name, {:local, name}},
-      {:worker_module, Mojito.ConnServer},
-      {:size, size},
-      {:max_overflow, max_overflow},
-      {:strategy, strategy},
-    ]
-
-    :poolboy.child_spec(name, poolboy_config)
-  end
-
-  @request_timeout Application.get_env(:mojito, :request_timeout, 5000)
+  @default_pool_opts [
+    size: 5,
+    max_overflow: 10,
+    pools: 5,
+    strategy: :lifo
+  ]
 
   @doc ~S"""
-  Makes an HTTP request using the given connection pool.
-
-  See `request/2` for documentation.
+  Performs an HTTP request using a connection pool, creating that pool if
+  it didn't already exist.  Requests are always matched to a pool that is
+  connected to the correct destination host and port.
   """
-  @spec request(
-          pid,
-          Mojito.method(),
-          String.t(),
-          Mojito.headers(),
-          String.t(),
-          Keyword.t()
-        ) :: {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, method, url, headers \\ [], payload \\ "", opts \\ []) do
-    req = %Mojito.Request{
-      method: method,
-      url: url,
-      headers: headers,
-      payload: payload,
-      opts: opts,
-    }
-
-    request(pool, req)
-  end
-
-  @doc ~S"""
-  Makes an HTTP request using the given connection pool.
-
-  Options:
-
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :request_timeout, 5000)`.
-  * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
-    Most commonly used to perform insecure HTTPS requests via
-    `transport_opts: [verify: :verify_none]`.
-  """
-  @spec request(pid, Mojito.request()) ::
+  @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, request)
-
-  def request(_pool, %{method: nil}) do
-    {:error, %Mojito.Error{message: "method cannot be nil"}}
-  end
-
-  def request(_pool, %{method: ""}) do
-    {:error, %Mojito.Error{message: "method cannot be blank"}}
-  end
-
-  def request(_pool, %{url: nil}) do
-    {:error, %Mojito.Error{message: "url cannot be nil"}}
-  end
-
-  def request(_pool, %{url: ""}) do
-    {:error, %Mojito.Error{message: "url cannot be blank"}}
-  end
-
-  def request(_pool, %{headers: h}) when not is_list(h) and not is_nil(h) do
-    {:error, %Mojito.Error{message: "headers must be a list"}}
-  end
-
-  def request(_pool, %{payload: p}) when not is_binary(p) and not is_nil(p) do
-    {:error, %Mojito.Error{message: "payload must be a UTF-8 string"}}
-  end
-
-  def request(pool, request) do
-    opts = request.opts || []
-    headers = request.headers || []
-    payload = request.payload || ""
-
-    timeout = opts[:timeout] || @request_timeout
-
-    start_time = time()
-
-    worker_fn = fn worker ->
-      case Mojito.ConnServer.request(
-             worker,
-             self,
-             request.method,
-             request.url,
-             headers,
-             payload,
-             opts
-           ) do
-        :ok ->
-          new_timeout = timeout - (time() - start_time)
-
-          receive do
-            {:mojito_response, response} -> response
-          after
-            new_timeout -> {:error, :timeout}
-          end
-
-        e ->
-          e
-      end
+  def request(%{} = request) do
+    with {:ok, valid_request} <- Request.validate_request(request),
+         {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
+         pool_key <- pool_key(host, port),
+         {:ok, pool} <- get_pool(pool_key) do
+      do_request(pool, pool_key, valid_request)
     end
+  end
 
-    :poolboy.transaction(pool, worker_fn, timeout)
+  defp do_request(pool, pool_key, request) do
+    case Mojito.Pool.Single.request(pool, request) do
+      {:error, %{reason: :checkout_timeout}} ->
+        {:ok, pid} = start_pool(pool_key)
+        Mojito.Pool.Single.request(pid, request)
+
+      other ->
+        other
+    end
+  end
+
+  ## Returns a pool for the given destination, starting one or more
+  ## if necessary.
+  @doc false
+  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
+  def get_pool(pool_key) do
+    case get_pools(pool_key) do
+      [] ->
+        Logger.debug("Mojito.Pool: starting pools for #{inspect(pool_key)}")
+        opts = pool_opts(pool_key)
+        1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
+        get_pool(pool_key)
+
+      pools ->
+        {:ok, Enum.random(pools)}
+    end
+  end
+
+  ## Returns all pools for the given destination.
+  @doc false
+  @spec get_pools(any) :: [pid]
+  defp get_pools(pool_key) do
+    Mojito.Pool.Registry
+    |> Registry.lookup(pool_key)
+    |> Enum.map(fn {_, pid} -> pid end)
+  end
+
+  ## Starts a new pool for the given destination.
+  @doc false
+  @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
+  def start_pool(pool_key) do
+    old_trap_exit = Process.flag(:trap_exit, true)
+
+    try do
+      GenServer.call(
+        Mojito.Pool.Manager,
+        {:start_pool, pool_key},
+        Config.timeout()
+      )
+    rescue
+      e -> {:error, e}
+    catch
+      :exit, _ -> {:error, :checkout_timeout}
+    after
+      Process.flag(:trap_exit, old_trap_exit)
+    end
     |> Utils.wrap_return_value()
   end
 
-  defp time, do: System.monotonic_time(:millisecond)
+  ## Returns a key representing the given destination.
+  @doc false
+  @spec pool_key(String.t(), pos_integer) :: pool_key
+  def pool_key(host, port) do
+    {host, port}
+  end
+
+  ## Returns the configured `t:pool_opts` for the given destination.
+  @doc false
+  @spec pool_opts(pool_key) :: Mojito.pool_opts()
+  def pool_opts({host, port}) do
+    destination_key =
+      try do
+        "#{host}:#{port}" |> String.to_existing_atom()
+      rescue
+        _ -> :none
+      end
+
+    config_pool_opts = Application.get_env(:mojito, :pool_opts, [])
+
+    destination_pool_opts =
+      config_pool_opts
+      |> Keyword.get(:destinations, [])
+      |> Keyword.get(destination_key, [])
+
+    @default_pool_opts
+    |> Keyword.merge(config_pool_opts)
+    |> Keyword.merge(destination_pool_opts)
+    |> Keyword.delete(:destinations)
+  end
 end

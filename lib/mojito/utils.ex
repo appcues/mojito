@@ -14,7 +14,9 @@ defmodule Mojito.Utils do
       :ok -> rv
       {:ok, _} -> rv
       {:error, %Error{}} -> rv
+      {:error, {:error, e}} -> {:error, %Error{reason: e}}
       {:error, e} -> {:error, %Error{reason: e}}
+      {:error, _mint_conn, error} -> {:error, %Error{reason: error}}
       other -> {:error, %Error{reason: :unknown, message: other}}
     end
   end

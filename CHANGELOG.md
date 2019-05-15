@@ -1,14 +1,28 @@
 # Changelog
 
-## 0.2.2 (2019-04-46)
+## 0.3.0 (2019-05-08)
+
+Major refactor.
+
+All end-user requests pass through `Mojito.request/1`, which now
+accepts keyword list input as well.  `Mojito.request/5` remains
+as an alias, and convenience methods for `get/3`, `post/4`, `put/4`,
+`patch/4`, `delete/3`, `head/3`, and `options/3` have been added
+(thanks, [@danhuynhdev](https://github.com/danhuynhdev)!).
+
+Connection pools are handled automatically, sorting requests to the
+correct pools, starting pools when necessary, and maintaining
+multiple redundant pools for GenServer efficiency.
+
+## 0.2.2 (2019-04-26)
 
 Fixed a bug where long requests could exceed the given timeout without
 failing (#17).  Thanks for the report,
-[mischov](https://github.com/mischov)!
+[@mischov](https://github.com/mischov)!
 
 Improved documentation about receiving `:tcp` and `:ssl` messages.
 Thanks for the report,
-[axelson](https://github.com/axelson)!
+[@axelson](https://github.com/axelson)!
 
 Removed an extra `Task` process creation in `Mojito.Pool.request/2`.
 
@@ -22,7 +36,7 @@ Added `Mojito.request/1` and `Mojito.Pool.request/2`, which accept a
 
 Removed dependency on Fuzzyurl in favor of built-in URI module.
 
-## O.2.0 (2019-04-19)
+## 0.2.0 (2019-04-19)
 
 Messages sent by Mojito now contain a `:mojito_response` prefix, to allow
 processes to select or ignore these messages with `receive`.
