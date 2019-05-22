@@ -39,13 +39,49 @@ defmodule Mojito.Pool do
   @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%{} = request) do
+    timeout = request.opts[:timeout] || Mojito.Config.timeout()
+
     with {:ok, valid_request} <- Request.validate_request(request),
          {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
          pool_key <- pool_key(host, port),
-         {:ok, pool} <- get_pool(pool_key) do
-      do_request(pool, pool_key, valid_request)
+         {:ok, pool} <- get_pool(pool_key),
+         {:ok, worker, timeout_left} <- get_worker(pool, time(), timeout) do
+      do_request(worker, pool_key, valid_request)
     end
   end
+
+
+  defp time, do: :erlang.monotonic_time(:millisecond)
+
+  def get_worker(pool, time_started, timeout) do
+    index = :random.uniform(pool.size)
+    worker_name = {Mojito.Pool, pool.name, index}
+    current_pipeline = :counters.get(pool.pipeline, index)
+
+    cond do
+      time_started + timeout < time() ->
+        {:error, :checkout_timeout}
+
+      current_pipeline > pool.max_pipeline ->
+        get_worker(pool, time_started, timeout)
+
+      :else ->
+        case Registry.lookup(Mojito.Pool.Registry, worker_name) do
+          [pid] ->
+            {:ok, pid, timeout - (time() - time_started)}
+
+          [] ->
+            ## Transient error due to recent worker death; retry
+            get_worker(pool, time_started, timeout)
+
+          _ ->
+            ## This should not happen
+            {:error, :too_many_workers}
+        end
+      end
+    end
+  end
+
 
   defp do_request(pool, pool_key, request) do
     case Mojito.Pool.Single.request(pool, request) do

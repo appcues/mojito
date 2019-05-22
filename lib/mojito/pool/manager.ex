@@ -18,91 +18,49 @@ defmodule Mojito.Pool.Manager do
 
   defp time, do: System.monotonic_time(:millisecond)
 
-  def handle_call({:start_pool, pool_key}, _from, state) do
-    pool_opts = Mojito.Pool.pool_opts(pool_key)
-    max_pools = pool_opts[:pools]
+  def handle_call({:start_pool, pool_name, size}, _from, state) do
+    pool = %{
+      name: pool_name,
+      size: size,
 
-    pools = state.pools |> Map.get(pool_key, [])
-    npools = Enum.count(pools)
+      ## Current pipeline depth for each worker
+      ## Resets to 0 if worker dies
+      pipeline: :counters.new(size),
 
-    cond do
-      npools >= max_pools ->
-        ## We're at max, don't start a new pool
-        {:reply, {:ok, Enum.random(pools)}, state}
+      ## Total success responses for each worker slot
+      ## Persists if worker dies
+      response_2xx: :counters.new(size),
 
-      :else ->
-        actually_start_pool(pool_key, pool_opts, pools, npools, state)
-    end
-  end
+      ## Total 4xx responses for each worker slot
+      ## Persists if worker dies
+      response_4xx: :counters.new(size),
 
-  def handle_call(:get_all_pool_states, _from, state) do
-    all_pool_states =
-      state.pools
-      |> Enum.map(fn {pool_key, pools} ->
-        {pool_key, pools |> Enum.map(&get_poolboy_state/1)}
-      end)
-      |> Enum.into(%{})
+      ## Total 5xx responses for each worker slot
+      ## Persists if worker dies
+      response_5xx: :counters.new(size),
+    }
 
-    {:reply, all_pool_states, state}
-  end
+    ## Start `size` workers, each of which will register itself in
+    ## Mojito.Pool.Registry
+    1..size
+    |> Enum.each(fn index ->
+      {:ok, _pid} =
+        DynamicSupervisor.start_child(
+          Mojito.Pool.Supervisor,
+          {Mojito.ConnServer, [pool: pool, index: index]}
+        )
+    end)
 
-  def handle_call({:get_pool_states, pool_key}, _from, state) do
-    pools = state.pools |> Map.get(pool_key, [])
-    pool_states = pools |> Enum.map(&get_poolboy_state/1)
-    {:reply, pool_states, state}
-  end
+    ## This pool will primarily be looked up using persistent_term
+    :persistent_term.put(pool_name, pool)
 
-  def handle_call({:get_pools, pool_key}, _from, state) do
-    {:reply, Map.get(state.pools, pool_key, []), state}
+    ## This is mostly for convenience and debugging
+    pools = state.pools |> Map.put(pool_name, pool)
+
+    {:reply, pool, %{state | pools: pools}}
   end
 
   def handle_call(:state, _from, state) do
     {:reply, state, state}
-  end
-
-  defp get_poolboy_state(pool_pid) do
-    {:state, supervisor, workers, waiting, monitors, size, overflow,
-     max_overflow, strategy} = :sys.get_state(pool_pid)
-
-    %{
-      supervisor: supervisor,
-      workers: workers,
-      waiting: waiting,
-      monitors: monitors,
-      size: size,
-      overflow: overflow,
-      max_overflow: max_overflow,
-      strategy: strategy,
-    }
-  end
-
-  ## This is designed to be able to launch pools on-demand, but for now we
-  ## launch all pools at once in Mojito.Pool.
-  defp actually_start_pool(pool_key, pool_opts, pools, npools, state) do
-    pool_id = {Mojito.Pool, pool_key, npools}
-
-    child_spec =
-      pool_opts
-      |> Keyword.put(:id, pool_id)
-      |> Mojito.Pool.Single.child_spec()
-
-    with {:ok, pool_pid} <-
-           Supervisor.start_child(Mojito.Supervisor, child_spec),
-         {:ok, _} <- Registry.register(Mojito.Pool.Registry, pool_key, pool_pid) do
-      state =
-        state
-        |> put_in([:pools, pool_key], [pool_pid | pools])
-        |> put_in([:last_start_at, pool_key], time())
-
-      {:reply, {:ok, pool_pid}, state}
-    else
-      {:error, {msg, _pid}}
-      when msg in [:already_started, :already_registered] ->
-        ## There was a race; we lost and that is fine
-        {:reply, {:ok, Enum.random(pools)}, state}
-
-      error ->
-        {:reply, error, state}
-    end
   end
 end

@@ -61,7 +61,15 @@ defmodule Mojito.ConnServer do
 
   #### GenServer callbacks
 
-  def init(_) do
+  def init(args) do
+    pool = args[:pool]
+    index = args[:index]
+
+    if pool && index do
+      worker_name = {Mojito.Pool, pool.name, index}
+      {:ok, _} = Registry.register(Mojito.Pool.Registry, worker_name, self())
+    end
+
     {:ok,
      %{
        conn: nil,
@@ -70,6 +78,8 @@ defmodule Mojito.ConnServer do
        port: nil,
        responses: %{},
        reply_tos: %{},
+       pool: pool,
+       index: index,
      }}
   end
 
@@ -92,9 +102,26 @@ defmodule Mojito.ConnServer do
 
     with {:ok, state, _ref} <-
            do_request(state, reply_to, method, url, headers, body, opts) do
+      increment_counter(state, :pipeline)
       {:reply, :ok, state}
     else
       err -> {:reply, err, close_connections(state)}
+    end
+  end
+
+  defp increment_counter(state, counter, n \\ 1) do
+    if state.pool && state.index do
+      :counters.add(state.pool[counter], state.index, n)
+    end
+  end
+
+  defp decrement_counter(state, counter, n \\ 1) do
+    increment_counter(state, counter, 0 - n)
+  end
+
+  defp set_counter(state, counter, n) do
+    if state.pool && state.index do
+      :counters.put(state.pool[counter], state.index, n)
     end
   end
 
@@ -131,6 +158,8 @@ defmodule Mojito.ConnServer do
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
       respond(reply_to, {:error, :closed})
     end)
+
+    :counters.put(state.pool.pipeline, state.index, 0)
 
     %{state | conn: nil, responses: %{}, reply_tos: %{}}
   end
