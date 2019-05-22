@@ -59,6 +59,18 @@ defmodule Mojito.ConnServer do
     )
   end
 
+  def request(pid, reply_to, request) do
+    request(
+      pid,
+      reply_to,
+      request.method,
+      request.url,
+      request.headers,
+      request.body,
+      request.opts
+    )
+  end
+
   #### GenServer callbacks
 
   def init(args) do

@@ -18,17 +18,27 @@ defmodule Mojito.Pool do
 
   @type pool_opt ::
           {:size, pos_integer}
-          | {:max_overflow, non_neg_integer}
           | {:pools, pos_integer}
-          | {:strategy, :lifo | :fifo}
+          | {:max_pipeline, pos_integer}
 
-  @typep pool_key :: {String.t(), pos_integer}
+  @type destination_key :: :atom
+  @type pool_index :: pos_integer
+  @type pool_name :: {destination_key, pool_index}
+
+  @type pool :: %{
+          name: pool_name,
+          size: pos_integer,
+          max_pipeline: pos_integer,
+          pipeline: :counters.counters_ref(),
+          response_2xx: :counters.counters_ref(),
+          response_4xx: :counters.counters_ref(),
+          response_5xx: :counters.counters_ref(),
+        }
 
   @default_pool_opts [
-    size: 5,
-    max_overflow: 10,
-    pools: 5,
-    strategy: :lifo
+    size: 8,
+    pools: 4,
+    max_pipeline: 16,
   ]
 
   @doc ~S"""
@@ -42,18 +52,28 @@ defmodule Mojito.Pool do
     timeout = request.opts[:timeout] || Mojito.Config.timeout()
 
     with {:ok, valid_request} <- Request.validate_request(request),
-         {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
-         pool_key <- pool_key(host, port),
-         {:ok, pool} <- get_pool(pool_key),
-         {:ok, worker, timeout_left} <- get_worker(pool, time(), timeout) do
-      do_request(worker, pool_key, valid_request)
+         {:ok, destination_key} <- destination_key(valid_request.url),
+         {:ok, pool} <- get_pool(destination_key),
+         {:ok, worker, timeout_left} <- get_worker(pool, time(), timeout),
+         :ok <- Mojito.ConnServer.request(worker, self(), valid_request) do
+      receive do
+        {:mojito_response, response} -> {:ok, response}
+      after
+        timeout_left -> {:error, :timeout}
+      end
+    end
+    |> Utils.wrap_return_value()
+  end
+
+  defp destination_key(url) do
+    with {:ok, _proto, host, port} <- Utils.decompose_url(url) do
+      {:ok, :"#{host}:#{port}"}
     end
   end
 
-
   defp time, do: :erlang.monotonic_time(:millisecond)
 
-  def get_worker(pool, time_started, timeout) do
+  defp get_worker(pool, time_started, timeout) do
     index = :random.uniform(pool.size)
     worker_name = {Mojito.Pool, pool.name, index}
     current_pipeline = :counters.get(pool.pipeline, index)
@@ -78,19 +98,6 @@ defmodule Mojito.Pool do
             ## This should not happen
             {:error, :too_many_workers}
         end
-      end
-    end
-  end
-
-
-  defp do_request(pool, pool_key, request) do
-    case Mojito.Pool.Single.request(pool, request) do
-      {:error, %{reason: :checkout_timeout}} ->
-        {:ok, pid} = start_pool(pool_key)
-        Mojito.Pool.Single.request(pid, request)
-
-      other ->
-        other
     end
   end
 
@@ -98,13 +105,21 @@ defmodule Mojito.Pool do
   ## if necessary.
   @doc false
   @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
-  def get_pool(pool_key) do
-    case get_pools(pool_key) do
+  def get_pool(destination_key) do
+    case get_pools(destination_key) do
       [] ->
-        Logger.debug("Mojito.Pool: starting pools for #{inspect(pool_key)}")
-        opts = pool_opts(pool_key)
-        1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
-        get_pool(pool_key)
+        Logger.debug("Mojito.Pool: starting pools for #{destination_key}")
+        opts = pool_opts(destination_key)
+
+        pools =
+          1..opts[:pools]
+          |> Enum.map(fn i ->
+            {:ok, pool} = start_pool({destination_key, i}, opts)
+            pool
+          end)
+
+        :ok = :persistent_term.put({Mojito.Pool, destination_key}, pools)
+        get_pool(destination_key)
 
       pools ->
         {:ok, Enum.random(pools)}
@@ -113,25 +128,25 @@ defmodule Mojito.Pool do
 
   ## Returns all pools for the given destination.
   @doc false
-  @spec get_pools(any) :: [pid]
-  defp get_pools(pool_key) do
-    Mojito.Pool.Registry
-    |> Registry.lookup(pool_key)
-    |> Enum.map(fn {_, pid} -> pid end)
+  @spec get_pools(any) :: [pool]
+  defp get_pools(destination_key) do
+    :persistent_term.get({Mojito.Pool, destination_key}, [])
   end
 
   ## Starts a new pool for the given destination.
   @doc false
-  @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
-  def start_pool(pool_key) do
+  @spec start_pool(destination_key, pool_opts) ::
+          {:ok, pid} | {:error, Mojito.error()}
+  def start_pool({destination_key, _} = pool_name, pool_opts) do
     old_trap_exit = Process.flag(:trap_exit, true)
 
     try do
-      GenServer.call(
-        Mojito.Pool.Manager,
-        {:start_pool, pool_key},
-        Config.timeout()
-      )
+      {:ok, pool} =
+        GenServer.call(
+          Mojito.Pool.Manager,
+          {:start_pool, pool_name, pool_opts.size, pool_opts.max_pipeline},
+          Config.timeout()
+        )
     rescue
       e -> {:error, e}
     catch
@@ -142,24 +157,10 @@ defmodule Mojito.Pool do
     |> Utils.wrap_return_value()
   end
 
-  ## Returns a key representing the given destination.
-  @doc false
-  @spec pool_key(String.t(), pos_integer) :: pool_key
-  def pool_key(host, port) do
-    {host, port}
-  end
-
   ## Returns the configured `t:pool_opts` for the given destination.
   @doc false
-  @spec pool_opts(pool_key) :: Mojito.pool_opts()
-  def pool_opts({host, port}) do
-    destination_key =
-      try do
-        "#{host}:#{port}" |> String.to_existing_atom()
-      rescue
-        _ -> :none
-      end
-
+  @spec pool_opts(destination_key) :: Mojito.pool_opts()
+  def pool_opts(destination_key) do
     config_pool_opts = Application.get_env(:mojito, :pool_opts, [])
 
     destination_pool_opts =

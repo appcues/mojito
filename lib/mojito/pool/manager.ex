@@ -18,10 +18,11 @@ defmodule Mojito.Pool.Manager do
 
   defp time, do: System.monotonic_time(:millisecond)
 
-  def handle_call({:start_pool, pool_name, size}, _from, state) do
+  def handle_call({:start_pool, pool_name, size, max_pipeline}, _from, state) do
     pool = %{
       name: pool_name,
       size: size,
+      max_pipeline: max_pipeline,
 
       ## Current pipeline depth for each worker
       ## Resets to 0 if worker dies
@@ -51,13 +52,10 @@ defmodule Mojito.Pool.Manager do
         )
     end)
 
-    ## This pool will primarily be looked up using persistent_term
-    :persistent_term.put(pool_name, pool)
-
     ## This is mostly for convenience and debugging
     pools = state.pools |> Map.put(pool_name, pool)
 
-    {:reply, pool, %{state | pools: pools}}
+    {:reply, {:ok, pool}, %{state | pools: pools}}
   end
 
   def handle_call(:state, _from, state) do
