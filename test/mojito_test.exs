@@ -170,20 +170,6 @@ defmodule MojitoTest do
       )
     end
 
-    it "accepts pool: pid" do
-      child_spec = Mojito.Pool.Single.child_spec()
-      {:ok, pool_pid} = Supervisor.start_child(Mojito.Supervisor, child_spec)
-
-      assert(
-        {:ok, response} =
-          Mojito.request(
-            method: :get,
-            url: "http://localhost:#{@http_port}/",
-            opts: [pool: pool_pid]
-          )
-      )
-    end
-
     it "can make HTTP requests" do
       assert({:ok, response} = get("/"))
       assert(200 == response.status_code)

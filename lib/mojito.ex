@@ -272,7 +272,6 @@ defmodule Mojito do
         case Keyword.get(valid_request.opts, :pool, true) do
           true -> fn -> Mojito.Pool.request(valid_request) end
           false -> fn -> Mojito.Request.Single.request(valid_request) end
-          pool -> fn -> Mojito.Pool.Single.request(pool, valid_request) end
         end
 
       ## Retry connection-closed errors once

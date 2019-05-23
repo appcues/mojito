@@ -57,7 +57,7 @@ defmodule Mojito.Pool do
          {:ok, worker, timeout_left} <- get_worker(pool, time(), timeout),
          :ok <- Mojito.ConnServer.request(worker, self(), valid_request) do
       receive do
-        {:mojito_response, response} -> {:ok, response}
+        {:mojito_response, response} -> response
       after
         timeout_left -> {:error, :timeout}
       end
@@ -87,8 +87,8 @@ defmodule Mojito.Pool do
 
       :else ->
         case Registry.lookup(Mojito.Pool.Registry, worker_name) do
-          [pid] ->
-            {:ok, pid, timeout - (time() - time_started)}
+          [{_, worker_pid}] ->
+            {:ok, worker_pid, timeout - (time() - time_started)}
 
           [] ->
             ## Transient error due to recent worker death; retry
@@ -144,7 +144,7 @@ defmodule Mojito.Pool do
       {:ok, pool} =
         GenServer.call(
           Mojito.Pool.Manager,
-          {:start_pool, pool_name, pool_opts.size, pool_opts.max_pipeline},
+          {:start_pool, pool_name, pool_opts[:size], pool_opts[:max_pipeline]},
           Config.timeout()
         )
     rescue

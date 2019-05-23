@@ -26,19 +26,19 @@ defmodule Mojito.Pool.Manager do
 
       ## Current pipeline depth for each worker
       ## Resets to 0 if worker dies
-      pipeline: :counters.new(size),
+      pipeline: :counters.new(size, []),
 
       ## Total success responses for each worker slot
       ## Persists if worker dies
-      response_2xx: :counters.new(size),
+      response_2xx: :counters.new(size, []),
 
       ## Total 4xx responses for each worker slot
       ## Persists if worker dies
-      response_4xx: :counters.new(size),
+      response_4xx: :counters.new(size, []),
 
       ## Total 5xx responses for each worker slot
       ## Persists if worker dies
-      response_5xx: :counters.new(size),
+      response_5xx: :counters.new(size, []),
     }
 
     ## Start `size` workers, each of which will register itself in
