@@ -112,7 +112,6 @@ defmodule Mojito do
       >>>> Mojito.request(%{method: :get, url: "https://jsonplaceholder.typicode.com/posts/1"})
       ## or...
       >>>> Mojito.request(method: :get, url: "https://jsonplaceholder.typicode.com/posts/1")
-
       {:ok,
        %Mojito.Response{
          body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
@@ -140,11 +139,13 @@ defmodule Mojito do
   `transport_opts: [verify: :verify_none]` option to `Mojito.request`
   or `Mojito.Pool.request`:
 
+  ## Examples
+
       >>>> Mojito.request(method: :get, url: "https://localhost:8443/")
       {:error, {:tls_alert, 'bad certificate'}}
 
       >>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
-      {:ok, %Mojito.Response{ ... }}
+      {:ok, %Mojito.Response{...}}
 
   ## Changelog
 
@@ -297,7 +298,28 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP GET request and returns the response.
 
-  See `request/1` for documentation.
+  ## Examples
+
+  Assemble URL with a query string params and fetch it with GET request:
+
+      >>>> "https://www.google.com/search"
+      ...> |> URI.parse()
+      ...> |> Map.put(:query, URI.encode_query(%{"q" => "mojito elixir"}))
+      ...> |> URI.to_string()
+      ...> |> Mojito.get()
+      {:ok,
+       %Mojito.Response{
+         body: "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"> ...",
+         complete: true,
+         headers: [
+           {"content-type", "text/html; charset=ISO-8859-1"},
+           ...
+         ],
+         status_code: 200
+       }}
+
+
+  See `request/1` for detailed documentation.
   """
   @spec get(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -308,7 +330,45 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP POST request and returns the response.
 
-  See `request/1` for documentation.
+  ## Examples
+
+  Submitting a form with POST request:
+
+      >>>> Mojito.post(
+      ...>   "http://localhost:4000/messages",
+      ...>   [{"content-type", "application/x-www-form-urlencoded"}],
+      ...>   URI.encode_query(%{"message[subject]" => "Contact request", "message[content]" => "data"}))
+      {:ok,
+       %Mojito.Response{
+         body: "Thank you!",
+         complete: true,
+         headers: [
+           {"server", "Cowboy"},
+           {"connection", "keep-alive"},
+           ...
+         ],
+         status_code: 200
+       }}
+
+  Submitting a JSON payload as POST request body:
+
+      >>>> Mojito.post(
+      ...>   "http://localhost:4000/api/messages",
+      ...>   [{"content-type", "application/json"}],
+      ...>   Jason.encode(%{"message" => %{"subject" => "Contact request", "content" => "data"}}))
+      {:ok,
+       %Mojito.Response{
+         body: "{\"message\": \"Thank you!\"}",
+         complete: true,
+         headers: [
+           {"server", "Cowboy"},
+           {"connection", "keep-alive"},
+           ...
+         ],
+         status_code: 200
+       }}
+
+  See `request/1` for detailed documentation.
   """
   @spec post(String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -319,7 +379,7 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP PUT request and returns the response.
 
-  See `request/1` for documentation.
+  See `request/1` and `post/4` for documentation and examples.
   """
   @spec put(String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -330,7 +390,7 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP PATCH request and returns the response.
 
-  See `request/1` for documentation.
+  See `request/1` and `post/4` for documentation and examples.
   """
   @spec patch(String.t(), headers, String.t(), Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -341,7 +401,7 @@ defmodule Mojito do
   @doc ~S"""
   Perform an HTTP DELETE request and returns the response.
 
-  See `request/1` for documentation.
+  See `request/1` and `post/4` for documentation and examples.
   """
   @spec delete(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
