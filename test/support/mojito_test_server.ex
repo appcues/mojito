@@ -94,4 +94,10 @@ defmodule Mojito.TestServer.PlugRouter do
     :timer.sleep(10000)
     send_resp(conn, 200, "ok")
   end
+
+  get "/redirect/1" do
+    conn
+    |> put_resp_header("location", "/")
+    |> send_resp(302, "You are being redirected")
+  end
 end
