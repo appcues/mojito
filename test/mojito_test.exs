@@ -309,6 +309,19 @@ defmodule MojitoTest do
           Headers.get(response.headers, "allow")
       )
     end
+
+    it "should not follow redirect by default" do
+      assert({:ok, response} = get("/redirect/1"))
+      assert(302 == response.status_code)
+      assert("You are being redirected" == response.body)
+    end
+
+    it "can follow a redirect" do
+      assert({:ok, response} = get("/redirect/1", follow_redirects: true))
+      assert(200 == response.status_code)
+      assert("Hello world!" == response.body)
+      assert(response.location == "http://localhost:#{@http_port}/")
+    end
   end
 
   context "external tests" do

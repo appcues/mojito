@@ -264,6 +264,8 @@ defmodule Mojito do
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
+  * `:follow_redirects` - If `true`, client will follow a HTTP redirect
+    if it encounters 3xx HTTP status code.
   """
   @spec request(request | request_kwlist) :: {:ok, response} | {:error, error}
   def request(request) do
@@ -277,8 +279,18 @@ defmodule Mojito do
 
       ## Retry connection-closed errors once
       case request_fn.() |> Mojito.Utils.wrap_return_value() do
-        {:error, %{reason: %{reason: :closed}}} -> request_fn.()
-        other -> other
+        {:error, %{reason: %{reason: :closed}}} ->
+          request_fn.()
+
+        {:ok, %{status_code: status_code} = response}
+        when status_code >= 300 and status_code < 400 ->
+          Mojito.Redirects.maybe_follow_redirect(valid_request, response)
+
+        {:ok, response} ->
+          {:ok, %{response | location: valid_request.url}}
+
+        other ->
+          other
       end
     end
   end
