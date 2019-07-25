@@ -50,8 +50,14 @@ defmodule Mojito.Utils do
   end
 
   @doc ~S"""
-  Returns a relative URL including query and fragment parts, and any
+  Returns a relative URL including query parts, excluding the fragment, and any
   necessary auth headers (i.e., for HTTP Basic auth).
+
+      iex> Mojito.Utils.get_relative_url_and_auth_headers("https://user:pass@example.com/this/is/awesome?foo=bar&baz")
+      {:ok, "/this/is/awesome?foo=bar&baz", [{"authorization", "Basic dXNlcjpwYXNz"}]}
+
+      iex> Mojito.Utils.get_relative_url_and_auth_headers("https://example.com/something.html#section42")
+      {:ok, "/something.html", []}
   """
   @spec get_relative_url_and_auth_headers(String.t()) ::
           {:ok, String.t(), Mojito.headers()} | {:error, any}
@@ -68,8 +74,7 @@ defmodule Mojito.Utils do
       joined_url =
         [
           if(uri.path, do: "#{uri.path}", else: ""),
-          if(uri.query, do: "?#{uri.query}", else: ""),
-          if(uri.fragment, do: "##{uri.fragment}", else: ""),
+          if(uri.query, do: "?#{uri.query}", else: "")
         ]
         |> Enum.join("")
 
