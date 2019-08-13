@@ -104,8 +104,23 @@ defmodule Mojito.Pool.Single do
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, request) do
+    start_time = time()
+    timeout = request.opts[:timeout] || Config.timeout()
+
     with {:ok, valid_request} <- Request.validate_request(request) do
-      do_request(pool, valid_request)
+      case do_request(pool, valid_request) do
+        {:error, %Mojito.Error{reason: %{reason: :closed}}} ->
+          ## Retry connection-closed errors as many times as we can
+          new_timeout = timeout - (time() - start_time)
+
+          new_request_opts =
+            valid_request.opts |> Keyword.put(:timeout, new_timeout)
+
+          request(pool, %{valid_request | opts: new_request_opts})
+
+        other ->
+          other
+      end
     end
   end
 

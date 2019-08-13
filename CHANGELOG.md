@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.0 (2019-08-13)
+
+Upgraded to Mint 0.4.0.
+
+Requests are automatically retried when we attempt to reuse a closed
+connection.
+
+Don't pass the URL fragment to Mint when making requests.
+Thanks [@alappe](https://github.com/alappe)!
+
+Improved examples and docs around making POST requests.
+Thanks [@hubertlepicki](https://github.com/hubertlepicki)!
+
+Removed noisy debug output.
+Thanks for the report, [@bcardarella](https://github.com/bcardarella)!
+
 ## 0.3.0 (2019-05-08)
 
 Major refactor.

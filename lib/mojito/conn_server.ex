@@ -73,11 +73,7 @@ defmodule Mojito.ConnServer do
      }}
   end
 
-  def terminate(reason, state) do
-    Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: terminating (#{inspect(reason)})"
-    end)
-
+  def terminate(_reason, state) do
     close_connections(state)
   end
 
@@ -86,10 +82,6 @@ defmodule Mojito.ConnServer do
         _from,
         state
       ) do
-    Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: #{method} #{url}"
-    end)
-
     with {:ok, state, _ref} <-
            do_request(state, reply_to, method, url, headers, body, opts) do
       {:reply, :ok, state}
@@ -100,10 +92,6 @@ defmodule Mojito.ConnServer do
 
   ## `msg` is an incoming chunk of a response
   def handle_info(msg, state) do
-    Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: received TCP data #{inspect(msg)}"
-    end)
-
     if !state.conn do
       {:noreply, close_connections(state)}
     else
@@ -126,8 +114,6 @@ defmodule Mojito.ConnServer do
 
   @spec close_connections(state) :: state
   defp close_connections(state) do
-    Logger.debug(fn -> "Mojito.ConnServer #{inspect(self())}: cleaning up" end)
-
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
       respond(reply_to, {:error, :closed})
     end)
@@ -175,10 +161,6 @@ defmodule Mojito.ConnServer do
 
   defp respond(pid, message) do
     send(pid, {:mojito_response, message})
-
-    Logger.debug(fn ->
-      "Mojito.ConnServer #{inspect(self())}: sent response to #{inspect(pid)}"
-    end)
   end
 
   @spec do_request(
