@@ -7,6 +7,9 @@ Upgraded to Mint 0.4.0.
 Requests are automatically retried when we attempt to reuse a closed
 connection.
 
+Added `Mojito.Headers.auth_header/2` helper for formintg HTTP Basic
+`Authorization` header.
+
 Don't pass the URL fragment to Mint when making requests.
 Thanks [@alappe](https://github.com/alappe)!
 
