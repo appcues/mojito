@@ -105,9 +105,10 @@ defmodule Mojito.Pool.Single do
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, request) do
     start_time = time()
-    timeout = request.opts[:timeout] || Config.timeout()
 
     with {:ok, valid_request} <- Request.validate_request(request) do
+      timeout = valid_request.opts[:timeout] || Config.timeout()
+
       case do_request(pool, valid_request) do
         {:error, %Mojito.Error{reason: %{reason: :closed}}} ->
           ## Retry connection-closed errors as many times as we can
