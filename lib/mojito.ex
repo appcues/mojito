@@ -48,14 +48,14 @@ defmodule Mojito do
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.3.0"}
+      {:mojito, "~> 0.4.0"}
 
   ## Upgrading from 0.2
 
   Using request methods other than those in the `Mojito` module is deprecated.
   A handful of new config parameters appeared as well.
 
-  Upgrading 0.2 to 0.3 cannot be performed safely inside a hot upgrade.
+  Upgrading 0.2 to 0.4 cannot be performed safely inside a hot upgrade.
   Deploy a regular release instead.
 
   ## Configuration
@@ -184,7 +184,9 @@ defmodule Mojito do
   @type method ::
           :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
-  @type headers :: [{String.t(), String.t()}]
+  @type header :: {String.t(), String.t()}
+
+  @type headers :: [header]
 
   @type request :: %Mojito.Request{
           method: method,
@@ -276,16 +278,12 @@ defmodule Mojito do
           pool -> fn -> Mojito.Pool.Single.request(pool, valid_request) end
         end
 
-      ## Retry connection-closed errors once
-      case request_fn.() |> Mojito.Utils.wrap_return_value() do
-        {:error, %{reason: %{reason: :closed}}} -> request_fn.()
-        other -> other
-      end
+      request_fn.()
     end
   end
 
   @doc ~S"""
-  Perform an HTTP HEAD request and returns the response.
+  Performs an HTTP HEAD request and returns the response.
 
   See `request/1` for documentation.
   """
@@ -296,11 +294,11 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP GET request and returns the response.
+  Performs an HTTP GET request and returns the response.
 
   ## Examples
 
-  Assemble URL with a query string params and fetch it with GET request:
+  Assemble a URL with a query string params and fetch it with GET request:
 
       >>>> "https://www.google.com/search"
       ...> |> URI.parse()
@@ -328,7 +326,7 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP POST request and returns the response.
+  Performs an HTTP POST request and returns the response.
 
   ## Examples
 
@@ -377,7 +375,7 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP PUT request and returns the response.
+  Performs an HTTP PUT request and returns the response.
 
   See `request/1` and `post/4` for documentation and examples.
   """
@@ -388,7 +386,7 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP PATCH request and returns the response.
+  Performs an HTTP PATCH request and returns the response.
 
   See `request/1` and `post/4` for documentation and examples.
   """
@@ -399,9 +397,9 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP DELETE request and returns the response.
+  Performs an HTTP DELETE request and returns the response.
 
-  See `request/1` and `post/4` for documentation and examples.
+  See `request/1` for documentation and examples.
   """
   @spec delete(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
@@ -410,7 +408,7 @@ defmodule Mojito do
   end
 
   @doc ~S"""
-  Perform an HTTP OPTIONS request and returns the response.
+  Performs an HTTP OPTIONS request and returns the response.
 
   See `request/1` for documentation.
   """

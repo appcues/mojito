@@ -185,4 +185,18 @@ defmodule Mojito.Headers do
       {name, Map.get(headers_map, name) |> Enum.join(",")}
     end)
   end
+
+  @doc ~S"""
+  Returns an HTTP Basic Auth header from the given username and password.
+
+  Example:
+
+      iex> Mojito.Headers.auth_header("hello", "world")
+      {"authorization", "Basic aGVsbG86d29ybGQ="}
+  """
+  @spec auth_header(String.t(), String.t()) :: Mojito.header()
+  def auth_header(username, password) do
+    auth64 = "#{username}:#{password}" |> Base.encode64()
+    {"authorization", "Basic #{auth64}"}
+  end
 end

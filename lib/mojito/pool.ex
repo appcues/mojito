@@ -65,7 +65,6 @@ defmodule Mojito.Pool do
   def get_pool(pool_key) do
     case get_pools(pool_key) do
       [] ->
-        Logger.debug("Mojito.Pool: starting pools for #{inspect(pool_key)}")
         opts = pool_opts(pool_key)
         1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
         get_pool(pool_key)

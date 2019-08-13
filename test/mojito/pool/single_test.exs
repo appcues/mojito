@@ -83,5 +83,14 @@ defmodule Mojito.Pool.SingleTest do
         assert({:ready, 2, 0, 0} = :poolboy.status(pool_name))
       end)
     end
+
+    it "retries request when connection was closed" do
+      with_pool(fn pool_name ->
+        1..100
+        |> Enum.each(fn _ ->
+          assert({:ok, _resp} = get(pool_name, "/"))
+        end)
+      end)
+    end
   end
 end
