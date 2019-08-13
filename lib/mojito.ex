@@ -184,7 +184,7 @@ defmodule Mojito do
   @type method ::
           :head | :get | :post | :put | :patch | :delete | :options | String.t()
 
-  @type header :: [{String.t(), String.t()}]
+  @type header :: {String.t(), String.t()}
 
   @type headers :: [header]
 
@@ -193,7 +193,7 @@ defmodule Mojito do
           url: String.t(),
           headers: headers | nil,
           body: String.t() | nil,
-          opts: Keyword.t() | nil,
+          opts: Keyword.t() | nil
         }
 
   @type request_kwlist :: [request_field]
@@ -209,12 +209,12 @@ defmodule Mojito do
           status_code: pos_integer,
           headers: headers,
           body: String.t(),
-          complete: boolean,
+          complete: boolean
         }
 
   @type error :: %Mojito.Error{
           reason: any,
-          message: String.t() | nil,
+          message: String.t() | nil
         }
 
   @type pool_opts :: [pool_opt | {:destinations, [{atom, pool_opts}]}]
