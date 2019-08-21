@@ -36,27 +36,9 @@ defmodule Mojito.ConnServer do
   Initiates a request.  The `reply_to` pid will receive the response in a
   message of the format `{:ok, %Mojito.Response{}} | {:error, any}`.
   """
-  @spec request(
-          pid,
-          pid,
-          Mojito.method(),
-          Mojito.headers(),
-          String.t(),
-          Keyword.t()
-        ) :: :ok | {:error, any}
-  def request(
-        pid,
-        reply_to,
-        method,
-        url,
-        headers \\ [],
-        body \\ "",
-        opts \\ []
-      ) do
-    GenServer.call(
-      pid,
-      {:request, reply_to, method, url, headers, body, opts}
-    )
+  @spec request(pid, Mojito.request(), pid, reference) :: :ok | {:error, any}
+  def request(server_pid, request, reply_to, response_ref) do
+    GenServer.call(server_pid, {:request, request, reply_to, response_ref})
   end
 
   #### GenServer callbacks
@@ -70,6 +52,7 @@ defmodule Mojito.ConnServer do
        port: nil,
        responses: %{},
        reply_tos: %{},
+       response_refs: %{},
      }}
   end
 
@@ -78,12 +61,12 @@ defmodule Mojito.ConnServer do
   end
 
   def handle_call(
-        {:request, reply_to, method, url, headers, body, opts},
+        {:request, request, reply_to, response_ref},
         _from,
         state
       ) do
-    with {:ok, state, _ref} <-
-           do_request(state, reply_to, method, url, headers, body, opts) do
+    with {:ok, state, _request_ref} <-
+           start_request(state, request, reply_to, response_ref) do
       {:reply, :ok, state}
     else
       err -> {:reply, err, close_connections(state)}
@@ -118,7 +101,7 @@ defmodule Mojito.ConnServer do
       respond(reply_to, {:error, :closed})
     end)
 
-    %{state | conn: nil, responses: %{}, reply_tos: %{}}
+    %{state | conn: nil, responses: %{}, reply_tos: %{}, response_refs: %{}}
   end
 
   defp apply_resps(state, []), do: state
@@ -148,37 +131,43 @@ defmodule Mojito.ConnServer do
   defp apply_resp(state, {:done, request_ref}) do
     r = Map.get(state.responses, request_ref)
     response = %{r | complete: true, body: :erlang.list_to_binary(r.body)}
+    response_ref = state.response_refs |> Map.get(request_ref)
 
     Map.get(state.reply_tos, request_ref)
-    |> respond({:ok, response})
+    |> respond({:ok, response}, response_ref)
 
     %{
       state
       | responses: Map.delete(state.responses, request_ref),
         reply_tos: Map.delete(state.reply_tos, request_ref),
+        response_refs: Map.delete(state.response_refs, request_ref),
     }
   end
 
-  defp respond(pid, message) do
-    send(pid, {:mojito_response, message})
+  defp respond(pid, message, response_ref \\ nil) do
+    send(pid, {:mojito_response, response_ref, message})
   end
 
-  @spec do_request(
+  @spec start_request(
           state,
+          Mojito.request(),
           pid,
-          Mojito.method(),
-          String.t(),
-          Mojito.headers(),
-          String.t(),
-          Keyword.t()
+          reference
         ) :: {:ok, state, reference} | {:error, any}
-  defp do_request(state, reply_to, method, url, headers, body, opts) do
-    with {:ok, state} <- ensure_connection(state, url, opts),
-         {:ok, conn, request_ref} <-
-           Conn.request(state.conn, method, url, headers, body, opts) do
+  defp start_request(state, request, reply_to, response_ref) do
+    with {:ok, state} <- ensure_connection(state, request.url, request.opts),
+         {:ok, conn, request_ref} <- Conn.request(state.conn, request) do
       responses = state.responses |> Map.put(request_ref, %Response{body: []})
       reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
-      state = %{state | conn: conn, responses: responses, reply_tos: reply_tos}
+      response_refs = state.response_refs |> Map.put(request_ref, response_ref)
+
+      state = %{
+        state
+        | conn: conn,
+          responses: responses,
+          reply_tos: reply_tos,
+          response_refs: response_refs,
+      }
 
       {:ok, state, request_ref}
     end

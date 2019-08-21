@@ -127,24 +127,16 @@ defmodule Mojito.Pool.Single do
 
   defp do_request(pool, request) do
     timeout = request.opts[:timeout] || Config.timeout()
-
     start_time = time()
+    response_ref = make_ref()
 
     worker_fn = fn worker ->
-      case ConnServer.request(
-             worker,
-             self(),
-             request.method,
-             request.url,
-             request.headers,
-             request.body,
-             request.opts
-           ) do
+      case ConnServer.request(worker, request, self(), response_ref) do
         :ok ->
-          new_timeout = timeout - (time() - start_time)
+          new_timeout = (timeout - (time() - start_time)) |> max(0)
 
           receive do
-            {:mojito_response, response} -> response
+            {:mojito_response, ^response_ref, response} -> response
           after
             new_timeout -> {:error, :timeout}
           end

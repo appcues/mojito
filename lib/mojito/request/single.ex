@@ -21,15 +21,10 @@ defmodule Mojito.Request.Single do
   @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%Request{} = req) do
-    opts = req.opts || []
-    headers = req.headers || []
-    body = req.body || ""
-
-    timeout = opts[:timeout] || Config.timeout()
-
-    with {:ok, conn} <- Conn.connect(req.url, opts),
-         {:ok, conn, _ref} <-
-           Conn.request(conn, req.method, req.url, headers, body, opts) do
+    with {:ok, req} <- Request.validate_request(req),
+         {:ok, conn} <- Conn.connect(req.url, req.opts),
+         {:ok, conn, _ref} <- Conn.request(conn, req) do
+      timeout = req.opts[:timeout] || Config.timeout()
       receive_response(conn, %Response{}, timeout)
     end
   end
