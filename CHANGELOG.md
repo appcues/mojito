@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 (2018-08-21)
+
+Fixed bug where timed-out responses would arrive in connection with
+the next request from that caller.  Thanks for the report and the
+test case, [@seanedwards](https://github.com/seanedwards)!
+
+Refactored to use `%Mojito.Request{}` structs more consistently across
+internal Mojito functions.
+
 ## 0.4.0 (2019-08-13)
 
 Upgraded to Mint 0.4.0.

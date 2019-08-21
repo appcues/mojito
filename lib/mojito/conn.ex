@@ -53,24 +53,17 @@ defmodule Mojito.Conn do
   a reference to this request (which is required when receiving pipelined
   responses).
   """
-  @spec request(
-          t,
-          atom | String.t(),
-          String.t(),
-          [{String.t(), String.t()}],
-          String.t(),
-          Keyword.t()
-        ) :: {:ok, t, reference} | {:error, any}
-  def request(conn, method, url, headers, body, _opts \\ []) do
+  @spec request(t, Mojito.request()) :: {:ok, t, reference} | {:error, any}
+  def request(conn, request) do
     with {:ok, relative_url, auth_headers} <-
-           Utils.get_relative_url_and_auth_headers(url),
+           Utils.get_relative_url_and_auth_headers(request.url),
          {:ok, mint_conn, request_ref} <-
            Mint.HTTP.request(
              conn.conn,
-             method_to_string(method),
+             method_to_string(request.method),
              relative_url,
-             auth_headers ++ headers,
-             body
+             auth_headers ++ request.headers,
+             request.body
            ) do
       {:ok, %{conn | conn: mint_conn}, request_ref}
     end

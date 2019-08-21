@@ -249,6 +249,12 @@ defmodule MojitoTest do
       )
     end
 
+    it "handles requests after a timeout" do
+      assert({:error, %{reason: :timeout}} = get("/wait?d=10", timeout: 1))
+      Process.sleep(100)
+      assert({:ok, %{body: "Hello Alice!"}} = get("?name=Alice"))
+    end
+
     it "handles URL query params" do
       assert({:ok, %{body: "Hello Alice!"}} = get("/?name=Alice"))
       assert({:ok, %{body: "Hello Alice!"}} = get("?name=Alice"))
