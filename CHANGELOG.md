@@ -2,7 +2,7 @@
 
 ## 0.5.0 (2018-08-21)
 
-Fixed bug where timed-out responses would arrive in connection with
+Fixed bug where timed-out responses could arrive in connection with
 the next request from that caller.  Thanks for the report and the
 test case, [@seanedwards](https://github.com/seanedwards)!
 
