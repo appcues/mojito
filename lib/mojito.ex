@@ -360,7 +360,7 @@ defmodule Mojito do
       >>>> Mojito.post(
       ...>   "http://localhost:4000/api/messages",
       ...>   [{"content-type", "application/json"}],
-      ...>   Jason.encode(%{"message" => %{"subject" => "Contact request", "content" => "data"}}))
+      ...>   Jason.encode!(%{"message" => %{"subject" => "Contact request", "content" => "data"}}))
       {:ok,
        %Mojito.Response{
          body: "{\"message\": \"Thank you!\"}",
