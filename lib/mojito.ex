@@ -279,10 +279,9 @@ defmodule Mojito do
   def request(request) do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
       request_fn =
-        case Keyword.get(valid_request.opts, :pool, true) do
+        case Mojito.Config.config(:pool, valid_request.opts) do
           true -> fn -> Mojito.Pool.request(valid_request) end
           false -> fn -> Mojito.Request.Single.request(valid_request) end
-          pool -> fn -> Mojito.Pool.Single.request(pool, valid_request) end
         end
 
       request_fn.()

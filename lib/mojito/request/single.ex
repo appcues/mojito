@@ -3,7 +3,7 @@ defmodule Mojito.Request.Single do
 
   @moduledoc false
 
-  alias Mojito.{Config, Conn, Error, Request, Response}
+  alias Mojito.{Config, Conn, Error, Request, Response, Utils}
   require Logger
 
   @doc ~S"""
@@ -22,9 +22,13 @@ defmodule Mojito.Request.Single do
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%Request{} = req) do
     with {:ok, req} <- Request.validate_request(req),
+         {:ok, _proto, host, port} <- Utils.decompose_url(req.url),
          {:ok, conn} <- Conn.connect(req.url, req.opts),
          {:ok, conn, _ref} <- Conn.request(conn, req) do
-      timeout = req.opts[:timeout] || Config.timeout()
+      timeout =
+        Config.config(:timeout, req.opts, host, port) ||
+          Config.config(:request_timeout, req.opts, host, port)
+
       receive_response(conn, %Response{}, timeout)
     end
   end

@@ -11,25 +11,9 @@ defmodule Mojito.Pool do
   ## `Mojito.Pool.request/1` is intended for use through `Mojito.request/1`.
   ## Config parameters are explained in the `Mojito` moduledocs.
 
-  alias Mojito.{Config, Request, Utils}
+  alias Mojito.{ConnServer, Request, Utils}
+  import Mojito.Config
   require Logger
-
-  @type pool_opts :: [pool_opt | {:destinations, [pool_opt]}]
-
-  @type pool_opt ::
-          {:size, pos_integer}
-          | {:max_overflow, non_neg_integer}
-          | {:pools, pos_integer}
-          | {:strategy, :lifo | :fifo}
-
-  @typep pool_key :: {String.t(), pos_integer}
-
-  @default_pool_opts [
-    size: 5,
-    max_overflow: 10,
-    pools: 5,
-    strategy: :lifo
-  ]
 
   @doc ~S"""
   Performs an HTTP request using a connection pool, creating that pool if
@@ -40,99 +24,55 @@ defmodule Mojito.Pool do
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%{} = request) do
     with {:ok, valid_request} <- Request.validate_request(request),
-         {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
-         pool_key <- pool_key(host, port),
-         {:ok, pool} <- get_pool(pool_key) do
-      do_request(pool, pool_key, valid_request)
-    end
-  end
+         {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url) do
+      size = config(:size, request.opts[:pool_opts], host, port)
+      pools = config(:pools, request.opts[:pool_opts], host, port)
+      pool_name = get_pool_name(host, port, pools)
 
-  defp do_request(pool, pool_key, request) do
-    case Mojito.Pool.Single.request(pool, request) do
-      {:error, %{reason: :checkout_timeout}} ->
-        {:ok, pid} = start_pool(pool_key)
-        Mojito.Pool.Single.request(pid, request)
+      timeout = config(:timeout, request.opts, host, port)
+      checkout_timeout = config(:checkout_timeout, request.opts, host, port)
+      request_timeout = config(:request_timeout, request.opts, host, port)
 
-      other ->
-        other
-    end
-  end
+      lock_opts = [
+        size: size,
+        resource: {Mojito.ConnServer, []},
+        timeout: timeout,
+        wait_timeout: checkout_timeout,
+        fun_timeout: request_timeout,
+      ]
 
-  ## Returns a pool for the given destination, starting one or more
-  ## if necessary.
-  @doc false
-  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
-  def get_pool(pool_key) do
-    case get_pools(pool_key) do
-      [] ->
-        opts = pool_opts(pool_key)
-        1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
-        get_pool(pool_key)
+      case Lockring.with_lock(pool_name, &do_request(&1, request), lock_opts) do
+        {:ok, return} ->
+          return
 
-      pools ->
-        {:ok, Enum.random(pools)}
-    end
-  end
+        {:error, "wait_timeout reached"} ->
+          {:error, %Mojito.Error{reason: :timeout}}
 
-  ## Returns all pools for the given destination.
-  @doc false
-  @spec get_pools(any) :: [pid]
-  defp get_pools(pool_key) do
-    Mojito.Pool.Registry
-    |> Registry.lookup(pool_key)
-    |> Enum.map(fn {_, pid} -> pid end)
-  end
+        {:error, "fun_timeout reached"} ->
+          {:error, %Mojito.Error{reason: :timeout}}
 
-  ## Starts a new pool for the given destination.
-  @doc false
-  @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
-  def start_pool(pool_key) do
-    old_trap_exit = Process.flag(:trap_exit, true)
-
-    try do
-      GenServer.call(
-        Mojito.Pool.Manager,
-        {:start_pool, pool_key},
-        Config.timeout()
-      )
-    rescue
-      e -> {:error, e}
-    catch
-      :exit, _ -> {:error, :checkout_timeout}
-    after
-      Process.flag(:trap_exit, old_trap_exit)
-    end
-    |> Utils.wrap_return_value()
-  end
-
-  ## Returns a key representing the given destination.
-  @doc false
-  @spec pool_key(String.t(), pos_integer) :: pool_key
-  def pool_key(host, port) do
-    {host, port}
-  end
-
-  ## Returns the configured `t:pool_opts` for the given destination.
-  @doc false
-  @spec pool_opts(pool_key) :: Mojito.pool_opts()
-  def pool_opts({host, port}) do
-    destination_key =
-      try do
-        "#{host}:#{port}" |> String.to_existing_atom()
-      rescue
-        _ -> :none
+        {:error, reason} ->
+          {:error, %Mojito.Error{reason: to_string(reason)}}
       end
+    end
+  end
 
-    config_pool_opts = Application.get_env(:mojito, :pool_opts, [])
+  defp do_request(conn_server, request) do
+    response_ref = make_ref()
 
-    destination_pool_opts =
-      config_pool_opts
-      |> Keyword.get(:destinations, [])
-      |> Keyword.get(destination_key, [])
+    case ConnServer.request(conn_server, request, self(), response_ref) do
+      :ok ->
+        receive do
+          {:mojito_response, ^response_ref, response} -> response
+        end
 
-    @default_pool_opts
-    |> Keyword.merge(config_pool_opts)
-    |> Keyword.merge(destination_pool_opts)
-    |> Keyword.delete(:destinations)
+      error ->
+        error
+    end
+  end
+
+  defp get_pool_name(host, port, pools) do
+    pool = pools |> :math.floor() |> round()
+    {Mojito.Pool, host, port, pool}
   end
 end

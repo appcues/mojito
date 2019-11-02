@@ -48,7 +48,7 @@ defmodule Mojito.MixProject do
     [
       {:mint, "~> 1.0"},
       {:castore, "~> 0.1"},
-      {:poolboy, "~> 1.5"},
+      {:lockring, path: "/Users/gamache/code/Appcues/lockring"},
       {:ex_spec, "~> 2.0", only: :test},
       {:jason, "~> 1.0", only: :test},
       {:cowboy, "~> 1.1", only: :test},
