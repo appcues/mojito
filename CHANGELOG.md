@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.0 (2018-08-21)
+## 0.5.0 (2019-08-21)
 
 Fixed bug where timed-out responses could arrive in connection with
 the next request from that caller.  Thanks for the report and the
