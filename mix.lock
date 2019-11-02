@@ -9,6 +9,7 @@
   "freedom_formatter": {:hex, :freedom_formatter, "1.0.0", "b19be4a845082d05d32bb23765e8e7bdc6d51decac13ab64ae44b0f6bf8a66d1", [:mix], [], "hexpm"},
   "fuzzyurl": {:hex, :fuzzyurl, "1.0.1", "389780519adccfc3582ecce8c6608c1619f029367abfdc9d4b6e46491d2fa8d5", [:mix], [], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
+  "lockring": {:git, "https://github.com/appcues/lockring.git", "73532322a16bc135228be55dbf45a0dc562b163f", []},
   "makeup": {:hex, :makeup, "0.8.0", "9cf32aea71c7fe0a4b2e9246c2c4978f9070257e5c9ce6d4a28ec450a839b55f", [:mix], [{:nimble_parsec, "~> 0.5.0", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm"},
   "makeup_elixir": {:hex, :makeup_elixir, "0.13.0", "be7a477997dcac2e48a9d695ec730b2d22418292675c75aa2d34ba0909dcdeda", [:mix], [{:makeup, "~> 0.8", [hex: :makeup, repo: "hexpm", optional: false]}], "hexpm"},
   "mime": {:hex, :mime, "1.3.1", "30ce04ab3175b6ad0bdce0035cba77bba68b813d523d1aac73d9781b4d193cf8", [:mix], [], "hexpm"},
