@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (2019-11-02)
+
+Upgraded to Mint 1.0. Thanks, [@esvinson](https://github.com/esvinson)!
+
+Fixed typo in CHANGELOG. Thanks, [@alappe](https://github.com/alappe)!
+
 ## 0.5.0 (2019-08-21)
 
 Fixed bug where timed-out responses could arrive in connection with
