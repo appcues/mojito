@@ -5,9 +5,9 @@ defmodule Mojito.Config do
     timeout: 5000,
     checkout_timeout: :infinity,
     request_timeout: :infinity,
-    size: 10,
-    pools: 1,
-    pool: true
+    pool_size: 10,
+    pool_count: 1,
+    pool: true,
   ]
 
   def config(key, opts \\ [], destination \\ :none) do

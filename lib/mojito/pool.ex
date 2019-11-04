@@ -25,16 +25,15 @@ defmodule Mojito.Pool do
   def request(%{} = request) do
     with {:ok, valid_request} <- Request.validate_request(request),
          {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url) do
-      size = config(:size, request.opts[:pool_opts], host, port)
-      pools = config(:pools, request.opts[:pool_opts], host, port)
-      pool_name = get_pool_name(host, port, pools)
-
       timeout = config(:timeout, request.opts, host, port)
       checkout_timeout = config(:checkout_timeout, request.opts, host, port)
       request_timeout = config(:request_timeout, request.opts, host, port)
+      pool_size = config(:pool_size, request.opts, host, port)
+      pool_count = config(:pool_count, request.opts, host, port)
+      pool_name = get_pool_name(host, port, pool_count)
 
       lock_opts = [
-        size: size,
+        size: pool_size,
         resource: {Mojito.ConnServer, []},
         timeout: timeout,
         wait_timeout: checkout_timeout,
@@ -71,8 +70,8 @@ defmodule Mojito.Pool do
     end
   end
 
-  defp get_pool_name(host, port, pools) do
-    pool = pools |> :math.floor() |> round()
+  defp get_pool_name(host, port, pool_count) do
+    pool = pool_count |> :math.floor() |> round()
     {Mojito.Pool, host, port, pool}
   end
 end

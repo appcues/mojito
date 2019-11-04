@@ -61,14 +61,15 @@ defmodule Mojito.ConnServer do
   end
 
   def handle_call(
-        {:request, request, reply_to, response_ref},
-        _from,
+        {:request, request, reply_to, response_ref} = msg,
+        from,
         state
       ) do
     with {:ok, state, _request_ref} <-
            start_request(state, request, reply_to, response_ref) do
       {:reply, :ok, state}
     else
+      {:error, _mint_conn, %{reason: :closed}} -> handle_call(msg, from, state)
       err -> {:reply, err, close_connections(state)}
     end
   end
@@ -84,7 +85,11 @@ defmodule Mojito.ConnServer do
           state = %{state | conn: state_conn}
           {:noreply, apply_resps(state, resps)}
 
+        {:error, _mint_conn, _error} ->
+          {:noreply, close_connections(state)}
+
         {:error, _mint_conn, _error, _resps} ->
+          ## This case may be obsolete
           {:noreply, close_connections(state)}
 
         :unknown ->
