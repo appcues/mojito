@@ -227,7 +227,7 @@ defmodule MojitoTest do
 
       assert(
         {:error, %{reason: :timeout}} =
-          Mojito.Request.Single.receive_response(
+          Mojito.Single.receive_response(
             conn,
             %Mojito.Response{},
             100

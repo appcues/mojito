@@ -1,4 +1,4 @@
-defmodule Mojito.Request.Single do
+defmodule Mojito.Single do
   ## Make a single request, without spawning any processes.
 
   @moduledoc false

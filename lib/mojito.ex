@@ -281,7 +281,7 @@ defmodule Mojito do
       request_fn =
         case Mojito.Config.config(:pool, valid_request.opts) do
           true -> fn -> Mojito.Pool.request(valid_request) end
-          false -> fn -> Mojito.Request.Single.request(valid_request) end
+          false -> fn -> Mojito.Single.request(valid_request) end
         end
 
       request_fn.()
