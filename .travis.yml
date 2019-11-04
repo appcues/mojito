@@ -3,7 +3,6 @@ otp_version:
   - 22.1
 elixir:
   - 1.9.2
-  - 1.8
 script:
   - "MIX_ENV=test mix do deps.get, compile, test"
 
