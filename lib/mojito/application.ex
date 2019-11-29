@@ -5,10 +5,10 @@ defmodule Mojito.Application do
 
   def start(_type, _args) do
     children = [
-      Mojito.Pool.Manager,
+      Mojito.Pool.Poolboy.Manager,
       {Registry,
        keys: :duplicate,
-       name: Mojito.Pool.Registry,
+       name: Mojito.Pool.Poolboy.Registry,
        partitions: System.schedulers_online()},
     ]
 

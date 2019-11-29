@@ -1,14 +1,14 @@
-defmodule Mojito.Pool.Single do
+defmodule Mojito.Pool.Poolboy.Single do
   @moduledoc false
 
-  ## Mojito.Pool.Single provides an HTTP request connection pool based on
-  ## Mojito and Poolboy.  It is intended for use through `Mojito.Pool`.
+  ## Mojito.Pool.Poolboy.Single provides an HTTP request connection pool based on
+  ## Mojito and Poolboy.
   ##
   ## Example:
   ##
-  ##    >>>> child_spec = Mojito.Pool.Single.child_spec()
+  ##    >>>> child_spec = Mojito.Pool.Poolboy.Single.child_spec()
   ##    >>>> {:ok, pool_pid} = Supervisor.start_child(Mojito.Supervisor, child_spec)
-  ##    >>>> Mojito.Pool.Single.request(pool_pid, :get, "http://example.com")
+  ##    >>>> Mojito.Pool.Poolboy.Single.request(pool_pid, :get, "http://example.com")
   ##    {:ok, %Mojito.Response{...}}
 
   alias Mojito.{Config, ConnServer, Request, Utils}
