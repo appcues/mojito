@@ -15,7 +15,9 @@ Mint.
 
 ## Quickstart
 
-    {:ok, response} = Mojito.request(method: :get, url: "https://github.com")
+```elixir
+{:ok, response} = Mojito.request(method: :get, url: "https://github.com")
+```
 
 ## Why Mojito?
 
@@ -50,7 +52,9 @@ Mojito addresses the following design goals:
 
 Add `mojito` to your deps in `mix.exs`:
 
-    {:mojito, "~> 0.5.0"}
+```elixir
+{:mojito, "~> 0.5.0"}
+```
 
 ## Upgrading from 0.4 and earlier
 
@@ -95,20 +99,22 @@ The following `:pool_opts` options are supported:
 
 For example:
 
-    use Mix.Config
+```elixir
+use Mix.Config
 
-    config :mojito,
-      timeout: 2500,
-      pool_opts: [
-        size: 10,
-        destinations: [
-          "example.com:443": [
-            size: 20,
-            max_overflow: 20,
-            pools: 10
-          ]
-        ]
+config :mojito,
+  timeout: 2500,
+  pool_opts: [
+    size: 10,
+    destinations: [
+      "example.com:443": [
+        size: 20,
+        max_overflow: 20,
+        pools: 10
       ]
+    ]
+  ]
+```
 
 Certain configs can be overridden with each request.  See `request/1`.
 
@@ -116,23 +122,25 @@ Certain configs can be overridden with each request.  See `request/1`.
 
 Make requests with `Mojito.request/1` or `Mojito.request/5`:
 
-    >>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
-    ## or...
-    >>>> Mojito.request(%{method: :get, url: "https://jsonplaceholder.typicode.com/posts/1"})
-    ## or...
-    >>>> Mojito.request(method: :get, url: "https://jsonplaceholder.typicode.com/posts/1")
+```elixir
+>>>> Mojito.request(:get, "https://jsonplaceholder.typicode.com/posts/1")
+## or...
+>>>> Mojito.request(%{method: :get, url: "https://jsonplaceholder.typicode.com/posts/1"})
+## or...
+>>>> Mojito.request(method: :get, url: "https://jsonplaceholder.typicode.com/posts/1")
 
-    {:ok,
-     %Mojito.Response{
-       body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
-       headers: [
-         {"content-type", "application/json; charset=utf-8"},
-         {"content-length", "292"},
-         {"connection", "keep-alive"},
-         ...
-       ],
-       status_code: 200
-     }}
+{:ok,
+ %Mojito.Response{
+   body: "{\n  \"userId\": 1,\n  \"id\": 1,\n  \"title\": \"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\",\n  \"body\": \"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\"\n}",
+   headers: [
+     {"content-type", "application/json; charset=utf-8"},
+     {"content-length", "292"},
+     {"connection", "keep-alive"},
+     ...
+   ],
+   status_code: 200
+ }}
+```
 
 By default, Mojito will use a connection pool for requests, automatically
 handling the creation and reuse of pools.  If this is not desired,
@@ -145,11 +153,13 @@ To accept self-signed certificates in HTTPS connections, you can give the
 `transport_opts: [verify: :verify_none]` option to `Mojito.request`
 or `Mojito.Pool.request`:
 
-    >>>> Mojito.request(method: :get, url: "https://localhost:8443/")
-    {:error, {:tls_alert, 'bad certificate'}}
+```elixir
+>>>> Mojito.request(method: :get, url: "https://localhost:8443/")
+{:error, {:tls_alert, 'bad certificate'}}
 
-    >>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
-    {:ok, %Mojito.Response{ ... }}
+>>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
+{:ok, %Mojito.Response{ ... }}
+```
 
 ## Changelog
 
