@@ -21,25 +21,31 @@ defmodule Mojito.Pool.Poolboy.SingleTest do
     end
 
     defp get(pool, path, opts \\ []) do
-      Mojito.Pool.Poolboy.Single.request(
-        pool,
-        :get,
-        "http://localhost:#{@http_port}#{path}",
-        [],
-        "",
-        opts
-      )
+      req = %Mojito.Request{
+        method: :get,
+        url: "http://localhost:#{@http_port}#{path}",
+        headers: [],
+        body: "",
+        opts: opts,
+      }
+
+      {:ok, _, host, port} = Mojito.Utils.decompose_url(req.url)
+
+      Mojito.Pool.Poolboy.Single.request(pool, req, host, port)
     end
 
     defp get_ssl(pool, path, opts \\ []) do
-      Mojito.Pool.Poolboy.Single.request(
-        pool,
-        :get,
-        "https://localhost:#{@https_port}#{path}",
-        [],
-        "",
-        [transport_opts: [verify: :verify_none]] ++ opts
-      )
+      req = %Mojito.Request{
+        method: :get,
+        url: "https://localhost:#{@https_port}#{path}",
+        headers: [],
+        body: "",
+        opts: [transport_opts: [verify: :verify_none]] ++ opts
+      }
+
+      {:ok, _, host, port} = Mojito.Utils.decompose_url(req.url)
+
+      Mojito.Pool.Poolboy.Single.request(pool, req, host, port)
     end
 
     it "can make HTTP requests" do

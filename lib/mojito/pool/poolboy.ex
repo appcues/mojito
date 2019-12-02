@@ -26,15 +26,15 @@ defmodule Mojito.Pool.Poolboy do
          {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
          pool_key <- pool_key(host, port),
          {:ok, pool} <- get_pool(pool_key) do
-      do_request(pool, pool_key, valid_request)
+      do_request(pool, pool_key, valid_request, host, port)
     end
   end
 
-  defp do_request(pool, pool_key, request) do
-    case Mojito.Pool.Poolboy.Single.request(pool, request) do
+  defp do_request(pool, pool_key, request, host, port) do
+    case Mojito.Pool.Poolboy.Single.request(pool, request, host, port) do
       {:error, %{reason: :checkout_timeout}} ->
         {:ok, pid} = start_pool(pool_key)
-        Mojito.Pool.Poolboy.Single.request(pid, request)
+        Mojito.Pool.Poolboy.Single.request(pid, request, host, port)
 
       other ->
         other
@@ -76,7 +76,7 @@ defmodule Mojito.Pool.Poolboy do
       GenServer.call(
         Mojito.Pool.Poolboy.Manager,
         {:start_pool, pool_key},
-        Config.timeout()
+        Config.config(:timeout, [])
       )
     rescue
       e -> {:error, e}
@@ -90,7 +90,7 @@ defmodule Mojito.Pool.Poolboy do
 
   ## Returns a key representing the given destination.
   @doc false
-  @spec pool_key(String.t(), pos_integer) :: Mojito.Pool.pool_key
+  @spec pool_key(String.t(), pos_integer) :: Mojito.Pool.pool_key()
   def pool_key(host, port) do
     {host, port}
   end

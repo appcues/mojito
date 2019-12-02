@@ -70,7 +70,7 @@ defmodule Mojito.Pool.Poolboy.Single do
 
   See `request/2` for documentation.
   """
-  @spec request(
+  @spec old_request(
           pid,
           Mojito.method(),
           String.t(),
@@ -78,7 +78,7 @@ defmodule Mojito.Pool.Poolboy.Single do
           String.t(),
           Keyword.t()
         ) :: {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, method, url, headers \\ [], body \\ "", opts \\ []) do
+  def old_request(pool, method, url, headers \\ [], body \\ "", opts \\ []) do
     req = %Request{
       method: method,
       url: url,
@@ -87,7 +87,7 @@ defmodule Mojito.Pool.Poolboy.Single do
       opts: opts,
     }
 
-    request(pool, req)
+    #request(pool, req)
   end
 
   @doc ~S"""
@@ -101,15 +101,15 @@ defmodule Mojito.Pool.Poolboy.Single do
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
   """
-  @spec request(pid, Mojito.request()) ::
+  @spec request(pid, Mojito.request(), String.t, non_neg_integer) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
-  def request(pool, request) do
+  def request(pool, request, host, port) do
     start_time = time()
 
     with {:ok, valid_request} <- Request.validate_request(request) do
-      timeout = valid_request.opts[:timeout] || Config.timeout()
+      timeout = Config.config(:timeout, {host, port}, valid_request.opts)
 
-      case do_request(pool, valid_request) do
+      case do_request(pool, valid_request, timeout) do
         {:error, %Mojito.Error{reason: %{reason: :closed}}} ->
           ## Retry connection-closed errors as many times as we can
           new_timeout = timeout - (time() - start_time)
@@ -117,7 +117,7 @@ defmodule Mojito.Pool.Poolboy.Single do
           new_request_opts =
             valid_request.opts |> Keyword.put(:timeout, new_timeout)
 
-          request(pool, %{valid_request | opts: new_request_opts})
+          request(pool, %{valid_request | opts: new_request_opts}, host, port)
 
         other ->
           other
@@ -125,8 +125,7 @@ defmodule Mojito.Pool.Poolboy.Single do
     end
   end
 
-  defp do_request(pool, request) do
-    timeout = request.opts[:timeout] || Config.timeout()
+  defp do_request(pool, request, timeout) do
     start_time = time()
     response_ref = make_ref()
 
