@@ -53,23 +53,8 @@ Mojito addresses the following design goals:
 Add `mojito` to your deps in `mix.exs`:
 
 ```elixir
-{:mojito, "~> 0.5.0"}
+{:mojito, "~> 0.6.1"}
 ```
-
-## Upgrading from 0.4 and earlier
-
-Upgrading from 0.4 to 0.5 requires no end-user code changes.
-
-Mojito 0.5 refactors some internal functions in a way that changes
-their arity and order of arguments.
-
-Upgrading to 0.5 cannot be performed safely inside a hot upgrade.
-Deploy a regular release instead.
-
-Using request methods other than those in the `Mojito` module is
-deprecated since 0.3.
-
-A handful of new config parameters appeared in 0.3 as well.
 
 ## Configuration
 

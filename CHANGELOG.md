@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1 (2019-12-20)
+
+Internal refactor to support different pool implementations. No features
+were added or changed.
+
+Code formatting improvements in docs. Thanks,
+[@sotojuan](https://github.com/sotojuan)!
+
 ## 0.6.0 (2019-11-02)
 
 Upgraded to Mint 1.0. Thanks, [@esvinson](https://github.com/esvinson)!
