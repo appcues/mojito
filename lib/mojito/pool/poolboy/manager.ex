@@ -1,4 +1,4 @@
-defmodule Mojito.Pool.Manager do
+defmodule Mojito.Pool.Poolboy.Manager do
   ## I'd prefer to start new pools directly in the caller process, but
   ## they'd end up disappearing from the registry when the process
   ## terminates.  So instead we start new pools from here, a long-lived
@@ -84,11 +84,11 @@ defmodule Mojito.Pool.Manager do
     child_spec =
       pool_opts
       |> Keyword.put(:id, pool_id)
-      |> Mojito.Pool.Single.child_spec()
+      |> Mojito.Pool.Poolboy.Single.child_spec()
 
     with {:ok, pool_pid} <-
            Supervisor.start_child(Mojito.Supervisor, child_spec),
-         {:ok, _} <- Registry.register(Mojito.Pool.Registry, pool_key, pool_pid) do
+         {:ok, _} <- Registry.register(Mojito.Pool.Poolboy.Registry, pool_key, pool_pid) do
       state =
         state
         |> put_in([:pools, pool_key], [pool_pid | pools])

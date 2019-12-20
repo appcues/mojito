@@ -1,13 +1,13 @@
-defmodule Mojito.PoolTest do
+defmodule Mojito.Pool.PoolboyTest do
   use ExSpec, async: false
-  doctest Mojito.Pool
+  doctest Mojito.Pool.Poolboy
 
   context "Mojito.Pool" do
     @http_port Application.get_env(:mojito, :test_server_http_port)
     @https_port Application.get_env(:mojito, :test_server_https_port)
 
     defp get(path, opts \\ []) do
-      Mojito.Pool.request(%Mojito.Request{
+      Mojito.Pool.Poolboy.request(%Mojito.Request{
         method: :get,
         url: "http://localhost:#{@http_port}#{path}",
         opts: opts,
@@ -15,7 +15,7 @@ defmodule Mojito.PoolTest do
     end
 
     defp get_ssl(path, opts \\ []) do
-      Mojito.Pool.request(%Mojito.Request{
+      Mojito.Pool.Poolboy.request(%Mojito.Request{
         method: :get,
         url: "https://localhost:#{@https_port}#{path}",
         opts: [transport_opts: [verify: :verify_none]] ++ opts,
