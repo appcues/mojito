@@ -24,7 +24,7 @@ defmodule Mojito.Request.Single do
     with {:ok, req} <- Request.validate_request(req),
          {:ok, conn} <- Conn.connect(req.url, req.opts),
          {:ok, conn, _ref} <- Conn.request(conn, req) do
-      timeout = req.opts[:timeout] || Config.timeout()
+      timeout = Config.config(:timeout, req.opts)
       receive_response(conn, %Response{}, timeout)
     end
   end

@@ -71,17 +71,18 @@ defmodule Mojito.Pool.Poolboy do
   @spec start_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
   def start_pool(pool_key) do
     old_trap_exit = Process.flag(:trap_exit, true)
+    timeout = Config.config(:timeout, [])
 
     try do
       GenServer.call(
         Mojito.Pool.Poolboy.Manager,
         {:start_pool, pool_key},
-        Config.timeout()
+        timeout
       )
     rescue
       e -> {:error, e}
     catch
-      :exit, _ -> {:error, :checkout_timeout}
+      :exit, _ -> {:error, :timeout}
     after
       Process.flag(:trap_exit, old_trap_exit)
     end
@@ -90,7 +91,7 @@ defmodule Mojito.Pool.Poolboy do
 
   ## Returns a key representing the given destination.
   @doc false
-  @spec pool_key(String.t(), pos_integer) :: Mojito.Pool.pool_key
+  @spec pool_key(String.t(), pos_integer) :: Mojito.Pool.pool_key()
   def pool_key(host, port) do
     {host, port}
   end

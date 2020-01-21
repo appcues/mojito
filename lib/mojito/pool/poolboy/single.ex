@@ -107,7 +107,7 @@ defmodule Mojito.Pool.Poolboy.Single do
     start_time = time()
 
     with {:ok, valid_request} <- Request.validate_request(request) do
-      timeout = valid_request.opts[:timeout] || Config.timeout()
+      timeout = Config.config(:timeout, valid_request.opts)
 
       case do_request(pool, valid_request) do
         {:error, %Mojito.Error{reason: %{reason: :closed}}} ->
@@ -126,7 +126,7 @@ defmodule Mojito.Pool.Poolboy.Single do
   end
 
   defp do_request(pool, request) do
-    timeout = request.opts[:timeout] || Config.timeout()
+    timeout = Config.config(:timeout, request.opts)
     start_time = time()
     response_ref = make_ref()
 

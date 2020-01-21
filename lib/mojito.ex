@@ -280,10 +280,17 @@ defmodule Mojito do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request),
          {:ok, valid_request} <- Mojito.Request.convert_headers_values_to_string(valid_request) do
       case Keyword.get(valid_request.opts, :pool, true) do
-        true -> Mojito.Pool.Poolboy.request(valid_request)
-        false -> Mojito.Request.Single.request(valid_request)
-        pid when is_pid(pid) -> Mojito.Pool.Poolboy.Single.request(pid, valid_request)
-        impl when is_atom(impl) -> impl.request(valid_request)
+        true ->
+          Mojito.Pool.Poolboy.request(valid_request)
+
+        false ->
+          Mojito.Request.Single.request(valid_request)
+
+        pid when is_pid(pid) ->
+          Mojito.Pool.Poolboy.Single.request(pid, valid_request)
+
+        impl when is_atom(impl) ->
+          impl.request(valid_request)
       end
     end
   end
