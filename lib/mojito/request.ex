@@ -7,7 +7,7 @@ defmodule Mojito.Request do
             body: "",
             opts: []
 
-  alias Mojito.{Error, Request}
+  alias Mojito.{Error, Headers, Request}
 
   @doc ~S"""
   Checks for errors and returns a canonicalized version of the request.
@@ -53,5 +53,13 @@ defmodule Mojito.Request do
 
   def validate_request(_request) do
     {:error, %Error{message: "request must be a map"}}
+  end
+
+  @doc ~S"""
+  Converts non-string header values to UTF-8 string if possible.
+  """
+  @spec convert_headers_values_to_string(Mojito.request()) :: {:ok, Mojito.request()}
+  def convert_headers_values_to_string(%__MODULE__{headers: headers} = request) do
+    {:ok, %__MODULE__{request | headers: Headers.convert_values_to_string(headers)}}
   end
 end

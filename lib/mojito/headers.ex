@@ -199,4 +199,29 @@ defmodule Mojito.Headers do
     auth64 = "#{username}:#{password}" |> Base.encode64()
     {"authorization", "Basic #{auth64}"}
   end
+
+  @doc ~S"""
+  Convert non string values to string where is possible.
+
+  Example:
+
+      iex> Mojito.Headers.convert_values_to_string([{"content-length", 0}])
+      [{"content-length", "0"}]
+  """
+  @spec convert_values_to_string(headers) :: headers
+  def convert_values_to_string(headers) do
+    convert_values_to_string(headers, [])
+  end
+
+  defp convert_values_to_string([], converted_headers),
+    do: Enum.reverse(converted_headers)
+
+  defp convert_values_to_string([{name, value} | rest], converted_headers)
+       when is_number(value) do
+    convert_values_to_string(rest, [{name, inspect(value)} | converted_headers])
+  end
+
+  defp convert_values_to_string([headers | rest], converted_headers) do
+    convert_values_to_string(rest, [headers | converted_headers])
+  end
 end

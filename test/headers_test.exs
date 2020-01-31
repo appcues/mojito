@@ -117,4 +117,22 @@ defmodule Mojito.HeadersTest do
 
     assert(output == Headers.normalize(@test_headers))
   end
+
+  test "convert_values_to_string converts numbers to string" do
+    input = [
+      {"integer", 2},
+      {"float", 22.5},
+      {"atom", :atom},
+      {"string", "string"}
+    ]
+
+    output = [
+      {"integer", "2"},
+      {"float", "22.5"},
+      {"atom", :atom},
+      {"string", "string"}
+    ]
+
+    assert(output == Headers.convert_values_to_string(input))
+  end
 end
