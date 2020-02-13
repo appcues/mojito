@@ -218,7 +218,7 @@ defmodule Mojito.Headers do
 
   defp convert_values_to_string([{name, value} | rest], converted_headers)
        when is_number(value) do
-    convert_values_to_string(rest, [{name, inspect(value)} | converted_headers])
+    convert_values_to_string(rest, [{name, to_string(value)} | converted_headers])
   end
 
   defp convert_values_to_string([headers | rest], converted_headers) do
