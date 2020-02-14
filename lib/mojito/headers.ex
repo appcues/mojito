@@ -217,7 +217,7 @@ defmodule Mojito.Headers do
     do: Enum.reverse(converted_headers)
 
   defp convert_values_to_string([{name, value} | rest], converted_headers)
-       when is_number(value) do
+       when is_number(value) or is_atom(value) do
     convert_values_to_string(rest, [{name, to_string(value)} | converted_headers])
   end
 

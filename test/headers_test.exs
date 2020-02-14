@@ -123,13 +123,15 @@ defmodule Mojito.HeadersTest do
       {"integer", 2},
       {"float", 22.5},
       {"atom", :atom},
+      {"list", [1,2]},
       {"string", "string"}
     ]
 
     output = [
       {"integer", "2"},
       {"float", "22.5"},
-      {"atom", :atom},
+      {"atom", "atom"},
+      {"list", [1,2]},
       {"string", "string"}
     ]
 

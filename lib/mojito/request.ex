@@ -59,7 +59,7 @@ defmodule Mojito.Request do
   Converts non-string header values to UTF-8 string if possible.
   """
   @spec convert_headers_values_to_string(Mojito.request()) :: {:ok, Mojito.request()}
-  def convert_headers_values_to_string(%__MODULE__{headers: headers} = request) do
-    {:ok, %__MODULE__{request | headers: Headers.convert_values_to_string(headers)}}
+  def convert_headers_values_to_string(%{headers: headers} = request) do
+    {:ok, %{request | headers: Headers.convert_values_to_string(headers)}}
   end
 end
