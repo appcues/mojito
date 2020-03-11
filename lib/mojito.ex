@@ -277,7 +277,8 @@ defmodule Mojito do
   """
   @spec request(request | request_kwlist) :: {:ok, response} | {:error, error}
   def request(request) do
-    with {:ok, valid_request} <- Mojito.Request.validate_request(request) do
+    with {:ok, valid_request} <- Mojito.Request.validate_request(request),
+         {:ok, valid_request} <- Mojito.Request.convert_headers_values_to_string(valid_request) do
       case Keyword.get(valid_request.opts, :pool, true) do
         true -> Mojito.Pool.Poolboy.request(valid_request)
         false -> Mojito.Request.Single.request(valid_request)
