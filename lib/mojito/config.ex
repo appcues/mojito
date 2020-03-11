@@ -38,9 +38,24 @@ defmodule Mojito.Config do
     end
   end
 
+  @spec config(atom, Keyword.t, String.t, String.t | non_neg_integer) :: any
+  def config(key, opts, host, port) do
+    destination = try do
+      String.to_existing_atom("#{host}:#{port}")
+    rescue
+      ArgumentError -> :none
+    end
+
+    config(key, opts, destination)
+  end
+
   @defaults [
     pools: "this value gets replaced below",
     timeout: 5000,
+    checkout_timeout: :infinity,
+    request_timeout: :infinity,
+    size: 32,
+    pipeline: 1024,
   ]
 
   defp default(:pools), do: System.schedulers_online()
