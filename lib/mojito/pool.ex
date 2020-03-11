@@ -11,7 +11,7 @@ defmodule Mojito.Pool do
           | {:pools, pos_integer}
           | {:strategy, :lifo | :fifo}
 
-  @typep pool_key :: {String.t(), pos_integer}
+  @type pool_key :: {String.t(), pos_integer}
 
   @default_pool_opts [
     size: 5,

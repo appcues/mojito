@@ -48,7 +48,7 @@ defmodule Mojito do
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.5.0"}
+      {:mojito, "~> 0.6.2"}
 
   ## Upgrading from 0.4 and earlier
 
@@ -69,7 +69,8 @@ defmodule Mojito do
 
   The following `config.exs` config parameters are supported:
 
-  * `:timeout` (milliseconds, default 5000) -- Default request timeout.
+  * `:timeout` (`:infinity` or milliseconds, default `5000`) --
+    Default request timeout.
   * `:transport_opts` (`t:Keyword.t`, default `[]`) -- Options to pass to
     the `:gen_tcp` or `:ssl` modules.  Commonly used to make HTTPS requests
     with self-signed TLS server certificates; see below for details.
@@ -269,8 +270,8 @@ defmodule Mojito do
   Options:
 
   * `:pool` - See above.
-  * `:timeout` - Response timeout in milliseconds.  Defaults to
-    `Application.get_env(:mojito, :timeout, 5000)`.
+  * `:timeout` - Response timeout in milliseconds, or `:infinity`.
+    Defaults to `Application.get_env(:mojito, :timeout, 5000)`.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.

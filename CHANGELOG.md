@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2 (2020-03-11)
+
+Header values are now stringified on their way to Mint. Thanks,
+[@egze](https://github.com/egze)!
+
+Timeouts of `:infinity` are now supported. Thanks,
+[@t8rsalad](https://github.com/t8rsalad)!
+
 ## 0.6.1 (2019-12-20)
 
 Internal refactor to support different pool implementations. No features
