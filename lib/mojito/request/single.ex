@@ -45,11 +45,16 @@ defmodule Mojito.Request.Single do
 
   defp handle_msg(conn, response, timeout, msg, start_time) do
     new_timeout = fn ->
-      time_elapsed = time() - start_time
+      case timeout do
+        :infinity ->
+          :infinity
+        _ ->
+          time_elapsed = time() - start_time
 
-      case timeout - time_elapsed do
-        x when x < 0 -> 0
-        x -> x
+          case timeout - time_elapsed do
+            x when x < 0 -> 0
+            x -> x
+          end
       end
     end
 

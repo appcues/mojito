@@ -112,7 +112,7 @@ defmodule Mojito.Pool.Poolboy.Single do
       case do_request(pool, valid_request) do
         {:error, %Mojito.Error{reason: %{reason: :closed}}} ->
           ## Retry connection-closed errors as many times as we can
-          new_timeout = timeout - (time() - start_time)
+          new_timeout = calc_new_timeout(timeout, start_time)
 
           new_request_opts =
             valid_request.opts |> Keyword.put(:timeout, new_timeout)
@@ -133,7 +133,7 @@ defmodule Mojito.Pool.Poolboy.Single do
     worker_fn = fn worker ->
       case ConnServer.request(worker, request, self(), response_ref) do
         :ok ->
-          new_timeout = (timeout - (time() - start_time)) |> max(0)
+          new_timeout = calc_new_timeout(timeout, start_time) |> max(0)
 
           receive do
             {:mojito_response, ^response_ref, response} -> response
@@ -158,6 +158,12 @@ defmodule Mojito.Pool.Poolboy.Single do
       Process.flag(:trap_exit, old_trap_exit)
     end
     |> Utils.wrap_return_value()
+  end
+
+  defp calc_new_timeout(:infinity, _), do: :infinity
+
+  defp calc_new_timeout(timeout, start_time) do
+    timeout - (time() - start_time)
   end
 
   defp time, do: System.monotonic_time(:millisecond)
