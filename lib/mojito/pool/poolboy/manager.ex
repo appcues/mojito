@@ -88,8 +88,7 @@ defmodule Mojito.Pool.Poolboy.Manager do
 
     with {:ok, pool_pid} <-
            Supervisor.start_child(Mojito.Supervisor, child_spec),
-         {:ok, _} <-
-           Registry.register(Mojito.Pool.Poolboy.Registry, pool_key, pool_pid) do
+         {:ok, _} <- Registry.register(Mojito.Pool.Poolboy.Registry, pool_key, pool_pid) do
       state =
         state
         |> put_in([:pools, pool_key], [pool_pid | pools])
