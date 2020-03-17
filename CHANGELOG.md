@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.3 (2020-03-17)
+
+`gzip`ped or `deflate`d responses are automatically expanded by
+Mojito. Thanks, [@mogorman](https://github.com/mogorman)!
+
+The Freedom Formatter has been removed. `mix format` is now applied.
+
 ## 0.6.2 (2020-03-11)
 
 Header values are now stringified on their way to Mint. Thanks,

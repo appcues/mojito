@@ -1,7 +1,7 @@
 defmodule Mojito.MixProject do
   use Mix.Project
 
-  @version "0.6.2"
+  @version "0.6.3"
   @repo_url "https://github.com/appcues/mojito"
 
   def project do
@@ -55,7 +55,6 @@ defmodule Mojito.MixProject do
       {:plug, "~> 1.3", only: :test},
       {:plug_cowboy, "~> 1.0", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
-      {:freedom_formatter, "~> 1.0", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end
