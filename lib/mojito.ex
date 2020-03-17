@@ -272,6 +272,8 @@ defmodule Mojito do
   * `:pool` - See above.
   * `:timeout` - Response timeout in milliseconds, or `:infinity`.
     Defaults to `Application.get_env(:mojito, :timeout, 5000)`.
+  * `:raw` - Set this to `true` to prevent the decompression of
+    `gzip` or `compress`-encoded responses.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
@@ -286,7 +288,29 @@ defmodule Mojito do
         pid when is_pid(pid) -> Mojito.Pool.Poolboy.Single.request(pid, valid_request)
         impl when is_atom(impl) -> impl.request(valid_request)
       end
+      |> maybe_decompress(valid_request.opts)
     end
+  end
+
+  defp maybe_decompress({:ok, response}, opts) do
+    case Keyword.get(opts, :raw) do
+      true ->
+        {:ok, response}
+      _->
+        case Enum.find(response.headers, fn {k, _v} -> k == "content-encoding" end) do
+          {"content-encoding", "gzip"} ->
+            {:ok ,%Mojito.Response{response | body: :zlib.gunzip(response.body)}}
+          {"content-encoding", "deflate"} ->
+            {:ok ,%Mojito.Response{response | body: :zlib.uncompress(response.body)}}
+          _ ->
+            # we don't have a decompressor for this so just returning
+            {:ok, response}
+        end
+    end
+  end
+
+  defp maybe_decompress(response, _opts) do
+    response
   end
 
   @doc ~S"""

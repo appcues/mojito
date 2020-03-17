@@ -315,6 +315,22 @@ defmodule MojitoTest do
           Headers.get(response.headers, "allow")
       )
     end
+
+    it "expands gzip" do
+      assert({:ok, response} = get("/gzip"))
+      assert("{\"ok\":true}\n" == response.body)
+
+      assert({:ok, response} = get("/gzip", raw: true))
+      assert("{\"ok\":true}\n" != response.body)
+    end
+
+    it "expands deflate" do
+      assert({:ok, response} = get("/deflate"))
+      assert("{\"ok\":true}\n" == response.body)
+
+      assert({:ok, response} = get("/deflate", raw: true))
+      assert("{\"ok\":true}\n" != response.body)
+    end
   end
 
   context "external tests" do
