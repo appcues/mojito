@@ -94,4 +94,22 @@ defmodule Mojito.TestServer.PlugRouter do
     :timer.sleep(10000)
     send_resp(conn, 200, "ok")
   end
+
+  @gzip_body "H4sICOnTcF4AA3Jlc3BvbnNlAKtWys9WsiopKk2t5QIAiEF/wgwAAAA=" |> Base.decode64!
+
+  get "/gzip" do
+    conn
+    |> put_resp_header("content-encoding", "gzip")
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(200, @gzip_body)
+  end
+
+  @deflate_body "eJyrVsrPVrIqKSpNreUCABr+BBs=" |> Base.decode64!
+
+  get "/deflate" do
+    conn
+    |> put_resp_header("content-encoding", "deflate")
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(200, @deflate_body)
+  end
 end

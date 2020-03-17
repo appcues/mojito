@@ -272,6 +272,8 @@ defmodule Mojito do
   * `:pool` - See above.
   * `:timeout` - Response timeout in milliseconds, or `:infinity`.
     Defaults to `Application.get_env(:mojito, :timeout, 5000)`.
+  * `:raw` - Set this to `true` to prevent the decompression of
+    `gzip` or `compress`-encoded responses.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
