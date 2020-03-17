@@ -42,7 +42,7 @@ defmodule Mojito.Request do
            url: request.url,
            headers: Map.get(request, :headers, []),
            body: Map.get(request, :body, ""),
-           opts: Map.get(request, :opts, []),
+           opts: Map.get(request, :opts, [])
          }}
     end
   end
@@ -58,7 +58,8 @@ defmodule Mojito.Request do
   @doc ~S"""
   Converts non-string header values to UTF-8 string if possible.
   """
-  @spec convert_headers_values_to_string(Mojito.request()) :: {:ok, Mojito.request()}
+  @spec convert_headers_values_to_string(Mojito.request()) ::
+          {:ok, Mojito.request()}
   def convert_headers_values_to_string(%{headers: headers} = request) do
     {:ok, %{request | headers: Headers.convert_values_to_string(headers)}}
   end

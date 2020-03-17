@@ -201,7 +201,7 @@ defmodule Mojito do
           url: String.t(),
           headers: headers | nil,
           body: String.t() | nil,
-          opts: Keyword.t() | nil,
+          opts: Keyword.t() | nil
         }
 
   @type request_kwlist :: [request_field]
@@ -217,12 +217,12 @@ defmodule Mojito do
           status_code: pos_integer,
           headers: headers,
           body: String.t(),
-          complete: boolean,
+          complete: boolean
         }
 
   @type error :: %Mojito.Error{
           reason: any,
-          message: String.t() | nil,
+          message: String.t() | nil
         }
 
   @type pool_opts :: [pool_opt | {:destinations, [{atom, pool_opts}]}]
@@ -281,12 +281,20 @@ defmodule Mojito do
   @spec request(request | request_kwlist) :: {:ok, response} | {:error, error}
   def request(request) do
     with {:ok, valid_request} <- Mojito.Request.validate_request(request),
-         {:ok, valid_request} <- Mojito.Request.convert_headers_values_to_string(valid_request) do
+         {:ok, valid_request} <-
+           Mojito.Request.convert_headers_values_to_string(valid_request) do
       case Keyword.get(valid_request.opts, :pool, true) do
-        true -> Mojito.Pool.Poolboy.request(valid_request)
-        false -> Mojito.Request.Single.request(valid_request)
-        pid when is_pid(pid) -> Mojito.Pool.Poolboy.Single.request(pid, valid_request)
-        impl when is_atom(impl) -> impl.request(valid_request)
+        true ->
+          Mojito.Pool.Poolboy.request(valid_request)
+
+        false ->
+          Mojito.Request.Single.request(valid_request)
+
+        pid when is_pid(pid) ->
+          Mojito.Pool.Poolboy.Single.request(pid, valid_request)
+
+        impl when is_atom(impl) ->
+          impl.request(valid_request)
       end
       |> maybe_decompress(valid_request.opts)
     end
@@ -296,12 +304,19 @@ defmodule Mojito do
     case Keyword.get(opts, :raw) do
       true ->
         {:ok, response}
-      _->
-        case Enum.find(response.headers, fn {k, _v} -> k == "content-encoding" end) do
+
+      _ ->
+        case Enum.find(response.headers, fn {k, _v} ->
+               k == "content-encoding"
+             end) do
           {"content-encoding", "gzip"} ->
-            {:ok ,%Mojito.Response{response | body: :zlib.gunzip(response.body)}}
+            {:ok,
+             %Mojito.Response{response | body: :zlib.gunzip(response.body)}}
+
           {"content-encoding", "deflate"} ->
-            {:ok ,%Mojito.Response{response | body: :zlib.uncompress(response.body)}}
+            {:ok,
+             %Mojito.Response{response | body: :zlib.uncompress(response.body)}}
+
           _ ->
             # we don't have a decompressor for this so just returning
             {:ok, response}

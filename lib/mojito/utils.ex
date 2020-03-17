@@ -74,7 +74,7 @@ defmodule Mojito.Utils do
       joined_url =
         [
           if(uri.path, do: "#{uri.path}", else: ""),
-          if(uri.query, do: "?#{uri.query}", else: ""),
+          if(uri.query, do: "?#{uri.query}", else: "")
         ]
         |> Enum.join("")
 

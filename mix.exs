@@ -15,14 +15,14 @@ defmodule Mojito.MixProject do
       deps: deps(),
       package: package(),
       dialyzer: [
-        plt_add_apps: [:mix],
+        plt_add_apps: [:mix]
       ],
       docs: [
         logo: "assets/mojito.png",
         main: "Mojito",
         source_ref: @version,
-        source_url: @repo_url,
-      ],
+        source_url: @repo_url
+      ]
     ]
   end
 
@@ -33,14 +33,14 @@ defmodule Mojito.MixProject do
     [
       licenses: ["MIT"],
       maintainers: ["pete gamache <pete@appcues.com>"],
-      links: %{github: @repo_url},
+      links: %{github: @repo_url}
     ]
   end
 
   def application do
     [
       extra_applications: [:logger],
-      mod: {Mojito.Application, []},
+      mod: {Mojito.Application, []}
     ]
   end
 
@@ -56,7 +56,7 @@ defmodule Mojito.MixProject do
       {:plug_cowboy, "~> 1.0", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:freedom_formatter, "~> 1.0", only: :dev, runtime: false},
-      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end
 end

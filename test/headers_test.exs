@@ -7,7 +7,7 @@ defmodule Mojito.HeadersTest do
     {"header1", "value1"},
     {"header3", "value3-1"},
     {"header2", "value2"},
-    {"HeaDer3", "value3-2"},
+    {"HeaDer3", "value3-2"}
   ]
 
   test "Headers.get with no match" do
@@ -54,7 +54,7 @@ defmodule Mojito.HeadersTest do
       {"header3", "value3-1"},
       {"header2", "value2"},
       {"HeaDer3", "value3-2"},
-      {"header4", "new value"},
+      {"header4", "new value"}
     ]
 
     assert(output == Headers.put(@test_headers, "header4", "new value"))
@@ -65,7 +65,7 @@ defmodule Mojito.HeadersTest do
       {"header1", "value1"},
       {"header3", "value3-1"},
       {"HeaDer3", "value3-2"},
-      {"heADer2", "new value"},
+      {"heADer2", "new value"}
     ]
 
     assert(output == Headers.put(@test_headers, "heADer2", "new value"))
@@ -75,7 +75,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header2", "value2"},
-      {"HeaDer3", "new value"},
+      {"HeaDer3", "new value"}
     ]
 
     assert(output == Headers.put(@test_headers, "HeaDer3", "new value"))
@@ -89,7 +89,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header3", "value3-1"},
-      {"HeaDer3", "value3-2"},
+      {"HeaDer3", "value3-2"}
     ]
 
     assert(output == Headers.delete(@test_headers, "heADer2"))
@@ -98,7 +98,7 @@ defmodule Mojito.HeadersTest do
   test "Headers.delete when value exists multiple times" do
     output = [
       {"header1", "value1"},
-      {"header2", "value2"},
+      {"header2", "value2"}
     ]
 
     assert(output == Headers.delete(@test_headers, "HEADER3"))
@@ -112,7 +112,7 @@ defmodule Mojito.HeadersTest do
     output = [
       {"header1", "value1"},
       {"header3", "value3-1,value3-2"},
-      {"header2", "value2"},
+      {"header2", "value2"}
     ]
 
     assert(output == Headers.normalize(@test_headers))
@@ -123,7 +123,7 @@ defmodule Mojito.HeadersTest do
       {"integer", 2},
       {"float", 22.5},
       {"atom", :atom},
-      {"list", [1,2]},
+      {"list", [1, 2]},
       {"string", "string"}
     ]
 
@@ -131,7 +131,7 @@ defmodule Mojito.HeadersTest do
       {"integer", "2"},
       {"float", "22.5"},
       {"atom", "atom"},
-      {"list", [1,2]},
+      {"list", [1, 2]},
       {"string", "string"}
     ]
 

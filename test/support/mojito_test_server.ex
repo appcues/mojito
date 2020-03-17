@@ -16,7 +16,7 @@ defmodule Mojito.TestServer do
         port: Application.get_env(:mojito, :test_server_https_port),
         keyfile: File.cwd!() <> "/test/support/key.pem",
         certfile: File.cwd!() <> "/test/support/cert.pem"
-      ),
+      )
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
@@ -66,7 +66,7 @@ defmodule Mojito.TestServer.PlugRouter do
   options _ do
     conn
     |> merge_resp_headers([
-      {"Allow", "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE"},
+      {"Allow", "OPTIONS, GET, HEAD, POST, PATCH, PUT, DELETE"}
     ])
     |> send_resp(200, "")
   end
@@ -95,7 +95,8 @@ defmodule Mojito.TestServer.PlugRouter do
     send_resp(conn, 200, "ok")
   end
 
-  @gzip_body "H4sICOnTcF4AA3Jlc3BvbnNlAKtWys9WsiopKk2t5QIAiEF/wgwAAAA=" |> Base.decode64!
+  @gzip_body "H4sICOnTcF4AA3Jlc3BvbnNlAKtWys9WsiopKk2t5QIAiEF/wgwAAAA="
+             |> Base.decode64!()
 
   get "/gzip" do
     conn
@@ -104,7 +105,7 @@ defmodule Mojito.TestServer.PlugRouter do
     |> send_resp(200, @gzip_body)
   end
 
-  @deflate_body "eJyrVsrPVrIqKSpNreUCABr+BBs=" |> Base.decode64!
+  @deflate_body "eJyrVsrPVrIqKSpNreUCABr+BBs=" |> Base.decode64!()
 
   get "/deflate" do
     conn

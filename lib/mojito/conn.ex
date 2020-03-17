@@ -35,7 +35,7 @@ defmodule Mojito.Conn do
          conn: mint_conn,
          protocol: proto,
          hostname: hostname,
-         port: port,
+         port: port
        }}
     end
   end

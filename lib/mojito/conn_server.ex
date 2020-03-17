@@ -52,7 +52,7 @@ defmodule Mojito.ConnServer do
        port: nil,
        responses: %{},
        reply_tos: %{},
-       response_refs: %{},
+       response_refs: %{}
      }}
   end
 
@@ -140,7 +140,7 @@ defmodule Mojito.ConnServer do
       state
       | responses: Map.delete(state.responses, request_ref),
         reply_tos: Map.delete(state.reply_tos, request_ref),
-        response_refs: Map.delete(state.response_refs, request_ref),
+        response_refs: Map.delete(state.response_refs, request_ref)
     }
   end
 
@@ -166,7 +166,7 @@ defmodule Mojito.ConnServer do
         | conn: conn,
           responses: responses,
           reply_tos: reply_tos,
-          response_refs: response_refs,
+          response_refs: response_refs
       }
 
       {:ok, state, request_ref}

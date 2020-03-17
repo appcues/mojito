@@ -218,7 +218,7 @@ defmodule MojitoTest do
           content_length: nil,
           connection: [],
           transfer_encoding: [],
-          body: nil,
+          body: nil
         })
 
       conn = %{conn | conn: mint_conn}

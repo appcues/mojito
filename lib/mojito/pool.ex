@@ -1,7 +1,8 @@
 defmodule Mojito.Pool do
   @moduledoc false
 
-  @callback request(request :: Mojito.request) :: {:ok, Mojito.response} | {:error, Mojito.error}
+  @callback request(request :: Mojito.request()) ::
+              {:ok, Mojito.response()} | {:error, Mojito.error()}
 
   @type pool_opts :: [pool_opt | {:destinations, [pool_opt]}]
 
@@ -19,7 +20,6 @@ defmodule Mojito.Pool do
     pools: 5,
     strategy: :lifo
   ]
-
 
   ## Returns the configured `t:pool_opts` for the given destination.
   @doc false

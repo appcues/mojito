@@ -9,7 +9,7 @@ config :mojito,
     pools: 5,
     destinations: [
       "localhost:18443": [
-        pools: 10,
-      ],
-    ],
+        pools: 10
+      ]
+    ]
   ]

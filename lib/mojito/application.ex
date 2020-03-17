@@ -9,7 +9,7 @@ defmodule Mojito.Application do
       {Registry,
        keys: :duplicate,
        name: Mojito.Pool.Poolboy.Registry,
-       partitions: System.schedulers_online()},
+       partitions: System.schedulers_online()}
     ]
 
     opts = [strategy: :one_for_one, name: Mojito.Supervisor]

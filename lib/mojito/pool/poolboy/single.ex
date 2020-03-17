@@ -61,7 +61,7 @@ defmodule Mojito.Pool.Poolboy.Single do
       start: {:poolboy, :start_link, [poolboy_opts, name_opts]},
       restart: :permanent,
       shutdown: 5000,
-      type: :worker,
+      type: :worker
     }
   end
 
@@ -84,7 +84,7 @@ defmodule Mojito.Pool.Poolboy.Single do
       url: url,
       headers: headers,
       body: body,
-      opts: opts,
+      opts: opts
     }
 
     request(pool, req)

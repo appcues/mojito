@@ -48,6 +48,7 @@ defmodule Mojito.Request.Single do
       case timeout do
         :infinity ->
           :infinity
+
         _ ->
           time_elapsed = time() - start_time
 

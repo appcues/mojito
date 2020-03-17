@@ -10,7 +10,7 @@ defmodule Mojito.Pool.PoolboyTest do
       Mojito.Pool.Poolboy.request(%Mojito.Request{
         method: :get,
         url: "http://localhost:#{@http_port}#{path}",
-        opts: opts,
+        opts: opts
       })
     end
 
@@ -18,7 +18,7 @@ defmodule Mojito.Pool.PoolboyTest do
       Mojito.Pool.Poolboy.request(%Mojito.Request{
         method: :get,
         url: "https://localhost:#{@https_port}#{path}",
-        opts: [transport_opts: [verify: :verify_none]] ++ opts,
+        opts: [transport_opts: [verify: :verify_none]] ++ opts
       })
     end
 
