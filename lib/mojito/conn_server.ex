@@ -20,7 +20,8 @@ defmodule Mojito.ConnServer do
   Example:
 
       {:ok, pid} = Mojito.ConnServer.start_link()
-      :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
+  
+  :ok = GenServer.cast(pid, {:request, self(), :get, "http://example.com", [], "", []})
       receive do
         {:ok, response} -> response
       after
@@ -43,7 +44,12 @@ defmodule Mojito.ConnServer do
 
   #### GenServer callbacks
 
-  def init(_) do
+  def init(opts) do
+    case opts[:register] do
+      {registry, id, value} -> Registry.register(registry, id, value)
+      _ -> :ok
+    end
+
     {:ok,
      %{
        conn: nil,

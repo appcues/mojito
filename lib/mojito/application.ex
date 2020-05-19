@@ -9,6 +9,10 @@ defmodule Mojito.Application do
       {Registry,
        keys: :duplicate,
        name: Mojito.Pool.Poolboy.Registry,
+       partitions: System.schedulers_online()},
+      {Registry,
+       keys: :duplicate,
+       name: Mojito.Pool.Mux.Registry,
        partitions: System.schedulers_online()}
     ]
 
