@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.4 (2020-05-20)
+
+Fixed bug where sending an empty string request body would hang certain
+HTTP/2 requests. Thanks for the report,
+[@Overbryd](https://github.com/Overbryd)!
+
 ## 0.6.3 (2020-03-17)
 
 `gzip`ped or `deflate`d responses are automatically expanded by

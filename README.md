@@ -53,7 +53,7 @@ Mojito addresses the following design goals:
 Add `mojito` to your deps in `mix.exs`:
 
 ```elixir
-{:mojito, "~> 0.6.3"}
+{:mojito, "~> 0.6.4"}
 ```
 
 ## Configuration

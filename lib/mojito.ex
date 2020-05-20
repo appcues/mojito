@@ -48,7 +48,7 @@ defmodule Mojito do
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.6.2"}
+      {:mojito, "~> 0.6.4"}
 
   ## Upgrading from 0.4 and earlier
 
