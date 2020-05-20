@@ -16,33 +16,52 @@ defmodule Mojito.Request do
           {:ok, Mojito.request()} | {:error, Mojito.error()}
 
   def validate_request(%{} = request) do
+    method = Map.get(request, :method)
+    url = Map.get(request, :url)
+    headers = Map.get(request, :headers, [])
+    body = Map.get(request, :body)
+    opts = Map.get(request, :opts, [])
+
     cond do
-      Map.get(request, :method) == nil ->
+      method == nil ->
         {:error, %Error{message: "method cannot be nil"}}
 
-      Map.get(request, :method) == "" ->
+      method == "" ->
         {:error, %Error{message: "method cannot be blank"}}
 
-      Map.get(request, :url) == nil ->
+      url == nil ->
         {:error, %Error{message: "url cannot be nil"}}
 
-      Map.get(request, :url) == "" ->
+      url == "" ->
         {:error, %Error{message: "url cannot be blank"}}
 
-      !is_list(Map.get(request, :headers, [])) ->
+      !is_list(headers) ->
         {:error, %Error{message: "headers must be a list"}}
 
-      !is_binary(Map.get(request, :body, "")) ->
-        {:error, %Error{message: "body must be a UTF-8 string"}}
+      !is_binary(body) && !is_nil(body) ->
+        {:error, %Error{message: "body must be `nil` or a UTF-8 string"}}
 
       :else ->
+        method_atom = method_to_atom(method)
+
+        ## Prevent bug #58, where sending "" with HEAD/GET/OPTIONS
+        ## can screw up HTTP/2 handling
+        valid_body =
+          case method_atom do
+            :get -> nil
+            :head -> nil
+            :delete -> nil
+            :options -> nil
+            _ -> request.body || ""
+          end
+
         {:ok,
          %Request{
-           method: request.method,
-           url: request.url,
-           headers: Map.get(request, :headers, []),
-           body: Map.get(request, :body, ""),
-           opts: Map.get(request, :opts, [])
+           method: method_atom,
+           url: url,
+           headers: headers,
+           body: valid_body,
+           opts: opts
          }}
     end
   end
@@ -53,6 +72,12 @@ defmodule Mojito.Request do
 
   def validate_request(_request) do
     {:error, %Error{message: "request must be a map"}}
+  end
+
+  defp method_to_atom(method) when is_atom(method), do: method
+
+  defp method_to_atom(method) when is_binary(method) do
+    method |> String.downcase() |> String.to_atom()
   end
 
   @doc ~S"""

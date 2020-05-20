@@ -336,7 +336,7 @@ defmodule Mojito do
   @spec head(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
   def head(url, headers \\ [], opts \\ []) do
-    request(:head, url, headers, "", opts)
+    request(:head, url, headers, nil, opts)
   end
 
   @doc ~S"""
@@ -368,7 +368,7 @@ defmodule Mojito do
   @spec get(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
   def get(url, headers \\ [], opts \\ []) do
-    request(:get, url, headers, "", opts)
+    request(:get, url, headers, nil, opts)
   end
 
   @doc ~S"""
@@ -450,7 +450,7 @@ defmodule Mojito do
   @spec delete(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
   def delete(url, headers \\ [], opts \\ []) do
-    request(:delete, url, headers, "", opts)
+    request(:delete, url, headers, nil, opts)
   end
 
   @doc ~S"""
@@ -461,6 +461,6 @@ defmodule Mojito do
   @spec options(String.t(), headers, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
   def options(url, headers \\ [], opts \\ []) do
-    request(:options, url, headers, "", opts)
+    request(:options, url, headers, nil, opts)
   end
 end
