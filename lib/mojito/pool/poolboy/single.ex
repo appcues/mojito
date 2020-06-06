@@ -97,6 +97,8 @@ defmodule Mojito.Pool.Poolboy.Single do
 
   * `:timeout` - Request timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :timeout, 5000)`.
+  * `:max_body_size` - Max body size in bytes. Defaults to nil in which
+    case no max size will be enforced.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.

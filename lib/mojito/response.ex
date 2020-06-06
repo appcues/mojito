@@ -4,7 +4,8 @@ defmodule Mojito.Response do
   defstruct status_code: nil,
             headers: [],
             body: "",
-            complete: false
+            complete: false,
+            size: 0
 
   @type t :: Mojito.response()
 end

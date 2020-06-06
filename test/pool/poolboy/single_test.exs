@@ -56,6 +56,15 @@ defmodule Mojito.Pool.Poolboy.SingleTest do
       end)
     end
 
+    it "can get a max body size error" do
+      with_pool(fn pool_name ->
+        assert(
+          {:error, %Mojito.Error{message: nil, reason: :max_body_size_exceeded}} ==
+          get(pool_name, "/infinite", max_body_size: 10)
+        )
+      end)
+    end
+
     it "can saturate pool" do
       with_pool(fn pool_name ->
         spawn(fn -> get(pool_name, "/wait1") end)

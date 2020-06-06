@@ -95,6 +95,15 @@ defmodule Mojito.TestServer.PlugRouter do
     send_resp(conn, 200, "ok")
   end
 
+  get "/infinite" do
+    Stream.unfold(send_chunked(conn, 200), fn
+      conn ->
+        {:ok, conn} = chunk(conn, "bytes")
+        {nil, conn}
+    end)
+    |> Stream.run
+  end
+
   @gzip_body "H4sICOnTcF4AA3Jlc3BvbnNlAKtWys9WsiopKk2t5QIAiEF/wgwAAAA="
              |> Base.decode64!()
 
