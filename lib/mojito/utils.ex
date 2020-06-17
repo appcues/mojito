@@ -1,7 +1,7 @@
 defmodule Mojito.Utils do
   @moduledoc false
 
-  alias Mojito.Error
+  alias Mojito.{Error, Response}
 
   @doc ~S"""
   Ensures that the return value errors are of the form
@@ -101,4 +101,18 @@ defmodule Mojito.Utils do
 
   def protocol_to_transport(proto),
     do: {:error, "unknown protocol #{inspect(proto)}"}
+
+
+  def put_chunk(%Response{size: nil} = response, chunk) do
+    %{response | body: [response.body | [chunk]]}
+  end
+  def put_chunk(%Response{size: remaining} = response, chunk) do
+    case remaining - byte_size(chunk) do
+      over_limit when over_limit < 0 ->
+        {:error, %Error{reason: :max_body_size_exceeded}}
+      new_remaining ->
+        %{response | body: [response.body | [chunk]], size: new_remaining}
+    end
+  end
+
 end

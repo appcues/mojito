@@ -4,6 +4,7 @@ defmodule Mojito.Request.Single do
   @moduledoc false
 
   alias Mojito.{Config, Conn, Error, Request, Response}
+  alias Mojito.Utils
   require Logger
 
   @doc ~S"""
@@ -14,6 +15,8 @@ defmodule Mojito.Request.Single do
 
   * `:timeout` - Response timeout in milliseconds.  Defaults to
     `Application.get_env(:mojito, :timeout, 5000)`.
+  * `:max_body_size` - Max body size in bytes. Defaults to nil in which
+    case no max size will be enforced.
   * `:transport_opts` - Options to be passed to either `:gen_tcp` or `:ssl`.
     Most commonly used to perform insecure HTTPS requests via
     `transport_opts: [verify: :verify_none]`.
@@ -25,7 +28,8 @@ defmodule Mojito.Request.Single do
          {:ok, conn} <- Conn.connect(req.url, req.opts),
          {:ok, conn, _ref} <- Conn.request(conn, req) do
       timeout = req.opts[:timeout] || Config.timeout()
-      receive_response(conn, %Response{}, timeout)
+      max_body_size = req.opts[:max_body_size]
+      receive_response(conn, %Response{size: max_body_size}, timeout)
     end
   end
 
@@ -64,10 +68,13 @@ defmodule Mojito.Request.Single do
         conn = %{conn | conn: mint_conn}
         response = apply_resps(response, resps)
 
-        if response.complete do
-          {:ok, response}
-        else
-          receive_response(conn, response, new_timeout.())
+        case response do
+          %{complete: true} ->
+            {:ok, response}
+          {:error, _} = err ->
+            err
+          _ ->
+            receive_response(conn, response, new_timeout.())
         end
 
       {:error, _, e, _} ->
@@ -93,7 +100,7 @@ defmodule Mojito.Request.Single do
   end
 
   defp apply_resp(response, {:data, _request_ref, chunk}) do
-    %{response | body: [response.body | [chunk]]}
+    Utils.put_chunk(response, chunk)
   end
 
   defp apply_resp(response, {:done, _request_ref}) do

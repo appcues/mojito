@@ -124,17 +124,24 @@ defmodule Mojito.ConnServer do
 
   defp apply_resp(state, {:data, request_ref, chunk}) do
     response = Map.get(state.responses, request_ref)
-    response = response |> Map.put(:body, [response.body | [chunk]])
-    %{state | responses: Map.put(state.responses, request_ref, response)}
+
+    case Utils.put_chunk(response, chunk) do
+      {:error, _} = err ->
+        halt(state, request_ref, err)
+      response ->
+        %{state | responses: Map.put(state.responses, request_ref, response)}
+    end
   end
 
   defp apply_resp(state, {:done, request_ref}) do
     r = Map.get(state.responses, request_ref)
     response = %{r | complete: true, body: :erlang.list_to_binary(r.body)}
-    response_ref = state.response_refs |> Map.get(request_ref)
+    halt(state, request_ref, {:ok, response})
+  end
 
-    Map.get(state.reply_tos, request_ref)
-    |> respond({:ok, response}, response_ref)
+  defp halt(state, request_ref, response) do
+    response_ref = state.response_refs |> Map.get(request_ref)
+    Map.get(state.reply_tos, request_ref) |> respond(response, response_ref)
 
     %{
       state
@@ -157,7 +164,8 @@ defmodule Mojito.ConnServer do
   defp start_request(state, request, reply_to, response_ref) do
     with {:ok, state} <- ensure_connection(state, request.url, request.opts),
          {:ok, conn, request_ref} <- Conn.request(state.conn, request) do
-      responses = state.responses |> Map.put(request_ref, %Response{body: []})
+      response = %Response{body: [], size: request.opts[:max_body_size]}
+      responses = state.responses |> Map.put(request_ref, response)
       reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
       response_refs = state.response_refs |> Map.put(request_ref, response_ref)
 

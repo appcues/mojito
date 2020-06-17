@@ -249,6 +249,13 @@ defmodule MojitoTest do
       )
     end
 
+    it "can set a max size" do
+      assert(
+        {:error, %Mojito.Error{message: nil, reason: :max_body_size_exceeded}} ==
+        get("/infinite", timeout: 10000, max_body_size: 10)
+      )
+    end
+
     it "handles requests after a timeout" do
       assert({:error, %{reason: :timeout}} = get("/wait?d=10", timeout: 1))
       Process.sleep(100)
