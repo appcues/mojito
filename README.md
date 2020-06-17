@@ -53,7 +53,7 @@ Mojito addresses the following design goals:
 Add `mojito` to your deps in `mix.exs`:
 
 ```elixir
-{:mojito, "~> 0.6.4"}
+{:mojito, "~> 0.7.0"}
 ```
 
 ## Configuration
@@ -61,6 +61,8 @@ Add `mojito` to your deps in `mix.exs`:
 The following `config.exs` config parameters are supported:
 
 * `:timeout` (milliseconds, default 5000) -- Default request timeout.
+* `:max_body_size` - Max body size in bytes. Defaults to nil in which
+  case no max size will be enforced.
 * `:transport_opts` (`t:Keyword.t`, default `[]`) -- Options to pass to
   the `:gen_tcp` or `:ssl` modules.  Commonly used to make HTTPS requests
   with self-signed TLS server certificates; see below for details.

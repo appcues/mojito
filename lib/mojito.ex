@@ -48,17 +48,17 @@ defmodule Mojito do
 
   Add `mojito` to your deps in `mix.exs`:
 
-      {:mojito, "~> 0.6.4"}
+      {:mojito, "~> 0.7.0"}
 
   ## Upgrading from 0.4 and earlier
+
+  Upgrading to 0.7 cannot be performed safely inside a hot upgrade.
+  Deploy a regular release instead.
 
   Upgrading from 0.4 to 0.5 requires no end-user code changes.
 
   Mojito 0.5 refactors some internal functions in a way that changes
   their arity and order of arguments.
-
-  Upgrading to 0.5 cannot be performed safely inside a hot upgrade.
-  Deploy a regular release instead.
 
   Using request methods other than those in the `Mojito` module is
   deprecated since 0.3.

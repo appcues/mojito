@@ -188,6 +188,7 @@ defmodule MojitoTest do
       assert({:ok, response} = get("/"))
       assert(200 == response.status_code)
       assert("Hello world!" == response.body)
+      assert(12 == response.size)
       assert("12" == Headers.get(response.headers, "content-length"))
     end
 
@@ -195,6 +196,7 @@ defmodule MojitoTest do
       assert({:ok, response} = get_ssl("/"))
       assert(200 == response.status_code)
       assert("Hello world!" == response.body)
+      assert(12 == response.size)
       assert("12" == Headers.get(response.headers, "content-length"))
     end
 
