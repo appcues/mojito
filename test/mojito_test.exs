@@ -340,6 +340,16 @@ defmodule MojitoTest do
       assert({:ok, response} = get("/deflate", raw: true))
       assert("{\"ok\":true}\n" != response.body)
     end
+
+    it "handles connection:close response" do
+      assert({:ok, response} = get("/close", pool: false))
+      assert("close" == response.body)
+    end
+
+    it "handles ssl connection:close response" do
+      assert({:ok, response} = get_ssl("/close", pool: false))
+      assert("close" == response.body)
+    end
   end
 
   context "external tests" do

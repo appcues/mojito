@@ -44,6 +44,13 @@ defmodule Mojito.TestServer.PlugRouter do
     send_resp(conn, 200, "Hello #{name}!")
   end
 
+  get "/close" do
+    {adapter, req} = conn.adapter
+    {:ok, req} = :cowboy_req.reply(200, [{"connection", "close"}],
+      fn(socket, transport) -> transport.send(socket, "close") end, req)
+    %{conn | adapter: {adapter, req}}
+  end
+
   post "/post" do
     name = conn.body_params["name"] || "Bob"
     send_resp(conn, 200, Jason.encode!(%{name: name}))
