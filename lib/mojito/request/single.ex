@@ -40,10 +40,17 @@ defmodule Mojito.Request.Single do
     start_time = time()
 
     receive do
-      {:tcp, _, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
-      {:tcp_closed, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
-      {:ssl, _, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
-      {:ssl_closed, _} = msg -> handle_msg(conn, response, timeout, msg, start_time)
+      {:tcp, _, _} = msg ->
+        handle_msg(conn, response, timeout, msg, start_time)
+
+      {:tcp_closed, _} = msg ->
+        handle_msg(conn, response, timeout, msg, start_time)
+
+      {:ssl, _, _} = msg ->
+        handle_msg(conn, response, timeout, msg, start_time)
+
+      {:ssl_closed, _} = msg ->
+        handle_msg(conn, response, timeout, msg, start_time)
     after
       timeout -> {:error, %Error{reason: :timeout}}
     end

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1 (2020-06-17)
+
+Fixed bug where Mojito failed to correctly handle responses with
+a `connection: close` header. Thanks,
+[@bmteller](https://github.com/bmteller)!
+
 ## 0.7.0 (2020-06-17)
 
 Added the `:max_body_size` option, to prevent a response body from

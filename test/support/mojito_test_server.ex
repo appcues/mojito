@@ -46,8 +46,15 @@ defmodule Mojito.TestServer.PlugRouter do
 
   get "/close" do
     {adapter, req} = conn.adapter
-    {:ok, req} = :cowboy_req.reply(200, [{"connection", "close"}],
-      fn(socket, transport) -> transport.send(socket, "close") end, req)
+
+    {:ok, req} =
+      :cowboy_req.reply(
+        200,
+        [{"connection", "close"}],
+        fn socket, transport -> transport.send(socket, "close") end,
+        req
+      )
+
     %{conn | adapter: {adapter, req}}
   end
 
