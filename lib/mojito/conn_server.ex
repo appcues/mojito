@@ -128,6 +128,7 @@ defmodule Mojito.ConnServer do
     case Utils.put_chunk(response, chunk) do
       {:ok, response} ->
         %{state | responses: Map.put(state.responses, request_ref, response)}
+
       {:error, _} = err ->
         halt(state, request_ref, err)
     end

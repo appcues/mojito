@@ -252,7 +252,7 @@ defmodule MojitoTest do
     it "can set a max size" do
       assert(
         {:error, %Mojito.Error{message: nil, reason: :max_body_size_exceeded}} ==
-        get("/infinite", timeout: 10000, max_body_size: 10)
+          get("/infinite", timeout: 10000, max_body_size: 10)
       )
     end
 

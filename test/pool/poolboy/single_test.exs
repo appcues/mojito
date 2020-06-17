@@ -60,7 +60,7 @@ defmodule Mojito.Pool.Poolboy.SingleTest do
       with_pool(fn pool_name ->
         assert(
           {:error, %Mojito.Error{message: nil, reason: :max_body_size_exceeded}} ==
-          get(pool_name, "/infinite", max_body_size: 10)
+            get(pool_name, "/infinite", max_body_size: 10)
         )
       end)
     end

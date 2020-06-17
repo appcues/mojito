@@ -71,8 +71,10 @@ defmodule Mojito.Request.Single do
         case response do
           %{complete: true} ->
             {:ok, response}
+
           {:error, _} = err ->
             err
+
           _ ->
             receive_response(conn, response, new_timeout.())
         end
