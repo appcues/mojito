@@ -100,7 +100,8 @@ defmodule Mojito.Request.Single do
   end
 
   defp apply_resp(response, {:data, _request_ref, chunk}) do
-    Utils.put_chunk(response, chunk)
+    {:ok, resp} = Utils.put_chunk(response, chunk)
+    resp
   end
 
   defp apply_resp(response, {:done, _request_ref}) do
