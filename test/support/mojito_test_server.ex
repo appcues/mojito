@@ -101,7 +101,7 @@ defmodule Mojito.TestServer.PlugRouter do
         {:ok, conn} = chunk(conn, "bytes")
         {nil, conn}
     end)
-    |> Stream.run
+    |> Stream.run()
   end
 
   @gzip_body "H4sICOnTcF4AA3Jlc3BvbnNlAKtWys9WsiopKk2t5QIAiEF/wgwAAAA="

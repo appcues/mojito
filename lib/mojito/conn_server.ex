@@ -126,16 +126,19 @@ defmodule Mojito.ConnServer do
     response = Map.get(state.responses, request_ref)
 
     case Utils.put_chunk(response, chunk) do
+      {:ok, response} ->
+        %{state | responses: Map.put(state.responses, request_ref, response)}
+
       {:error, _} = err ->
         halt(state, request_ref, err)
-      response ->
-        %{state | responses: Map.put(state.responses, request_ref, response)}
     end
   end
 
   defp apply_resp(state, {:done, request_ref}) do
     r = Map.get(state.responses, request_ref)
-    response = %{r | complete: true, body: :erlang.list_to_binary(r.body)}
+    body = :erlang.list_to_binary(r.body)
+    size = byte_size(body)
+    response = %{r | complete: true, body: body, size: size}
     halt(state, request_ref, {:ok, response})
   end
 
