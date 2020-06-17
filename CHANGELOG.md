@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0 (2020-06-17)
+
+Added the `:max_body_size` option, to prevent a response body from
+growing too large. Thanks, [@rozap](https://github.com/rozap)!
+
 ## 0.6.4 (2020-05-20)
 
 Fixed bug where sending an empty string request body would hang certain
