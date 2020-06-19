@@ -238,7 +238,7 @@ defmodule Mojito do
 
   See `request/1` for details.
   """
-  @spec request(method, String.t(), headers, String.t(), Keyword.t()) ::
+  @spec request(method, String.t(), headers, String.t() | nil, Keyword.t()) ::
           {:ok, response} | {:error, error} | no_return
   def request(method, url, headers \\ [], body \\ "", opts \\ []) do
     %Mojito.Request{

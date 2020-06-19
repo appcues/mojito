@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2 (2020-06-19)
+
+Fixed typespecs.
+
 ## 0.7.1 (2020-06-17)
 
 Fixed bug where Mojito failed to correctly handle responses with
