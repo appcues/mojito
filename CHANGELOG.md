@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.3 (2020-06-22)
+
+Moved core Mojito functions into separate `Mojito.Base` module for
+easier interoperation with mocking libraries like Mox. Thanks,
+[@bcardarella](https://github.com/bcardarella)!
+
 ## 0.7.2 (2020-06-19)
 
 Fixed typespecs.
