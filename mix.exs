@@ -46,7 +46,7 @@ defmodule Mojito.MixProject do
 
   defp deps do
     [
-      {:mint, "~> 1.0"},
+      {:mint, "~> 1.1"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},

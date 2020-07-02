@@ -221,6 +221,13 @@ defmodule MojitoTest do
       assert({:error, %Error{reason: :timeout}} = get("/wait1", timeout: 100))
     end
 
+    it "can http/2 via Mint" do
+      port = Application.get_env(:mojito, :test_server_http_port)
+
+      assert {:ok, mint_conn} =
+               Mint.HTTP.connect(:http, "localhost", port, protocols: [:http2])
+    end
+
     it "handles timeouts even on long requests" do
       port = Application.get_env(:mojito, :test_server_http_port)
       {:ok, conn} = Mojito.Conn.connect("http://localhost:#{port}")
@@ -365,6 +372,12 @@ defmodule MojitoTest do
     it "handles ssl connection:close response" do
       assert({:ok, response} = get_ssl("/close", pool: false))
       assert("close" == response.body)
+    end
+
+    it "can POST big bodies" do
+      one_meg = String.duplicate("x", 0x100000)
+      body = %{data: one_meg} |> Jason.encode!()
+      assert({:ok, response} = post("/post", body, protocols: [:http2]))
     end
   end
 
