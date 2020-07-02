@@ -1,6 +1,8 @@
 defmodule Mojito.Pool.Poolboy.Single do
   @moduledoc false
 
+  require Logger
+
   ## Mojito.Pool.Poolboy.Single provides an HTTP request connection pool based on
   ## Mojito and Poolboy.
   ##
@@ -155,7 +157,9 @@ defmodule Mojito.Pool.Poolboy.Single do
     rescue
       e -> {:error, e}
     catch
-      :exit, _ -> {:error, :checkout_timeout}
+      :exit, e ->
+        e |> inspect |> Logger.error()
+        {:error, :checkout_timeout}
     after
       Process.flag(:trap_exit, old_trap_exit)
     end

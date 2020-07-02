@@ -26,10 +26,10 @@ defmodule Mojito.Request.Single do
   def request(%Request{} = req) do
     with {:ok, req} <- Request.validate_request(req),
          {:ok, conn} <- Conn.connect(req.url, req.opts),
-         {:ok, conn, _ref} <- Conn.request(conn, req) do
+         {:ok, conn, _ref, response} <- Conn.request(conn, req) do
       timeout = req.opts[:timeout] || Config.timeout()
       max_body_size = req.opts[:max_body_size]
-      receive_response(conn, %Response{size: max_body_size}, timeout)
+      receive_response(conn, response, timeout)
     end
   end
 
@@ -75,7 +75,7 @@ defmodule Mojito.Request.Single do
     case Mint.HTTP.stream(conn.conn, msg) do
       {:ok, mint_conn, resps} ->
         conn = %{conn | conn: mint_conn}
-        response = apply_resps(response, resps)
+        response = Response.apply_resps(response, resps)
 
         case response do
           %{complete: true} ->
@@ -94,28 +94,5 @@ defmodule Mojito.Request.Single do
       :unknown ->
         receive_response(conn, response, new_timeout.())
     end
-  end
-
-  defp apply_resps(response, []), do: response
-
-  defp apply_resps(response, [mint_resp | rest]) do
-    apply_resp(response, mint_resp) |> apply_resps(rest)
-  end
-
-  defp apply_resp(response, {:status, _request_ref, status_code}) do
-    %{response | status_code: status_code}
-  end
-
-  defp apply_resp(response, {:headers, _request_ref, headers}) do
-    %{response | headers: headers}
-  end
-
-  defp apply_resp(response, {:data, _request_ref, chunk}) do
-    {:ok, resp} = Utils.put_chunk(response, chunk)
-    resp
-  end
-
-  defp apply_resp(response, {:done, _request_ref}) do
-    %{response | complete: true, body: :erlang.iolist_to_binary(response.body)}
   end
 end

@@ -221,13 +221,6 @@ defmodule MojitoTest do
       assert({:error, %Error{reason: :timeout}} = get("/wait1", timeout: 100))
     end
 
-    it "can http/2 via Mint" do
-      port = Application.get_env(:mojito, :test_server_http_port)
-
-      assert {:ok, mint_conn} =
-               Mint.HTTP.connect(:http, "localhost", port, protocols: [:http2])
-    end
-
     it "handles timeouts even on long requests" do
       port = Application.get_env(:mojito, :test_server_http_port)
       {:ok, conn} = Mojito.Conn.connect("http://localhost:#{port}")
@@ -374,10 +367,34 @@ defmodule MojitoTest do
       assert("close" == response.body)
     end
 
-    it "can POST big bodies" do
-      one_meg = String.duplicate("x", 0x100000)
-      body = %{data: one_meg} |> Jason.encode!()
+    it "can POST big bodies over HTTP/1" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
+      assert({:ok, response} = post("/post", body, protocols: [:http1]))
+      assert({:ok, map} = Jason.decode(response.body))
+      assert(%{"name" => big} == map)
+    end
+
+    it "can POST big bodies over HTTP/2" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
       assert({:ok, response} = post("/post", body, protocols: [:http2]))
+      assert({:ok, map} = Jason.decode(response.body))
+      assert(%{"name" => big} == map)
+    end
+
+    it "handles response chunks arriving during stream_request_body" do
+      ## sending a body this big will trigger a 500 error in Cowboy
+      ## because we have not configured it otherwise
+      big = String.duplicate("x", 100_000_000)
+      body = %{name: big}
+
+      assert(
+        {:ok, response} =
+          post("/post", body, protocols: [:http2], timeout: 15_000)
+      )
+
+      assert(500 == response.status_code)
     end
   end
 
