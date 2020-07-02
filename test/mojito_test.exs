@@ -192,6 +192,22 @@ defmodule MojitoTest do
       assert("12" == Headers.get(response.headers, "content-length"))
     end
 
+    it "can use HTTP/1.1" do
+      assert({:ok, response} = get("/", protocols: [:http1]))
+      assert(200 == response.status_code)
+      assert("Hello world!" == response.body)
+      assert(12 == response.size)
+      assert("12" == Headers.get(response.headers, "content-length"))
+    end
+
+    it "can use HTTP/2" do
+      assert({:ok, response} = get("/", protocols: [:http2]))
+      assert(200 == response.status_code)
+      assert("Hello world!" == response.body)
+      assert(12 == response.size)
+      assert("12" == Headers.get(response.headers, "content-length"))
+    end
+
     it "can make HTTPS requests" do
       assert({:ok, response} = get_ssl("/"))
       assert(200 == response.status_code)
