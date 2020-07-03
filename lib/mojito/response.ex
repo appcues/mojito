@@ -1,7 +1,7 @@
 defmodule Mojito.Response do
   @moduledoc false
 
-  alias Mojito.Utils
+  alias Mojito.{Error, Response}
 
   defstruct status_code: nil,
             headers: [],
@@ -12,7 +12,7 @@ defmodule Mojito.Response do
   @type t :: Mojito.response()
 
   @doc ~S"""
-  Applies responses received from `Mint.HTTP.stream/2` to a %Mojito.Response{}.
+  Applies responses received from `Mint.HTTP.stream/2` to a `%Mojito.Response{}`.
   """
   @spec apply_resps(t, [Mint.Types.response()]) :: {:ok, t} | {:error, any}
   def apply_resps(response, []), do: {:ok, response}
@@ -24,7 +24,7 @@ defmodule Mojito.Response do
   end
 
   @doc ~S"""
-  Applies a response received from `Mint.HTTP.stream/2` to a %Mojito.Response{}.
+  Applies a response received from `Mint.HTTP.stream/2` to a `%Mojito.Response{}`.
   """
   @spec apply_resps(t, Mint.Types.response()) :: {:ok, t} | {:error, any}
   def apply_resp(response, {:status, _request_ref, status_code}) do
@@ -36,7 +36,7 @@ defmodule Mojito.Response do
   end
 
   def apply_resp(response, {:data, _request_ref, chunk}) do
-    with {:ok, response} <- Utils.put_chunk(response, chunk) do
+    with {:ok, response} <- put_chunk(response, chunk) do
       {:ok, response}
     end
   end
@@ -45,5 +45,26 @@ defmodule Mojito.Response do
     body = :erlang.iolist_to_binary(response.body)
     size = byte_size(body)
     {:ok, %{response | complete: true, body: body, size: size}}
+  end
+
+  @doc ~S"""
+  Adds chunks to a response body, respecting the `response.size` field.
+  `response.size` should be set to the maximum number of bytes to accept
+  as the response body, or `nil` for no limit.
+  """
+  @spec put_chunk(t, binary) :: {:ok, %Response{}} | {:error, any}
+  def put_chunk(%Response{size: nil} = response, chunk) do
+    {:ok, %{response | body: [response.body | [chunk]]}}
+  end
+
+  def put_chunk(%Response{size: remaining} = response, chunk) do
+    case remaining - byte_size(chunk) do
+      over_limit when over_limit < 0 ->
+        {:error, %Error{reason: :max_body_size_exceeded}}
+
+      new_remaining ->
+        {:ok,
+         %{response | body: [response.body | [chunk]], size: new_remaining}}
+    end
   end
 end
