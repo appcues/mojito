@@ -396,6 +396,16 @@ defmodule MojitoTest do
 
       assert(500 == response.status_code)
     end
+
+    it "handles timeouts during stream_request_body" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
+
+      assert(
+        {:error, %{reason: :timeout}} =
+          post("/post", body, protocols: [:http2], timeout: 100)
+      )
+    end
   end
 
   context "external tests" do
