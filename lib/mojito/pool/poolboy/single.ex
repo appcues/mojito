@@ -157,7 +157,7 @@ defmodule Mojito.Pool.Poolboy.Single do
     rescue
       e -> {:error, e}
     catch
-      :exit, e -> {:error, :checkout_timeout}
+      :exit, _ -> {:error, :checkout_timeout}
     after
       Process.flag(:trap_exit, old_trap_exit)
     end
