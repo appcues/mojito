@@ -73,17 +73,11 @@ defmodule Mojito.Request.Single do
     case Mint.HTTP.stream(conn.conn, msg) do
       {:ok, mint_conn, resps} ->
         conn = %{conn | conn: mint_conn}
-        response = Response.apply_resps(response, resps)
 
-        case response do
-          %{complete: true} ->
-            {:ok, response}
-
-          {:error, _} = err ->
-            err
-
-          _ ->
-            receive_response(conn, response, new_timeout.())
+        case Response.apply_resps(response, resps) do
+          {:ok, %{complete: true} = response} -> {:ok, response}
+          {:error, _} = err -> err
+          _ -> receive_response(conn, response, new_timeout.())
         end
 
       {:error, _, e, _} ->

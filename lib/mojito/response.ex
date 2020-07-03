@@ -14,27 +14,36 @@ defmodule Mojito.Response do
   @doc ~S"""
   Applies responses received from `Mint.HTTP.stream/2` to a %Mojito.Response{}.
   """
-  @spec apply_resps(t, [Mint.Types.response()]) :: t
-  def apply_resps(response, []), do: response
+  @spec apply_resps(t, [Mint.Types.response()]) :: {:ok, t} | {:error, any}
+  def apply_resps(response, []), do: {:ok, response}
 
   def apply_resps(response, [mint_resp | rest]) do
-    apply_resp(response, mint_resp) |> apply_resps(rest)
+    with {:ok, response} <- apply_resp(response, mint_resp) do
+      apply_resps(response, rest)
+    end
   end
 
-  defp apply_resp(response, {:status, _request_ref, status_code}) do
-    %{response | status_code: status_code}
+  @doc ~S"""
+  Applies a response received from `Mint.HTTP.stream/2` to a %Mojito.Response{}.
+  """
+  @spec apply_resps(t, Mint.Types.response()) :: {:ok, t} | {:error, any}
+  def apply_resp(response, {:status, _request_ref, status_code}) do
+    {:ok, %{response | status_code: status_code}}
   end
 
-  defp apply_resp(response, {:headers, _request_ref, headers}) do
-    %{response | headers: headers}
+  def apply_resp(response, {:headers, _request_ref, headers}) do
+    {:ok, %{response | headers: headers}}
   end
 
-  defp apply_resp(response, {:data, _request_ref, chunk}) do
-    {:ok, resp} = Utils.put_chunk(response, chunk)
-    resp
+  def apply_resp(response, {:data, _request_ref, chunk}) do
+    with {:ok, response} <- Utils.put_chunk(response, chunk) do
+      {:ok, response}
+    end
   end
 
-  defp apply_resp(response, {:done, _request_ref}) do
-    %{response | complete: true, body: :erlang.iolist_to_binary(response.body)}
+  def apply_resp(response, {:done, _request_ref}) do
+    body = :erlang.iolist_to_binary(response.body)
+    size = byte_size(body)
+    {:ok, %{response | complete: true, body: body, size: size}}
   end
 end

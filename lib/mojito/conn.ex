@@ -122,7 +122,7 @@ defmodule Mojito.Conn do
               msg -> Mint.HTTP.stream(mint_conn, msg)
             end
 
-          response = Mojito.Response.apply_resps(response, resps)
+          {:ok, response} = Mojito.Response.apply_resps(response, resps)
 
           {mint_conn, response}
         else
