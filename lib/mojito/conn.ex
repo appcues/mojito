@@ -56,7 +56,7 @@ defmodule Mojito.Conn do
   @spec request(t, Mojito.request()) :: {:ok, t, reference} | {:error, any}
   def request(conn, request) do
     max_body_size = request.opts[:max_body_size]
-    response = %Mojito.Response{size: max_body_size}
+    response = %Mojito.Response{body: [], size: max_body_size}
 
     with {:ok, relative_url, auth_headers} <-
            Utils.get_relative_url_and_auth_headers(request.url),
@@ -79,9 +79,9 @@ defmodule Mojito.Conn do
   end
 
   defp stream_request_body(mint_conn, request_ref, response, "") do
-    with {:ok, mint_conn, _ref} <-
+    with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, :eof) do
-      {:ok, mint_conn, request_ref, response}
+      {:ok, mint_conn, response}
     end
   end
 
@@ -112,7 +112,6 @@ defmodule Mojito.Conn do
       )
 
     {chunk, rest} = String.split_at(body, chunk_size)
-    if "" == rest, do: IO.puts("last one")
 
     with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
@@ -124,6 +123,7 @@ defmodule Mojito.Conn do
             end
 
           response = Mojito.Response.apply_resps(response, resps)
+
           {mint_conn, response}
         else
           {mint_conn, response}

@@ -4,7 +4,6 @@ defmodule Mojito.Request.Single do
   @moduledoc false
 
   alias Mojito.{Config, Conn, Error, Request, Response}
-  alias Mojito.Utils
   require Logger
 
   @doc ~S"""
@@ -28,7 +27,6 @@ defmodule Mojito.Request.Single do
          {:ok, conn} <- Conn.connect(req.url, req.opts),
          {:ok, conn, _ref, response} <- Conn.request(conn, req) do
       timeout = req.opts[:timeout] || Config.timeout()
-      max_body_size = req.opts[:max_body_size]
       receive_response(conn, response, timeout)
     end
   end

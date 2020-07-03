@@ -391,7 +391,7 @@ defmodule MojitoTest do
 
       assert(
         {:ok, response} =
-          post("/post", body, protocols: [:http2], timeout: 15_000)
+          post("/post", body, protocols: [:http2], timeout: 10_000)
       )
 
       assert(500 == response.status_code)

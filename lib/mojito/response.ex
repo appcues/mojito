@@ -1,6 +1,8 @@
 defmodule Mojito.Response do
   @moduledoc false
 
+  alias Mojito.Utils
+
   defstruct status_code: nil,
             headers: [],
             body: "",
