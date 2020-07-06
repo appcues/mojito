@@ -15,7 +15,8 @@ defmodule Mojito.MixProject do
       deps: deps(),
       package: package(),
       dialyzer: [
-        plt_add_apps: [:mix]
+        plt_apps: [:asn1, :castore, :compiler, :crypto, :elixir, :kernel, :logger, :mix, :poolboy,
+ :public_key, :ssl, :stdlib]
       ],
       docs: [
         logo: "assets/mojito.png",
@@ -46,7 +47,6 @@ defmodule Mojito.MixProject do
 
   defp deps do
     [
-      {:mint, "~> 1.1"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},
