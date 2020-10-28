@@ -12,7 +12,7 @@ defmodule Mojito.Request do
   @doc ~S"""
   Checks for errors and returns a canonicalized version of the request.
   """
-  @spec validate_request(map | Mojito.request()) ::
+  @spec validate_request(map | Mojito.request() | Mojito.request_kwlist()) ::
           {:ok, Mojito.request()} | {:error, Mojito.error()}
 
   def validate_request(%{} = request) do
