@@ -43,12 +43,7 @@ defmodule Mojito.Base do
           | {:body, String.t()}
           | {:opts, Keyword.t()}
 
-  @type response :: %Mojito.Response{
-          status_code: pos_integer,
-          headers: headers,
-          body: String.t(),
-          complete: boolean
-        }
+  @type response :: %Mojito.Response{}
 
   @type error :: %Mojito.Error{
           reason: any,

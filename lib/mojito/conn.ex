@@ -85,8 +85,8 @@ defmodule Mojito.Conn do
     end
   end
 
-  defp stream_request_body(
-         %Mint.HTTP1{} = mint_conn,
+  defp stream_request_body_http1(
+         mint_conn,
          request_ref,
          response,
          body
@@ -95,12 +95,20 @@ defmodule Mojito.Conn do
 
     with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
-      stream_request_body(mint_conn, request_ref, response, rest)
+      stream_request_body_http1(mint_conn, request_ref, response, rest)
     end
   end
 
-  defp stream_request_body(
-         %Mint.HTTP2{} = mint_conn,
+  defp stream_request_body(mint_conn, request_ref, response, body) do
+    case Mint.HTTP.conn_module(mint_conn) do
+      Mint.HTTP1 -> stream_request_body_http1(mint_conn, request_ref, response, body)
+      Mint.HTTP2 -> stream_request_body_http2(mint_conn, request_ref, response, body)
+      _ -> {:error, "unknown conn module"}
+    end
+  end
+
+  defp stream_request_body_http2(
+         mint_conn,
          request_ref,
          response,
          body
@@ -132,7 +140,7 @@ defmodule Mojito.Conn do
       if response.complete do
         {:ok, mint_conn, response}
       else
-        stream_request_body(mint_conn, request_ref, response, rest)
+        stream_request_body_http2(mint_conn, request_ref, response, rest)
       end
     end
   end
