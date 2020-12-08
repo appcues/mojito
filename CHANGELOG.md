@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.4 (2020-11-02)
+
+Fixed handling of Mint error responses.
+Thanks, [@alexandremcosta](https://github.com/alexandremcosta)!
+
+Fixed a Dialyzer warning around keyword lists.
+Thanks, [@Vaysman](https://github.com/Vaysman)!
+
 ## 0.7.3 (2020-06-22)
 
 Moved core Mojito functions into separate `Mojito.Base` module for
