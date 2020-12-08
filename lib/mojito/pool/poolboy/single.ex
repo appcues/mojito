@@ -1,8 +1,6 @@
 defmodule Mojito.Pool.Poolboy.Single do
   @moduledoc false
 
-  require Logger
-
   ## Mojito.Pool.Poolboy.Single provides an HTTP request connection pool based on
   ## Mojito and Poolboy.
   ##
