@@ -138,7 +138,11 @@ defmodule Mojito.Pool.Poolboy.Single do
           new_timeout = calc_new_timeout(timeout, start_time) |> max(0)
 
           receive do
-            {:mojito_response, ^response_ref, response} -> response
+            {:mojito_response, ^response_ref, response} ->
+              ## reduce memory footprint of idle pool
+              :erlang.garbage_collect(worker)
+
+              response
           after
             new_timeout -> {:error, :timeout}
           end
