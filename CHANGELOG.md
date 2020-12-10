@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.6 (2020-12-10)
+
+Fixed a bug around HTTP/2 responses larger than 64kB. Thanks for the
+reports, [@dch](https://github.com/dch) and
+[@jayjun](https://github.com/jayjun)!
+
+Reduced memory footprint of idle Mojito pools by forcing GC after
+requests complete. Thanks for the reports,
+[@axelson](https://github.com/axelson) and
+[@hubertlepicki](https://github.com/hubertlepicki)!
+
+## 0.7.5 (2020-11-06)
+
+Fixed packaging bug in 0.7.4.
+
 ## 0.7.4 (2020-11-02)
 
 Fixed handling of Mint error responses.
