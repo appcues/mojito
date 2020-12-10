@@ -3,20 +3,16 @@ defmodule Mojito.TestServer do
 
   def start(_type, _args) do
     children = [
-      Plug.Adapters.Cowboy.child_spec(
-        :http,
-        Mojito.TestServer.PlugRouter,
-        [],
-        port: Application.get_env(:mojito, :test_server_http_port)
-      ),
-      Plug.Adapters.Cowboy.child_spec(
-        :https,
-        Mojito.TestServer.PlugRouter,
-        [],
-        port: Application.get_env(:mojito, :test_server_https_port),
-        keyfile: File.cwd!() <> "/test/support/key.pem",
-        certfile: File.cwd!() <> "/test/support/cert.pem"
-      )
+      {Plug.Cowboy,
+       scheme: :http,
+       plug: Mojito.TestServer.PlugRouter,
+       port: Application.get_env(:mojito, :test_server_http_port)},
+      {Plug.Cowboy,
+       scheme: :https,
+       plug: Mojito.TestServer.PlugRouter,
+       port: Application.get_env(:mojito, :test_server_https_port),
+       keyfile: File.cwd!() <> "/test/support/key.pem",
+       certfile: File.cwd!() <> "/test/support/cert.pem"}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
@@ -50,8 +46,8 @@ defmodule Mojito.TestServer.PlugRouter do
     {:ok, req} =
       :cowboy_req.reply(
         200,
-        [{"connection", "close"}],
-        fn socket, transport -> transport.send(socket, "close") end,
+        %{"connection" => "close"},
+        "close",
         req
       )
 

@@ -110,22 +110,24 @@ defmodule Mojito.ConnServer do
     apply_resp(state, resp) |> apply_resps(rest)
   end
 
-  defp apply_resp(state, {:status, request_ref, status}) do
-    response = Map.get(state.responses, request_ref)
-    response = response |> Map.put(:status_code, status)
+  defp apply_resp(state, {:status, request_ref, _status} = msg) do
+    {:ok, response} =
+      Map.get(state.responses, request_ref)
+      |> Response.apply_resp(msg)
+
     %{state | responses: Map.put(state.responses, request_ref, response)}
   end
 
-  defp apply_resp(state, {:headers, request_ref, headers}) do
-    response = Map.get(state.responses, request_ref)
-    response = response |> Map.put(:headers, headers)
+  defp apply_resp(state, {:headers, request_ref, _headers} = msg) do
+    {:ok, response} =
+      Map.get(state.responses, request_ref)
+      |> Response.apply_resp(msg)
+
     %{state | responses: Map.put(state.responses, request_ref, response)}
   end
 
-  defp apply_resp(state, {:data, request_ref, chunk}) do
-    response = Map.get(state.responses, request_ref)
-
-    case Utils.put_chunk(response, chunk) do
+  defp apply_resp(state, {:data, request_ref, _chunk} = msg) do
+    case Map.get(state.responses, request_ref) |> Response.apply_resp(msg) do
       {:ok, response} ->
         %{state | responses: Map.put(state.responses, request_ref, response)}
 
@@ -170,21 +172,30 @@ defmodule Mojito.ConnServer do
         ) :: {:ok, state, reference} | {:error, any}
   defp start_request(state, request, reply_to, response_ref) do
     with {:ok, state} <- ensure_connection(state, request.url, request.opts),
-         {:ok, conn, request_ref} <- Conn.request(state.conn, request) do
-      response = %Response{body: [], size: request.opts[:max_body_size]}
-      responses = state.responses |> Map.put(request_ref, response)
-      reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
-      response_refs = state.response_refs |> Map.put(request_ref, response_ref)
+         {:ok, conn, request_ref, response} <- Conn.request(state.conn, request) do
+      case response do
+        %{complete: true} ->
+          ## Request was completed by server during stream_request_body
+          respond(reply_to, {:ok, response}, response_ref)
+          {:ok, %{state | conn: conn}, request_ref}
 
-      state = %{
-        state
-        | conn: conn,
-          responses: responses,
-          reply_tos: reply_tos,
-          response_refs: response_refs
-      }
+        _ ->
+          responses = state.responses |> Map.put(request_ref, response)
+          reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
 
-      {:ok, state, request_ref}
+          response_refs =
+            state.response_refs |> Map.put(request_ref, response_ref)
+
+          state = %{
+            state
+            | conn: conn,
+              responses: responses,
+              reply_tos: reply_tos,
+              response_refs: response_refs
+          }
+
+          {:ok, state, request_ref}
+      end
     end
   end
 

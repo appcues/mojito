@@ -55,6 +55,9 @@ defmodule Mojito.Conn do
   """
   @spec request(t, Mojito.request()) :: {:ok, t, reference} | {:error, any}
   def request(conn, request) do
+    max_body_size = request.opts[:max_body_size]
+    response = %Mojito.Response{body: [], size: max_body_size}
+
     with {:ok, relative_url, auth_headers} <-
            Utils.get_relative_url_and_auth_headers(request.url),
          {:ok, mint_conn, request_ref} <-
@@ -63,9 +66,74 @@ defmodule Mojito.Conn do
              method_to_string(request.method),
              relative_url,
              auth_headers ++ request.headers,
-             request.body
-           ) do
-      {:ok, %{conn | conn: mint_conn}, request_ref}
+             :stream
+           ),
+         {:ok, mint_conn, response} <-
+           stream_request_body(mint_conn, request_ref, response, request.body) do
+      {:ok, %{conn | conn: mint_conn}, request_ref, response}
+    end
+  end
+
+  defp stream_request_body(mint_conn, request_ref, response, nil) do
+    stream_request_body(mint_conn, request_ref, response, "")
+  end
+
+  defp stream_request_body(mint_conn, request_ref, response, "") do
+    with {:ok, mint_conn} <-
+           Mint.HTTP.stream_request_body(mint_conn, request_ref, :eof) do
+      {:ok, mint_conn, response}
+    end
+  end
+
+  defp stream_request_body(
+         %Mint.HTTP1{} = mint_conn,
+         request_ref,
+         response,
+         body
+       ) do
+    {chunk, rest} = String.split_at(body, 65535)
+
+    with {:ok, mint_conn} <-
+           Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
+      stream_request_body(mint_conn, request_ref, response, rest)
+    end
+  end
+
+  defp stream_request_body(
+         %Mint.HTTP2{} = mint_conn,
+         request_ref,
+         response,
+         body
+       ) do
+    chunk_size =
+      min(
+        Mint.HTTP2.get_window_size(mint_conn, {:request, request_ref}),
+        Mint.HTTP2.get_window_size(mint_conn, :connection)
+      )
+
+    {chunk, rest} = String.split_at(body, chunk_size)
+
+    with {:ok, mint_conn} <-
+           Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
+      {mint_conn, response} =
+        if "" != rest do
+          {:ok, mint_conn, resps} =
+            receive do
+              msg -> Mint.HTTP.stream(mint_conn, msg)
+            end
+
+          {:ok, response} = Mojito.Response.apply_resps(response, resps)
+
+          {mint_conn, response}
+        else
+          {mint_conn, response}
+        end
+
+      if response.complete do
+        {:ok, mint_conn, response}
+      else
+        stream_request_body(mint_conn, request_ref, response, rest)
+      end
     end
   end
 

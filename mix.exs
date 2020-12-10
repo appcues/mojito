@@ -46,14 +46,14 @@ defmodule Mojito.MixProject do
 
   defp deps do
     [
-      {:mint, "~> 1.0"},
+      {:mint, "~> 1.1"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
       {:ex_spec, "~> 2.0", only: :test},
       {:jason, "~> 1.0", only: :test},
-      {:cowboy, "~> 1.1", only: :test},
+      {:cowboy, "~> 2.0", only: :test},
       {:plug, "~> 1.3", only: :test},
-      {:plug_cowboy, "~> 1.0", only: :test},
+      {:plug_cowboy, "~> 2.0", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]

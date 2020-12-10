@@ -192,6 +192,22 @@ defmodule MojitoTest do
       assert("12" == Headers.get(response.headers, "content-length"))
     end
 
+    it "can use HTTP/1.1" do
+      assert({:ok, response} = get("/", protocols: [:http1]))
+      assert(200 == response.status_code)
+      assert("Hello world!" == response.body)
+      assert(12 == response.size)
+      assert("12" == Headers.get(response.headers, "content-length"))
+    end
+
+    it "can use HTTP/2" do
+      assert({:ok, response} = get("/", protocols: [:http2]))
+      assert(200 == response.status_code)
+      assert("Hello world!" == response.body)
+      assert(12 == response.size)
+      assert("12" == Headers.get(response.headers, "content-length"))
+    end
+
     it "can make HTTPS requests" do
       assert({:ok, response} = get_ssl("/"))
       assert(200 == response.status_code)
@@ -349,6 +365,46 @@ defmodule MojitoTest do
     it "handles ssl connection:close response" do
       assert({:ok, response} = get_ssl("/close", pool: false))
       assert("close" == response.body)
+    end
+
+    it "can POST big bodies over HTTP/1" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
+      assert({:ok, response} = post("/post", body, protocols: [:http1]))
+      assert({:ok, map} = Jason.decode(response.body))
+      assert(%{"name" => big} == map)
+    end
+
+    it "can POST big bodies over HTTP/2" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
+      assert({:ok, response} = post("/post", body, protocols: [:http2]))
+      assert({:ok, map} = Jason.decode(response.body))
+      assert(%{"name" => big} == map)
+    end
+
+    it "handles response chunks arriving during stream_request_body" do
+      ## sending a body this big will trigger a 500 error in Cowboy
+      ## because we have not configured it otherwise
+      big = String.duplicate("x", 100_000_000)
+      body = %{name: big}
+
+      assert(
+        {:ok, response} =
+          post("/post", body, protocols: [:http2], timeout: 10_000)
+      )
+
+      assert(500 == response.status_code)
+    end
+
+    it "handles timeouts during stream_request_body" do
+      big = String.duplicate("x", 5_000_000)
+      body = %{name: big}
+
+      assert(
+        {:error, %{reason: :timeout}} =
+          post("/post", body, protocols: [:http2], timeout: 100)
+      )
     end
   end
 
