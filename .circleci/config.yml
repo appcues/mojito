@@ -1,0 +1,14 @@
+# Elixir CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-elixir/ for more details
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/elixir:1.11
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: mix format --check-formatted
+      - run: mix deps.get
+      - run: mix test
