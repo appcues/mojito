@@ -25,7 +25,7 @@ defmodule Mojito.Pool.Poolboy do
     with {:ok, valid_request} <- Request.validate_request(request),
          {:ok, _proto, host, port} <- Utils.decompose_url(valid_request.url),
          pool_key <- pool_key(host, port),
-         {:ok, pool} <- get_pool(pool_key) do
+         {:ok, pool} <- get_pool(pool_key, request.opts) do
       do_request(pool, pool_key, valid_request)
     end
   end
@@ -44,12 +44,12 @@ defmodule Mojito.Pool.Poolboy do
   ## Returns a pool for the given destination, starting one or more
   ## if necessary.
   @doc false
-  @spec get_pool(any) :: {:ok, pid} | {:error, Mojito.error()}
-  def get_pool(pool_key) do
+  @spec get_pool(any, Keyword.t) :: {:ok, pid} | {:error, Mojito.error()}
+  def get_pool(pool_key, opts) do
     case get_pools(pool_key) do
       [] ->
-        opts = Mojito.Pool.pool_opts(pool_key)
-        1..opts[:pools] |> Enum.each(fn _ -> start_pool(pool_key) end)
+        pools = Config.config(pool_key, :pools)
+        1..pools |> Enum.each(fn _ -> start_pool(pool_key) end)
         get_pool(pool_key)
 
       pools ->
