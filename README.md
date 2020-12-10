@@ -1,6 +1,6 @@
 <img align="right" width="131" height="225" src="assets/mojito.png?raw=true">
 
-# Mojito [![Build Status](https://travis-ci.org/appcues/mojito.svg?branch=master)](https://travis-ci.org/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
+# Mojito [![Build Status](https://circleci.com/gh/appcues/mojito.svg?style=svg)](https://circleci.com/gh/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
 
 Mojito is an easy-to-use, high-performance HTTP client built using the
 low-level [Mint library](https://github.com/ericmj/mint).
