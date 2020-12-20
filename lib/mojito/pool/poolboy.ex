@@ -45,7 +45,7 @@ defmodule Mojito.Pool.Poolboy do
   ## if necessary.
   @doc false
   @spec get_pool(any, Keyword.t) :: {:ok, pid} | {:error, Mojito.error()}
-  def get_pool(pool_key, opts) do
+  def get_pool(pool_key, opts \\ []) do
     case get_pools(pool_key) do
       [] ->
         pools = Config.config(pool_key, :pools)

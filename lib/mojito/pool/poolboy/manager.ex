@@ -6,6 +6,7 @@ defmodule Mojito.Pool.Poolboy.Manager do
 
   @moduledoc false
 
+  alias Mojito.Config
   use GenServer
 
   def start_link(args) do
@@ -19,8 +20,8 @@ defmodule Mojito.Pool.Poolboy.Manager do
   defp time, do: System.monotonic_time(:millisecond)
 
   def handle_call({:start_pool, pool_key}, _from, state) do
-    pool_opts = Mojito.Pool.pool_opts(pool_key)
-    max_pools = pool_opts[:pools]
+    max_pools = Config.config(pool_key, :pools)
+    pool_opts = [] ## FIXME
 
     pools = state.pools |> Map.get(pool_key, [])
     npools = Enum.count(pools)
