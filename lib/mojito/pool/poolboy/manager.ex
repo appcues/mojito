@@ -21,7 +21,8 @@ defmodule Mojito.Pool.Poolboy.Manager do
 
   def handle_call({:start_pool, pool_key}, _from, state) do
     max_pools = Config.config(pool_key, :pools)
-    pool_opts = [] ## FIXME
+    ## FIXME
+    pool_opts = []
 
     pools = state.pools |> Map.get(pool_key, [])
     npools = Enum.count(pools)

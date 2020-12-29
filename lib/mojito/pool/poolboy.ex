@@ -44,7 +44,7 @@ defmodule Mojito.Pool.Poolboy do
   ## Returns a pool for the given destination, starting one or more
   ## if necessary.
   @doc false
-  @spec get_pool(any, Keyword.t) :: {:ok, pid} | {:error, Mojito.error()}
+  @spec get_pool(any, Keyword.t()) :: {:ok, pid} | {:error, Mojito.error()}
   def get_pool(pool_key, opts \\ []) do
     case get_pools(pool_key) do
       [] ->

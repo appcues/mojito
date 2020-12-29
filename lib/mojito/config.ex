@@ -62,22 +62,22 @@ defmodule Mojito.Config do
     a request to complete, including both the time spent checking
     out a pool worker, and the time spent communicating with the
     server. Set to `:infinity` to wait indefinitely.
-    Default is `#{inspect @defaults[:timeout]}`.
+    Default is `#{inspect(@defaults[:timeout])}`.
 
   * `:checkout_timeout` is the maximum number of milliseconds (or
     `:infinity`, as above) to wait for a pool worker to be available.
-    Default is `#{inspect @defaults[:checkout_timeout]}`.
+    Default is `#{inspect(@defaults[:checkout_timeout])}`.
 
   * `:request_timeout` is the maximum number of milliseconds (or
     `:infinity`, as above) to wait for the server to complete its
     response once a pool worker has been checked out.
-    Default is `#{inspect @defaults[:request_timeout]}`.
+    Default is `#{inspect(@defaults[:request_timeout])}`.
 
   * `:transport_opts` is passed to the `:gen_tcp` or `:ssl` module
     when establishing connections. Its most common use is disabling
     TLS certificate verification by passing a value of
     `[verify: :verify_none]`.
-    Default is `#{inspect @defaults[:transport_opts]}`.
+    Default is `#{inspect(@defaults[:transport_opts])}`.
 
   ### Pool options
 
@@ -86,16 +86,16 @@ defmodule Mojito.Config do
     generally the number of CPUs.
 
   * `:size` is the number of connections per pool.
-    Default is `#{inspect @defaults[:size]}`.
+    Default is `#{inspect(@defaults[:size])}`.
 
   * `:depth` is the maximum number of pipelined (HTTP/1.1) or
     multiplexed (HTTP/2) requests per pool worker.
-    Default is `#{inspect @defaults[:depth]}`.
+    Default is `#{inspect(@defaults[:depth])}`.
 
   * `:strategy` is the algorithm for selecting a pool worker.
     Valid values are `:lifo` (reuse workers immediately) and
     `:fifo` (wait as long as possible before reuse).
-    Default is `#{inspect @defaults[:strategy]}`.
+    Default is `#{inspect(@defaults[:strategy])}`.
   """
 
   ## runtime_default/1 is for values that must be determined at runtime
@@ -103,7 +103,7 @@ defmodule Mojito.Config do
 
   defp runtime_default(_key), do: nil
 
-  @spec config(atom | Mojito.Pool.pool_key(), atom, Keyword.t) :: any | nil
+  @spec config(atom | Mojito.Pool.pool_key(), atom, Keyword.t()) :: any | nil
   def config(destination, key, opts) when is_atom(destination) do
     ## First non-nil value wins
     with nil <- opts[destination][key],
@@ -117,7 +117,7 @@ defmodule Mojito.Config do
     end
   end
 
-  def config({host, port}=_pool_key, key, opts) do
+  def config({host, port} = _pool_key, key, opts) do
     try do
       "#{host}:#{port}"
       |> String.to_existing_atom()

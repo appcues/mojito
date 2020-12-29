@@ -36,23 +36,48 @@ defmodule Mojito.ConnServer do
   Initiates a request.  The `reply_to` pid will receive the response in a
   message of the format `{:ok, %Mojito.Response{}} | {:error, any}`.
   """
-  @spec request(pid, Mojito.request(), pid, reference) :: :ok | {:error, any}
-  def request(server_pid, request, reply_to, response_ref) do
-    GenServer.call(server_pid, {:request, request, reply_to, response_ref})
+  @spec request(
+          pid,
+          Mojito.request(),
+          pid,
+          reference,
+          non_neg_integer | :infinity
+        ) :: :ok | {:error, any}
+  def request(
+        server_pid,
+        request,
+        reply_to,
+        response_ref,
+        no_reply_after \\ :infinity
+      ) do
+    GenServer.call(
+      server_pid,
+      {:request, request, reply_to, response_ref, no_reply_after}
+    )
   end
 
   #### GenServer callbacks
 
-  def init(_) do
+  def init(opts) do
+    if opts[:registry] do
+      Registry.register(
+        opts[:registry],
+        opts[:registry_key],
+        opts[:registry_value]
+      )
+    end
+
     {:ok,
      %{
+       opts: opts,
        conn: nil,
        protocol: nil,
        hostname: nil,
        port: nil,
        responses: %{},
        reply_tos: %{},
-       response_refs: %{}
+       response_refs: %{},
+       no_reply_afters: %{}
      }}
   end
 
@@ -61,12 +86,12 @@ defmodule Mojito.ConnServer do
   end
 
   def handle_call(
-        {:request, request, reply_to, response_ref},
+        {:request, request, reply_to, response_ref, no_reply_after},
         _from,
         state
       ) do
     with {:ok, state, _request_ref} <-
-           start_request(state, request, reply_to, response_ref) do
+           start_request(state, request, reply_to, response_ref, no_reply_after) do
       {:reply, :ok, state}
     else
       err -> {:reply, err, close_connections(state)}
@@ -98,7 +123,7 @@ defmodule Mojito.ConnServer do
   @spec close_connections(state) :: state
   defp close_connections(state) do
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
-      respond(reply_to, {:error, :closed})
+      respond(state, reply_to, {:error, :closed})
     end)
 
     %{state | conn: nil, responses: %{}, reply_tos: %{}, response_refs: %{}}
@@ -150,7 +175,9 @@ defmodule Mojito.ConnServer do
 
   defp halt(state, request_ref, response) do
     response_ref = state.response_refs |> Map.get(request_ref)
-    Map.get(state.reply_tos, request_ref) |> respond(response, response_ref)
+
+    Map.get(state.reply_tos, request_ref)
+    |> respond(state, response, response_ref)
 
     %{
       state
@@ -160,38 +187,52 @@ defmodule Mojito.ConnServer do
     }
   end
 
-  defp respond(pid, message, response_ref \\ nil) do
-    send(pid, {:mojito_response, response_ref, message})
+  defp now, do: :erlang.monotonic_time(:millisecond)
+
+  defp respond(state, pid, message, response_ref \\ nil) do
+    ## This works right with :infinity
+    if now() <= state.no_reply_afters[response_ref] do
+      send(pid, {:mojito_response, response_ref, message})
+    end
   end
 
   @spec start_request(
           state,
           Mojito.request(),
           pid,
-          reference
+          reference,
+          non_neg_integer | :infinity
         ) :: {:ok, state, reference} | {:error, any}
-  defp start_request(state, request, reply_to, response_ref) do
-    with {:ok, state} <- ensure_connection(state, request.url, request.opts),
+  defp start_request(state, request, reply_to, response_ref, no_reply_after) do
+    opts = Keyword.merge(state.opts, request.opts)
+
+    with {:ok, state} <- ensure_connection(state, request.url, opts),
          {:ok, conn, request_ref, response} <- Conn.request(state.conn, request) do
       case response do
         %{complete: true} ->
           ## Request was completed by server during stream_request_body
-          respond(reply_to, {:ok, response}, response_ref)
+          respond(state, reply_to, {:ok, response}, response_ref)
           {:ok, %{state | conn: conn}, request_ref}
 
         _ ->
+          ## These are addressed by request_ref
           responses = state.responses |> Map.put(request_ref, response)
           reply_tos = state.reply_tos |> Map.put(request_ref, reply_to)
 
           response_refs =
             state.response_refs |> Map.put(request_ref, response_ref)
 
+          ## This one is addressed by response_ref
+          no_reply_afters =
+            state.no_reply_afters |> Map.put(response_ref, no_reply_after)
+
           state = %{
             state
             | conn: conn,
               responses: responses,
               reply_tos: reply_tos,
-              response_refs: response_refs
+              response_refs: response_refs,
+              no_reply_afters: no_reply_afters
           }
 
           {:ok, state, request_ref}
