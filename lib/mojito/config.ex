@@ -10,7 +10,7 @@ defmodule Mojito.Config do
     request_timeout: :infinity,
     transport_opts: [],
     size: 8,
-    depth: 1024,
+    multi: 1024,
     strategy: :lifo
   ]
 
@@ -88,9 +88,9 @@ defmodule Mojito.Config do
   * `:size` is the number of connections per pool.
     Default is `#{inspect(@defaults[:size])}`.
 
-  * `:depth` is the maximum number of pipelined (HTTP/1.1) or
+  * `:multi` is the maximum number of pipelined (HTTP/1.1) or
     multiplexed (HTTP/2) requests per pool worker.
-    Default is `#{inspect(@defaults[:depth])}`.
+    Default is `#{inspect(@defaults[:multi])}`.
 
   * `:strategy` is the algorithm for selecting a pool worker.
     Valid values are `:lifo` (reuse workers immediately) and

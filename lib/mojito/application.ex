@@ -6,6 +6,7 @@ defmodule Mojito.Application do
   def start(_type, _args) do
     children = [
       Mojito.Pool.Poolboy.Manager,
+      Mojito.Pool.Multi,
       {Registry,
        keys: :duplicate,
        name: Mojito.Pool.Poolboy.Registry,

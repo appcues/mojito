@@ -189,7 +189,7 @@ defmodule Mojito.ConnServer do
 
   defp now, do: :erlang.monotonic_time(:millisecond)
 
-  defp respond(state, pid, message, response_ref \\ nil) do
+  defp respond(pid, state, message, response_ref \\ nil) do
     ## This works right with :infinity
     if now() <= state.no_reply_afters[response_ref] do
       send(pid, {:mojito_response, response_ref, message})

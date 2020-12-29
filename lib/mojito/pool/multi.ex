@@ -4,6 +4,8 @@ defmodule Mojito.Pool.Multi do
   pipelining (HTTP/2).
   """
 
+  alias Mojito.Config
+
   @opaque server_id :: {Mojito.ConnServer, Mojito.Pool.pool_key, non_neg_integer, non_neg_integer}
 
   use GenServer
