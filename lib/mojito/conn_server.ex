@@ -123,7 +123,7 @@ defmodule Mojito.ConnServer do
   @spec close_connections(state) :: state
   defp close_connections(state) do
     Enum.each(state.reply_tos, fn {_request_ref, reply_to} ->
-      respond(state, reply_to, {:error, :closed})
+      respond(reply_to, state, {:error, :closed})
     end)
 
     %{state | conn: nil, responses: %{}, reply_tos: %{}, response_refs: %{}}
@@ -211,7 +211,7 @@ defmodule Mojito.ConnServer do
       case response do
         %{complete: true} ->
           ## Request was completed by server during stream_request_body
-          respond(state, reply_to, {:ok, response}, response_ref)
+          respond(reply_to, state, {:ok, response}, response_ref)
           {:ok, %{state | conn: conn}, request_ref}
 
         _ ->

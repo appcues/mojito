@@ -5,6 +5,7 @@ defmodule Mojito.Pool.Multi do
   """
 
   alias Mojito.Config
+  require Logger
 
   @opaque server_id :: {Mojito.ConnServer, Mojito.Pool.pool_key, non_neg_integer, non_neg_integer}
 
@@ -85,6 +86,8 @@ defmodule Mojito.Pool.Multi do
           end
         rescue
           e ->
+            Logger.debug(e)
+
             ## Replace conn on any non-timeout request error
             replace_conn_server(server_id, request.opts)
             {:error, e}
@@ -174,13 +177,16 @@ defmodule Mojito.Pool.Multi do
     index = :random.uniform(size)
 
     server_id = {Mojito.ConnServer, pool_key, :erlang.system_info(:scheduler_id), index}
+    server_id |> inspect |> Logger.debug
 
     {conn_server, counter} = get_or_create_conn_server(server_id, opts)
 
     ## Now we have a connection -- check whether it's overbooked
     max_multi = Config.config(pool_key, :multi, opts)
 
-    if max_multi > :counters.get(counter, 1) do
+    count = :counters.get(counter, 1)
+    Logger.debug("count #{count}")
+    if max_multi > count do
       :counters.add(counter, 1, 1)
       {:ok, conn_server, server_id, counter}
     else

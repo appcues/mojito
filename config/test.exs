@@ -1,8 +1,12 @@
 use Mix.Config
 
+config :logger, level: :debug
+
 config :mojito,
   test_server_http_port: 18999,
   test_server_https_port: 18443,
+  size: 3,
+  multi: 1024,
   pool_opts: [
     size: 2,
     max_overflow: 2,

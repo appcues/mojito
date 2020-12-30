@@ -119,7 +119,7 @@ defmodule Mojito.Conn do
         if "" != rest do
           {:ok, mint_conn, resps} =
             receive do
-              msg -> Mint.HTTP.stream(mint_conn, msg)
+              {_, _, ^request_ref, _}=msg -> Mint.HTTP.stream(mint_conn, msg)
             end
 
           {:ok, response} = Mojito.Response.apply_resps(response, resps)
