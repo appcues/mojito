@@ -1,6 +1,7 @@
 defmodule Mojito.Telemetry do
   @moduledoc ~S"""
   Mojito Telemetry integration
+  Thanks to team Finch for basically all of this
 
   [:mojito, :queue, :start]
   [:mojito, :queue, :stop]

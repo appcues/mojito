@@ -1,7 +1,7 @@
 defmodule Mojito.Conn do
   @moduledoc false
 
-  alias Mojito.{Error, Utils}
+  alias Mojito.{Error, Telemetry, Utils}
 
   defstruct conn: nil,
             protocol: nil,
@@ -28,8 +28,16 @@ defmodule Mojito.Conn do
   @spec connect(String.t(), String.t(), non_neg_integer, Keyword.t()) ::
           {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
-    with {:ok, proto} <- protocol_to_atom(protocol),
+    with meta <- %{
+           protocol: protocol,
+           hostname: hostname,
+           port: port
+         },
+         start_time <- Telemetry.start(:connect, meta),
+         {:ok, proto} <- protocol_to_atom(protocol),
          {:ok, mint_conn} <- Mint.HTTP.connect(proto, hostname, port, opts) do
+      Telemetry.stop(:connect, start_time, meta)
+
       {:ok,
        %Mojito.Conn{
          conn: mint_conn,
