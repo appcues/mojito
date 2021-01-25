@@ -80,7 +80,7 @@ defmodule Mojito.Pool.Poolboy.Manager do
   ## This is designed to be able to launch pools on-demand, but for now we
   ## launch all pools at once in Mojito.Pool.
   defp actually_start_pool(pool_key, pool_opts, pools, npools, state) do
-    start = Telemetry.start(:pool, %{pool_name: pool_key})
+    start = Telemetry.start(:pool, %{pool_key: pool_key})
     pool_id = {Mojito.Pool, pool_key, npools}
 
     child_spec =

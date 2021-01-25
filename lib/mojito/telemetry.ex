@@ -3,13 +3,38 @@ defmodule Mojito.Telemetry do
   Mojito Telemetry integration
   Thanks to team Finch for basically all of this
 
-  [:mojito, :queue, :start]
-  [:mojito, :queue, :stop]
+  Mojito executes the following events:
   [:mojito, :pool, :start]
-  [:mojito, :pool, :stop] # How long it took to boot the child
+  [:mojito, :pool, :stop]
+
+  `pool` events contain the `pool_key` metadata
+
   [:mojito, :request, :start]
   [:mojito, :request, :stop]
 
+  `request` events contain the following metadata
+
+  ```
+  %{
+      url: url,
+      method: method
+  }
+  ```
+
+  [:mojito, :connection, :start]
+  [:mojito, :connection, :stop]
+
+  `connection` events contain the following metadata
+
+  ```
+  %{
+    hostname: hostname,
+    protocol: protocol,
+    port: port
+  }
+
+  `start` events will contain the `system_time` measurements, and `stop` events
+  will contain the `system_time` as well as the `duration` between `start` and `stop`
   """
 
   def start(name, meta \\ %{}) do

@@ -150,11 +150,10 @@ or `Mojito.Pool.request`:
 
 ## Telemetry
 
-Mojito executes the following [Telemetry](https://github.com/beam-telemetry/telemetry) events:
+Mojito integrates the standard [Telemetry](https://github.com/beam-telemetry/telemetry) library.
 
-```elixir
-[:mojito,
-```
+See the [Mojito.Telemetry](https://github.com/appcues/mojito/blob/master/lib/mojito/telemetry.ex) module for more info
+
 
 ## Changelog
 
