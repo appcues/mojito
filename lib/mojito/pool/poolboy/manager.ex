@@ -7,6 +7,7 @@ defmodule Mojito.Pool.Poolboy.Manager do
   @moduledoc false
 
   use GenServer
+  alias Mojito.Telemetry
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -79,6 +80,7 @@ defmodule Mojito.Pool.Poolboy.Manager do
   ## This is designed to be able to launch pools on-demand, but for now we
   ## launch all pools at once in Mojito.Pool.
   defp actually_start_pool(pool_key, pool_opts, pools, npools, state) do
+    start = Telemetry.start(:pool, %{pool_name: pool_key})
     pool_id = {Mojito.Pool, pool_key, npools}
 
     child_spec =
@@ -95,14 +97,18 @@ defmodule Mojito.Pool.Poolboy.Manager do
         |> put_in([:pools, pool_key], [pool_pid | pools])
         |> put_in([:last_start_at, pool_key], time())
 
+      Telemetry.stop(:pool, start, %{pool_key: pool_key})
+
       {:reply, {:ok, pool_pid}, state}
     else
       {:error, {msg, _pid}}
       when msg in [:already_started, :already_registered] ->
         ## There was a race; we lost and that is fine
+        Telemetry.stop(:pool, start, %{pool_key: pool_key})
         {:reply, {:ok, Enum.random(pools)}, state}
 
       error ->
+        Telemetry.stop(:pool, start, pool_key)
         {:reply, error, state}
     end
   end

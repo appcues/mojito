@@ -11,7 +11,7 @@ defmodule Mojito.Pool.Poolboy.Single do
   ##    >>>> Mojito.Pool.Poolboy.Single.request(pool_pid, :get, "http://example.com")
   ##    {:ok, %Mojito.Response{...}}
 
-  alias Mojito.{Config, ConnServer, Request, Utils}
+  alias Mojito.{Config, ConnServer, Request, Telemetry, Utils}
 
   @doc false
   @deprecated "Use child_spec/1 instead"
@@ -106,7 +106,12 @@ defmodule Mojito.Pool.Poolboy.Single do
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, request) do
-    start_time = time()
+    meta = %{
+      url: request.url,
+      method: request.method
+    }
+
+    start_time = Telemetry.start(:request, meta)
 
     with {:ok, valid_request} <- Request.validate_request(request) do
       timeout = valid_request.opts[:timeout] || Config.timeout()
@@ -122,6 +127,7 @@ defmodule Mojito.Pool.Poolboy.Single do
           request(pool, %{valid_request | opts: new_request_opts})
 
         other ->
+          Telemetry.stop(:request, start_time, meta)
           other
       end
     end
