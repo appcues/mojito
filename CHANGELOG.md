@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.7 (2021-02-04)
+
+Added Mojito.Telemetry. Thanks,
+[@andyleclair](https://github.com/andyleclair)! And thanks to the
+[Finch](https://github.com/keathley/finch) team, whose telemetry
+implementation informed this one.
+
 ## 0.7.6 (2020-12-10)
 
 Fixed a bug around HTTP/2 responses larger than 64kB. Thanks for the
