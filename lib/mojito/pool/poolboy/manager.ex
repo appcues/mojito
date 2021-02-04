@@ -107,9 +107,11 @@ defmodule Mojito.Pool.Poolboy.Manager do
       {:error, {msg, _pid}}
       when msg in [:already_started, :already_registered] ->
         ## There was a race; we lost and that is fine
+        Telemetry.stop(:pool, start, meta)
         {:reply, {:ok, Enum.random(pools)}, state}
 
       error ->
+        Telemetry.stop(:pool, start, meta)
         {:reply, error, state}
     end
   end
