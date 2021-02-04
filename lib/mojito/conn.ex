@@ -28,11 +28,7 @@ defmodule Mojito.Conn do
   @spec connect(String.t(), String.t(), non_neg_integer, Keyword.t()) ::
           {:ok, t} | {:error, any}
   def connect(protocol, hostname, port, opts \\ []) do
-    with meta <- %{
-           protocol: protocol,
-           hostname: hostname,
-           port: port
-         },
+    with meta <- %{host: hostname, port: port},
          start_time <- Telemetry.start(:connect, meta),
          {:ok, proto} <- protocol_to_atom(protocol),
          {:ok, mint_conn} <- Mint.HTTP.connect(proto, hostname, port, opts) do

@@ -1,16 +1,23 @@
 defmodule Mojito.Telemetry do
   @moduledoc ~S"""
-  Mojito Telemetry integration
-  Thanks to team Finch for basically all of this
+  Mojito's [Telemetry](https://github.com/beam-telemetry/telemetry)
+  integration.
 
-  Mojito executes the following events:
+  Mojito emits the following Telemetry measurements:
+
+  ```
   [:mojito, :pool, :start]
   [:mojito, :pool, :stop]
 
-  `pool` events contain the `pool_key` metadata
-
   [:mojito, :request, :start]
   [:mojito, :request, :stop]
+
+  [:mojito, :connect, :start]
+  [:mojito, :connect, :stop]
+  ```
+
+  Thanks to team Finch for basically all of this
+
 
   `request` events contain the following metadata
 
@@ -21,8 +28,8 @@ defmodule Mojito.Telemetry do
   }
   ```
 
-  [:mojito, :connection, :start]
-  [:mojito, :connection, :stop]
+  [:mojito, :connect, :start]
+  [:mojito, :connect, :stop]
 
   `connection` events contain the following metadata
 
@@ -37,25 +44,31 @@ defmodule Mojito.Telemetry do
   will contain the `system_time` as well as the `duration` between `start` and `stop`
   """
 
+  @typep monotonic_time :: integer
+
+  @doc false
+  @spec start(atom, map) :: monotonic_time
   def start(name, meta \\ %{}) do
     start_time = time()
 
     :telemetry.execute(
       [:mojito, name, :start],
-      %{system_time: start_time},
+      %{system_time: system_time},
       meta
     )
 
     start_time
   end
 
+  @doc false
+  @spec stop(atom, monotonic_time, map) :: monotonic_time
   def stop(name, start_time, meta \\ %{}) do
     stop_time = time()
     duration = stop_time - start_time
 
     :telemetry.execute(
       [:mojito, name, :stop],
-      %{system_time: stop_time, duration: duration},
+      %{system_time: system_time(), duration: duration},
       meta
     )
 
@@ -63,4 +76,5 @@ defmodule Mojito.Telemetry do
   end
 
   defp time(), do: System.monotonic_time(:millisecond)
+  defp system_time, do: System.system_time(:millisecond)
 end
