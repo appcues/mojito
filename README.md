@@ -150,10 +150,11 @@ or `Mojito.Pool.request`:
 
 ## Telemetry
 
-Mojito integrates the standard [Telemetry](https://github.com/beam-telemetry/telemetry) library.
+Mojito integrates with the standard
+[Telemetry](https://github.com/beam-telemetry/telemetry) library.
 
-See the [Mojito.Telemetry](https://github.com/appcues/mojito/blob/master/lib/mojito/telemetry.ex) module for more info
-
+See the [Mojito.Telemetry](https://github.com/appcues/mojito/blob/master/lib/mojito/telemetry.ex)
+module for more information.
 
 ## Changelog
 

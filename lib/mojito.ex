@@ -155,6 +155,13 @@ defmodule Mojito do
       >>>> Mojito.request(method: :get, url: "https://localhost:8443/", opts: [transport_opts: [verify: :verify_none]])
       {:ok, %Mojito.Response{...}}
 
+  ## Telemetry
+
+  Mojito integrates with the standard
+  [Telemetry](https://github.com/beam-telemetry/telemetry) library.
+
+  See the `Mojito.Telemetry` module for more information.
+
   ## Changelog
 
   See the [CHANGELOG.md](https://github.com/appcues/mojito/blob/master/CHANGELOG.md).

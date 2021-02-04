@@ -32,11 +32,11 @@ defmodule Mojito.Telemetry do
 
   * `[:mojito, :request, :start]` before making a request
     - Measurements: `:system_time`
-    - Metadata: `:host`, `:port`, `:path` `:method`
+    - Metadata: `:host`, `:port`, `:path`, `:method`
 
   * `[:mojito, :request, :stop]` after making a request
     - Measurements: `:system_time`, `:duration`
-    - Metadata: `:host`, `:port`, `:path` `:method`
+    - Metadata: `:host`, `:port`, `:path`, `:method`
 
   """
 
