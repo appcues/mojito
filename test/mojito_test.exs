@@ -143,14 +143,14 @@ defmodule MojitoTest do
 
     it "accepts kwlist input" do
       assert(
-        {:ok, response} =
+        {:ok, _response} =
           Mojito.request(method: :get, url: "http://localhost:#{@http_port}/")
       )
     end
 
     it "accepts pool: true" do
       assert(
-        {:ok, response} =
+        {:ok, _response} =
           Mojito.request(
             method: :get,
             url: "http://localhost:#{@http_port}/",
@@ -161,7 +161,7 @@ defmodule MojitoTest do
 
     it "accepts pool: false" do
       assert(
-        {:ok, response} =
+        {:ok, _response} =
           Mojito.request(
             method: :get,
             url: "http://localhost:#{@http_port}/",
@@ -175,7 +175,7 @@ defmodule MojitoTest do
       {:ok, pool_pid} = Supervisor.start_child(Mojito.Supervisor, child_spec)
 
       assert(
-        {:ok, response} =
+        {:ok, _response} =
           Mojito.request(
             method: :get,
             url: "http://localhost:#{@http_port}/",

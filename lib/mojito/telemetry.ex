@@ -3,57 +3,65 @@ defmodule Mojito.Telemetry do
   Mojito's [Telemetry](https://github.com/beam-telemetry/telemetry)
   integration.
 
-  Mojito emits the following Telemetry measurements:
+  All time measurements are emitted in `:millisecond` units by
+  default. A different
+  [Erlang time unit](https://erlang.org/doc/man/erlang.html#type-time_unit)
+  can be chosen by setting a config parameter like so:
 
   ```
-  [:mojito, :pool, :start]
-  [:mojito, :pool, :stop]
-
-  [:mojito, :request, :start]
-  [:mojito, :request, :stop]
-
-  [:mojito, :connect, :start]
-  [:mojito, :connect, :stop]
+  config :mojito, Mojito.Telemetry, time_unit: :microsecond
   ```
 
-  Thanks to team Finch for basically all of this
+  Mojito emits the following Telemetry events:
 
+  * `[:mojito, :pool, :start]` before launching a pool
+    - Measurements: `:system_time`
+    - Metadata: `:host`, `:port`
 
-  `request` events contain the following metadata
+  * `[:mojito, :pool, :stop]` after launching a pool
+    - Measurements: `:system_time`, `:duration`
+    - Metadata: `:host`, `:port`
 
-  ```
-  %{
-      url: url,
-      method: method
-  }
-  ```
+  * `[:mojito, :connect, :start]` before connecting to a host
+    - Measurements: `:system_time`
+    - Metadata: `:host`, `:port`
 
-  [:mojito, :connect, :start]
-  [:mojito, :connect, :stop]
+  * `[:mojito, :connect, :stop]` after connecting to a host
+    - Measurements: `:system_time`, `:duration`
+    - Metadata: `:host`, `:port`
 
-  `connection` events contain the following metadata
+  * `[:mojito, :request, :start]` before making a request
+    - Measurements: `:system_time`
+    - Metadata: `:host`, `:port`, `:path` `:method`
 
-  ```
-  %{
-    hostname: hostname,
-    protocol: protocol,
-    port: port
-  }
+  * `[:mojito, :request, :stop]` after making a request
+    - Measurements: `:system_time`, `:duration`
+    - Metadata: `:host`, `:port`, `:path` `:method`
 
-  `start` events will contain the `system_time` measurements, and `stop` events
-  will contain the `system_time` as well as the `duration` between `start` and `stop`
   """
 
   @typep monotonic_time :: integer
 
+  defp time_unit do
+    Application.get_env(:mojito, Mojito.Telemetry)[:time_unit] || :millisecond
+  end
+
+  defp monotonic_time do
+    :erlang.monotonic_time(time_unit())
+  end
+
+  defp system_time do
+    :erlang.system_time(time_unit())
+  end
+
   @doc false
   @spec start(atom, map) :: monotonic_time
   def start(name, meta \\ %{}) do
-    start_time = time()
+    start_time = monotonic_time()
 
     :telemetry.execute(
       [:mojito, name, :start],
-      %{system_time: system_time},
+      %{system_time: system_time()},
       meta
     )
 
@@ -63,7 +71,7 @@ defmodule Mojito.Telemetry do
   @doc false
   @spec stop(atom, monotonic_time, map) :: monotonic_time
   def stop(name, start_time, meta \\ %{}) do
-    stop_time = time()
+    stop_time = monotonic_time()
     duration = stop_time - start_time
 
     :telemetry.execute(
@@ -74,7 +82,4 @@ defmodule Mojito.Telemetry do
 
     stop_time
   end
-
-  defp time(), do: System.monotonic_time(:millisecond)
-  defp system_time, do: System.system_time(:millisecond)
 end

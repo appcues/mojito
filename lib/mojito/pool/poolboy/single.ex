@@ -106,8 +106,13 @@ defmodule Mojito.Pool.Poolboy.Single do
   @spec request(pid, Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(pool, request) do
+    ## TODO refactor so request.url is already a URI struct when it gets here
+    uri = URI.parse(request.url)
+
     meta = %{
-      url: request.url,
+      host: uri.host,
+      port: uri.port,
+      path: uri.path,
       method: request.method
     }
 
