@@ -49,6 +49,7 @@ defmodule Mojito.MixProject do
       {:mint, "~> 1.1"},
       {:castore, "~> 0.1"},
       {:poolboy, "~> 1.5"},
+      {:telemetry, "~> 0.4"},
       {:ex_spec, "~> 2.0", only: :test},
       {:jason, "~> 1.0", only: :test},
       {:cowboy, "~> 2.0", only: :test},

@@ -148,6 +148,14 @@ or `Mojito.Pool.request`:
 {:ok, %Mojito.Response{ ... }}
 ```
 
+## Telemetry
+
+Mojito integrates with the standard
+[Telemetry](https://github.com/beam-telemetry/telemetry) library.
+
+See the [Mojito.Telemetry](https://github.com/appcues/mojito/blob/master/lib/mojito/telemetry.ex)
+module for more information.
+
 ## Changelog
 
 See the [CHANGELOG.md](https://github.com/appcues/mojito/blob/master/CHANGELOG.md).
@@ -177,7 +185,7 @@ Heartfelt thanks to everyone who's helped make Mojito better.
 
 ## Authorship and License
 
-Copyright 2018-2019, Appcues, Inc.
+Copyright 2018-2021, Appcues, Inc.
 
 This software is released under the MIT License.
 
