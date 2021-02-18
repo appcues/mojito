@@ -23,12 +23,12 @@ defmodule Mojito.Request.Single do
   @spec request(Mojito.request()) ::
           {:ok, Mojito.response()} | {:error, Mojito.error()}
   def request(%Request{} = req) do
-    with {:ok, req} <- Request.validate_request(req),
-         {:ok, conn} <- Conn.connect(req.url, req.opts),
-         {:ok, conn, _ref, response} <- Conn.request(conn, req) do
-      timeout = req.opts[:timeout] || Config.timeout()
-      receive_response(conn, response, timeout)
-    end
+    with_connection(req, fn conn ->
+      with {:ok, conn, _ref, response} <- Conn.request(conn, req) do
+        timeout = req.opts[:timeout] || Config.timeout()
+        receive_response(conn, response, timeout)
+      end
+    end)
   end
 
   defp time, do: System.monotonic_time(:millisecond)
@@ -85,6 +85,17 @@ defmodule Mojito.Request.Single do
 
       :unknown ->
         receive_response(conn, response, new_timeout.())
+    end
+  end
+
+  defp with_connection(req, fun) do
+    with {:ok, req} <- Request.validate_request(req),
+         {:ok, conn} <- Conn.connect(req.url, req.opts) do
+      try do
+        fun.(conn)
+      after
+        Conn.close(conn)
+      end
     end
   end
 end
