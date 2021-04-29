@@ -63,18 +63,94 @@ defmodule Mojito.Conn do
     response = %Mojito.Response{body: [], size: max_body_size}
 
     with {:ok, relative_url, auth_headers} <-
-           Utils.get_relative_url_and_auth_headers(request.url),
-         {:ok, mint_conn, request_ref} <-
+           Utils.get_relative_url_and_auth_headers(request.url) do
+      all_headers = auth_headers ++ request.headers
+
+      case conn.conn do
+        %Mint.HTTP1{} ->
+          simple_request(conn, relative_url, all_headers, request, response)
+
+        %Mint.HTTP2{} ->
+          chunk_size = calculate_initial_chunk_size(conn.conn)
+          body_size = byte_size(request.body || "")
+
+          # we try and avoid the chunking code because it creates an extra empty
+          # chunk. but otherwise it should have the same behaviour
+          if body_size <= chunk_size do
+            simple_request(conn, relative_url, all_headers, request, response)
+          else
+            streaming_request(
+              conn,
+              relative_url,
+              add_default_content_length_header(all_headers, request.body),
+              request,
+              response
+            )
+          end
+      end
+    end
+  end
+
+  defp add_default_content_length_header(headers, nil) do
+    headers
+  end
+
+  defp add_default_content_length_header(headers, body) do
+    Mint.Core.Util.put_new_header_lazy(headers, "content-length", fn ->
+      body |> IO.iodata_length() |> Integer.to_string()
+    end)
+  end
+
+  defp streaming_request(conn, relative_url, all_headers, request, response) do
+    with {:ok, mint_conn, request_ref} <-
            Mint.HTTP.request(
              conn.conn,
              method_to_string(request.method),
              relative_url,
-             auth_headers ++ request.headers,
+             all_headers,
              :stream
            ),
          {:ok, mint_conn, response} <-
            stream_request_body(mint_conn, request_ref, response, request.body) do
       {:ok, %{conn | conn: mint_conn}, request_ref, response}
+    end
+  end
+
+  defp simple_request(conn, relative_url, all_headers, request, response) do
+    with {:ok, mint_conn, request_ref} <-
+           Mint.HTTP.request(
+             conn.conn,
+             method_to_string(request.method),
+             relative_url,
+             all_headers,
+             request.body
+           ) do
+      {:ok, %{conn | conn: mint_conn}, request_ref, response}
+    end
+  end
+
+  defp calculate_initial_chunk_size(mint_conn) do
+    min(
+      mint_conn.server_settings.initial_window_size,
+      Mint.HTTP2.get_window_size(mint_conn, :connection)
+    )
+  end
+
+  defp calculate_chunk_size(mint_conn, request_ref) do
+    min(
+      Mint.HTTP2.get_window_size(mint_conn, {:request, request_ref}),
+      Mint.HTTP2.get_window_size(mint_conn, :connection)
+    )
+  end
+
+  defp binary_split_at(bin, size) do
+    # don't use String.split_at. split_at is for unicode code points
+
+    if byte_size(bin) <= size do
+      {bin, ""}
+    else
+      <<part::binary-size(size), rest::binary()>> = bin
+      {part, rest}
     end
   end
 
@@ -90,32 +166,13 @@ defmodule Mojito.Conn do
   end
 
   defp stream_request_body(
-         %Mint.HTTP1{} = mint_conn,
-         request_ref,
-         response,
-         body
-       ) do
-    {chunk, rest} = String.split_at(body, 65535)
-
-    with {:ok, mint_conn} <-
-           Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
-      stream_request_body(mint_conn, request_ref, response, rest)
-    end
-  end
-
-  defp stream_request_body(
          %Mint.HTTP2{} = mint_conn,
          request_ref,
          response,
          body
        ) do
-    chunk_size =
-      min(
-        Mint.HTTP2.get_window_size(mint_conn, {:request, request_ref}),
-        Mint.HTTP2.get_window_size(mint_conn, :connection)
-      )
-
-    {chunk, rest} = String.split_at(body, chunk_size)
+    chunk_size = calculate_chunk_size(mint_conn, request_ref)
+    {chunk, rest} = binary_split_at(body, chunk_size)
 
     with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do

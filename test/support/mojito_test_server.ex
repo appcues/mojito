@@ -59,6 +59,10 @@ defmodule Mojito.TestServer.PlugRouter do
     send_resp(conn, 200, Jason.encode!(%{name: name}))
   end
 
+  post "/headers" do
+    send_resp(conn, 200, Jason.encode!(Map.new(conn.req_headers)))
+  end
+
   patch "/patch" do
     name = conn.body_params["name"] || "Bob"
     send_resp(conn, 200, Jason.encode!(%{name: name}))
