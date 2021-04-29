@@ -216,6 +216,28 @@ defmodule MojitoTest do
       assert("12" == Headers.get(response.headers, "content-length"))
     end
 
+    it "sends content-length on http/1.1 requests" do
+      assert({:ok, response} = post("/headers", "body", protocols: [:http1]))
+      headers = Jason.decode!(response.body)
+
+      assert Map.get(headers, "content-length") == "6"
+    end
+
+    it "sends content-length on http2 requests" do
+      assert({:ok, response} = post("/headers", "body", protocols: [:http2]))
+      headers = Jason.decode!(response.body)
+
+      assert Map.get(headers, "content-length") == "6"
+    end
+
+    it "sends content-length on large http2 requests" do
+      big = String.duplicate("x", 5_000_000)
+      assert({:ok, response} = post("/headers", big, protocols: [:http2]))
+      headers = Jason.decode!(response.body)
+
+      assert Map.get(headers, "content-length") == "5000002"
+    end
+
     it "handles timeouts" do
       assert({:ok, _} = get("/", timeout: 100))
       assert({:error, %Error{reason: :timeout}} = get("/wait1", timeout: 100))
