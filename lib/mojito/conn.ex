@@ -95,7 +95,7 @@ defmodule Mojito.Conn do
          response,
          body
        ) do
-    {chunk, rest} = String.split_at(body, 65535)
+    {chunk, rest} = split_chunk(body, 65_535)
 
     with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
@@ -115,12 +115,14 @@ defmodule Mojito.Conn do
         Mint.HTTP2.get_window_size(mint_conn, :connection)
       )
 
-    {chunk, rest} = String.split_at(body, chunk_size)
+    {chunk, rest} = split_chunk(body, chunk_size)
 
     with {:ok, mint_conn} <-
            Mint.HTTP.stream_request_body(mint_conn, request_ref, chunk) do
       {mint_conn, response} =
-        if "" != rest do
+        if is_nil(rest) do
+          {mint_conn, response}
+        else
           {:ok, mint_conn, resps} =
             receive do
               msg -> Mint.HTTP.stream(mint_conn, msg)
@@ -128,8 +130,6 @@ defmodule Mojito.Conn do
 
           {:ok, response} = Mojito.Response.apply_resps(response, resps)
 
-          {mint_conn, response}
-        else
           {mint_conn, response}
         end
 
@@ -147,5 +147,16 @@ defmodule Mojito.Conn do
 
   defp method_to_string(m) when is_binary(m) do
     m |> String.upcase()
+  end
+
+  defp split_chunk(binary, chunk_size)
+       when is_binary(binary) and is_integer(chunk_size) do
+    case binary do
+      <<chunk::binary-size(chunk_size), rest::binary>> ->
+        {chunk, rest}
+
+      _ ->
+        {binary, nil}
+    end
   end
 end
