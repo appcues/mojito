@@ -376,7 +376,7 @@ defmodule MojitoTest do
     end
 
     it "can POST big bodies over HTTP/2" do
-      big = String.duplicate("x", 5_000_000)
+      big = String.duplicate("é", 2_500_000)
       body = %{name: big}
       assert({:ok, response} = post("/post", body, protocols: [:http2]))
       assert({:ok, map} = Jason.decode(response.body))
