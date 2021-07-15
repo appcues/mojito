@@ -56,7 +56,7 @@ defmodule Mojito.MixProject do
       {:plug, "~> 1.3", only: :test},
       {:plug_cowboy, "~> 2.0", only: :test},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
-      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 end
