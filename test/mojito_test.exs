@@ -403,7 +403,7 @@ defmodule MojitoTest do
 
       assert(
         {:error, %{reason: :timeout}} =
-          post("/post", body, protocols: [:http2], timeout: 100)
+          post("/post", body, protocols: [:http2], timeout: 10)
       )
     end
   end
