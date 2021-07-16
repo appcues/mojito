@@ -22,6 +22,19 @@ defmodule Mojito.Conn do
   end
 
   @doc ~S"""
+  Closes a connection
+  """
+  @spec close(t) :: :ok
+  def close(conn) do
+    # mint returns an updated conn
+    # but i don't understand why anyone
+    # would care about it. i think they just
+    # close the socket and set state: closed
+    Mint.HTTP.close(conn.conn)
+    :ok
+  end
+
+  @doc ~S"""
   Connects to the server specified in the given URL,
   returning a connection to the server.  No requests are made.
   """
