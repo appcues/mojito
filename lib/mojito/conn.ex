@@ -26,10 +26,6 @@ defmodule Mojito.Conn do
   """
   @spec close(t) :: :ok
   def close(conn) do
-    # mint returns an updated conn
-    # but i don't understand why anyone
-    # would care about it. i think they just
-    # close the socket and set state: closed
     Mint.HTTP.close(conn.conn)
     :ok
   end
