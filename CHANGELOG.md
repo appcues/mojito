@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.8 (2021-07-16)
+
+Fixed a few bugs around connection handling and chunk sizing. Thanks to
+[@reisub](https://github.com/reisub), [@fahchen](https://github.com/fahchen),
+[@bmteller](https://github.com/bmteller).
+
 ## 0.7.7 (2021-02-04)
 
 Added Mojito.Telemetry. Thanks,
