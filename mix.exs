@@ -1,7 +1,7 @@
 defmodule Mojito.MixProject do
   use Mix.Project
 
-  @version "0.7.7"
+  @version "0.7.8"
   @repo_url "https://github.com/appcues/mojito"
 
   def project do
@@ -32,7 +32,10 @@ defmodule Mojito.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      maintainers: ["pete gamache <pete@appcues.com>"],
+      maintainers: [
+        "pete gamache <pete@appcues.com>",
+        "andy leclair <andy@appcues.com>"
+      ],
       links: %{github: @repo_url}
     ]
   end
