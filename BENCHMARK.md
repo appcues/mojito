@@ -1,4 +1,4 @@
-# Mojito benchmarks
+# Benchmarks
 
 These benchmarks were conducted using
 [gamache/httpc_bench](https://github.com/gamache/httpc_bench).

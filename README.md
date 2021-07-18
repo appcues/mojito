@@ -1,6 +1,8 @@
 <img align="right" width="131" height="225" src="assets/mojito.png?raw=true">
 
-# Mojito [![Build Status](https://circleci.com/gh/appcues/mojito.svg?style=svg)](https://circleci.com/gh/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito)
+# Mojito [![Build Status](https://circleci.com/gh/appcues/mojito.svg?style=svg)](https://circleci.com/gh/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito) [![Total Download](https://img.shields.io/hexpm/dt/mojito.svg)](https://hex.pm/packages/mojito) [![License](https://img.shields.io/hexpm/l/mojito.svg)](https://github.com/appcues/mojito/blob/master/LICENSE.md) [![Last Updated](https://img.shields.io/github/last-commit/appcues/mojito.svg)](https://github.com/appcues/mojito/commits/master)
+
+<!-- MDOC !-->
 
 Mojito is an easy-to-use, high-performance HTTP client built using the
 low-level [Mint library](https://github.com/ericmj/mint).
@@ -55,6 +57,21 @@ Add `mojito` to your deps in `mix.exs`:
 ```elixir
 {:mojito, "~> 0.7.7"}
 ```
+
+## Upgrading from 0.4 and earlier
+
+Upgrading to 0.7 cannot be performed safely inside a hot upgrade.
+Deploy a regular release instead.
+
+Upgrading from 0.4 to 0.5 requires no end-user code changes.
+
+Mojito 0.5 refactors some internal functions in a way that changes
+their arity and order of arguments.
+
+Using request methods other than those in the `Mojito` module is
+deprecated since 0.3.
+
+A handful of new config parameters appeared in 0.3 as well.
 
 ## Configuration
 
@@ -156,6 +173,8 @@ Mojito integrates with the standard
 See the [Mojito.Telemetry](https://github.com/appcues/mojito/blob/master/lib/mojito/telemetry.ex)
 module for more information.
 
+<!-- MDOC !-->
+
 ## Changelog
 
 See the [CHANGELOG.md](https://github.com/appcues/mojito/blob/master/CHANGELOG.md).
@@ -183,9 +202,8 @@ Contributors and contributions are listed in the
 [changelog](https://github.com/appcues/mojito/blob/master/CHANGELOG.md).
 Heartfelt thanks to everyone who's helped make Mojito better.
 
-## Authorship and License
+## Copyright and License
 
-Copyright 2018-2021, Appcues, Inc.
+Copyright 2018 Appcues, Inc.
 
-This software is released under the MIT License.
-
+This software is released under the [MIT License](./LICENSE.md).
