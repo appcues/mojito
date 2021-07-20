@@ -7,22 +7,16 @@ defmodule Mojito.MixProject do
   def project do
     [
       app: :mojito,
-      description: "Fast, easy to use HTTP client based on Mint",
       version: @version,
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
-      package: package(),
       dialyzer: [
         plt_add_apps: [:mix]
       ],
-      docs: [
-        logo: "assets/mojito.png",
-        main: "Mojito",
-        source_ref: @version,
-        source_url: @repo_url
-      ]
+      deps: deps(),
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -31,12 +25,13 @@ defmodule Mojito.MixProject do
 
   defp package do
     [
+      description: "Fast, easy to use HTTP client based on Mint",
       licenses: ["MIT"],
-      maintainers: [
-        "pete gamache <pete@appcues.com>",
-        "andy leclair <andy@appcues.com>"
-      ],
-      links: %{github: @repo_url}
+      maintainers: ["pete gamache <pete@appcues.com>"],
+      links: %{
+        Changelog: "https://hexdocs.pm/mojito/changelog.html",
+        GitHub: @repo_url
+      }
     ]
   end
 
@@ -58,8 +53,25 @@ defmodule Mojito.MixProject do
       {:cowboy, "~> 2.0", only: :test},
       {:plug, "~> 1.3", only: :test},
       {:plug_cowboy, "~> 2.0", only: :test},
-      {:ex_doc, "~> 0.18", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      extras: [
+        "CHANGELOG.md": [],
+        "BENCHMARK.md": [],
+        "LICENSE.md": [title: "License"],
+        "README.md": [title: "Overview"],
+      ],
+      assets: "assets",
+      logo: "assets/mojito.png",
+      main: "readme",
+      source_url: @repo_url,
+      source_ref: @version,
+      formatters: ["html"]
     ]
   end
 end
