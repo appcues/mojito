@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.9 (2021-07-20)
+
+Improved docs. Thanks, [@kianmeng](https://github.com/kianmeng)!
+
 ## 0.7.8 (2021-07-16)
 
 Fixed a few bugs around connection handling and chunk sizing. Thanks to

@@ -1,7 +1,7 @@
 defmodule Mojito.MixProject do
   use Mix.Project
 
-  @version "0.7.8"
+  @version "0.7.9"
   @repo_url "https://github.com/appcues/mojito"
 
   def project do
@@ -61,14 +61,12 @@ defmodule Mojito.MixProject do
   defp docs do
     [
       extras: [
-        "CHANGELOG.md": [],
-        "BENCHMARK.md": [],
-        "LICENSE.md": [title: "License"],
-        "README.md": [title: "Overview"],
+        "CHANGELOG.md": [title: "Changelog"],
+        "LICENSE.md": [title: "License"]
       ],
       assets: "assets",
       logo: "assets/mojito.png",
-      main: "readme",
+      main: "Mojito",
       source_url: @repo_url,
       source_ref: @version,
       formatters: ["html"]
