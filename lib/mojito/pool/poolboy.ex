@@ -36,9 +36,11 @@ defmodule Mojito.Pool.Poolboy do
         case start_pool(pool_key) do
           {:ok, pid} ->
             Mojito.Pool.Poolboy.Single.request(pid, request)
+
           error ->
             error
         end
+
       other ->
         other
     end

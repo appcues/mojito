@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.10 (2021-10-27)
+
+Fixed a bug around starting pools. Thanks,
+[@reisub](https://github.com/reisub)!
+
+Marked compatibility with Telemetry 1.0. Thanks,
+[@jchristgit](https://github.com/jchristgit)!
+
 ## 0.7.9 (2021-07-20)
 
 Improved docs. Thanks, [@kianmeng](https://github.com/kianmeng)!
