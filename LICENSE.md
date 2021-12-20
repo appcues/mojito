@@ -1,6 +1,6 @@
 # The MIT License
 
-Copyright 2018 Appcues, Inc.
+Copyright 2018-2021 Appcues, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the

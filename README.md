@@ -189,6 +189,6 @@ Heartfelt thanks to everyone who's helped make Mojito better.
 
 ## Copyright and License
 
-Copyright 2018 Appcues, Inc.
+Copyright 2018-2021 Appcues, Inc.
 
 This software is released under the [MIT License](./LICENSE.md).
