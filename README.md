@@ -10,6 +10,8 @@ of Finch has an [excellent writeup here](https://elixirforum.com/t/mint-vs-finch
 describing the problems with Mojito, and as a result we use Finch
 internally at Appcues now.
 
+## Original Description
+
 <!-- MDOC !-->
 
 Mojito is an easy-to-use, high-performance HTTP client built using the
