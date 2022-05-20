@@ -2,6 +2,14 @@
 
 # Mojito [![Build Status](https://circleci.com/gh/appcues/mojito.svg?style=svg)](https://circleci.com/gh/appcues/mojito) [![Docs](https://img.shields.io/badge/api-docs-green.svg?style=flat)](https://hexdocs.pm/mojito/Mojito.html) [![Hex.pm Version](http://img.shields.io/hexpm/v/mojito.svg?style=flat)](https://hex.pm/packages/mojito) [![License](https://img.shields.io/hexpm/l/mojito.svg)](https://github.com/appcues/mojito/blob/master/LICENSE.md)
 
+## Now Deprecated
+
+We recommend that you use [Finch](https://github.com/sneako/finch) which
+is also built on [Mint](https://github.com/ericmj/mint). The creator
+of Finch has an [excellent writeup here](https://elixirforum.com/t/mint-vs-finch-vs-gun-vs-tesla-vs-httpoison-etc/38588/11)
+describing the problems with Mojito, and as a result we use Finch
+internally at Appcues now.
+
 <!-- MDOC !-->
 
 Mojito is an easy-to-use, high-performance HTTP client built using the
